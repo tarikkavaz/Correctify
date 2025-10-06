@@ -12,7 +12,7 @@ export interface Corrector {
   correct(input: CorrectionInput): Promise<CorrectionResult>;
 }
 
-export type Provider = 'ollama' | 'openai';
+export type Provider = 'openai';
 
 export interface CorrectionRequest {
   text: string;

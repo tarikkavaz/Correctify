@@ -85,25 +85,12 @@ The global shortcut works even when Correctify is minimized or in the background
 | Global correction | `Cmd+Shift+.` | `Ctrl+Shift+.` |
 | Copy result | Click Copy button | Click Copy button |
 
-## Pricing
-
-You only pay for what you use through your OpenAI account:
-- **~$0.00015** per 1,000 input tokens
-- **~$0.0006** per 1,000 output tokens
-
-For reference, 1,000 tokens ≈ 750 words. Most corrections cost less than a penny.
-
 ## Privacy
 
 - Your text is sent to OpenAI's servers for correction
 - Your API key is stored locally on your device (never sent to any servers)
 - The app doesn't log, store, or track anything
 - No analytics, no telemetry, no database
-
-**Where your API key is stored:**
-- **macOS**: `~/Library/Application Support/com.correctify/`
-- **Windows**: `%APPDATA%\com.correctify\`
-- **Linux**: `~/.local/share/com.correctify/`
 
 ## Requirements
 

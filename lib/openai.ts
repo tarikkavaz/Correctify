@@ -1,8 +1,19 @@
 import OpenAI from 'openai';
 import { Corrector, CorrectionInput, CorrectionResult } from './types';
 
-const SYSTEM_PROMPT =
-  'You are a writing assistant. Your job is to fix ALL spelling mistakes, grammar errors, and punctuation issues. This includes: repeated letters (e.g., "Hellllooo" → "Hello", "Worlddd" → "World"), misspelled words (e.g., "Thhis" → "This", "iz" → "is"), and typos. Be thorough and aggressive with corrections. IMPORTANT: The input uses markdown syntax - preserve the markdown formatting symbols (**bold**, *italic*, `code`, ```blocks```, lists, etc.) but fully correct all text content between them. DO NOT correct text inside code blocks (inline `code` or ```code blocks```). Return only the corrected text with preserved markdown formatting and no explanations.';
+const SYSTEM_PROMPT = `
+You are a writing assistant. Fix ALL spelling mistakes, grammar errors, punctuation issues, and typos.
+
+Rules:
+1. Correct repeated letters (e.g., "Hellllooo" → "Hello").
+2. Fix misspelled words (e.g., "Thhis" → "This").
+3. Correct improper capitalization.
+4. Preserve ALL markdown formatting (bold, italic, headings, lists, links, blockquotes, inline code, fenced code blocks).
+5. NEVER alter text inside inline \`code\` or fenced \`\`\`code blocks\`\`\`.
+6. Do not translate the text — always keep the original language of the input.
+7. Be thorough and aggressive with corrections, but do not change meaning.
+8. Output ONLY the corrected text with markdown formatting intact. Do not explain or add anything else.
+`;
 
 export class OpenAICorrector implements Corrector {
   private client: OpenAI;

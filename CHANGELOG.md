@@ -5,6 +5,33 @@ All notable changes to Correctify will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.2.0] - 2025-01-10
+
+### Added
+- Localization support for multiple languages (English, German, French, Turkish)
+  - Automatically detects system language and falls back to English
+  - Language-specific UI translations for better user experience
+
+### Changed
+- **System Prompt**: Updated and restructured for better clarity with numbered rules
+  - Added support for preserving original language (no translation)
+  - Improved markdown formatting preservation instructions
+  - Better handling of code blocks and inline code
+- **UI Icons**: Updated KeyRound icon for API key section in Help modal
+- **UI Icons**: Changed emoji to Lightbulb component for "Quick Correction from Anywhere" section
+- **Removed Ollama Support**: Simplified codebase by removing Ollama corrector
+  - Deleted `lib/ollama.ts` and related test files
+  - Updated API routes to only support OpenAI provider
+  - Removed `.env.example` file (no longer needed)
+
+### Fixed
+- Disabled Inspector Window in production builds for better security
+
+### Documentation
+- Removed pricing section from README (OpenAI pricing changes frequently)
+- Removed API key storage location details from README (simplified documentation)
+- Updated all version references to 0.2.0
+
 ## [0.1.1] - 2025-01-06
 
 ### Added
@@ -60,6 +87,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - No text storage or logging
 - Direct communication with OpenAI API only
 
+[0.2.0]: https://github.com/tarikkavaz/Correctify/compare/v0.1.1...v0.2.0
 [0.1.1]: https://github.com/tarikkavaz/Correctify/compare/v0.1.0...v0.1.1
 [0.1.0]: https://github.com/tarikkavaz/Correctify/releases/tag/v0.1.0
-
