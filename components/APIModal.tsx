@@ -3,6 +3,7 @@
 import { useState, useEffect, FormEvent } from 'react';
 import { X, KeyRound } from 'lucide-react';
 import { open } from '@tauri-apps/plugin-shell';
+import { useLocale } from '@/lib/useLocale';
 
 interface APIModalProps {
   isOpen: boolean;
@@ -18,6 +19,7 @@ export default function APIModal({
   currentApiKey,
 }: APIModalProps) {
   const [apiKey, setApiKey] = useState(currentApiKey);
+  const { messages } = useLocale();
 
   useEffect(() => {
     setApiKey(currentApiKey);
@@ -52,7 +54,7 @@ export default function APIModal({
             <div className="p-2 bg-primary/10 dark:bg-primary/20 rounded-lg">
               <KeyRound className="w-5 h-5 text-primary dark:text-blue-400" />
             </div>
-            <h2 className="text-xl font-semibold dark:text-white">API Key</h2>
+            <h2 className="text-xl font-semibold dark:text-white">{messages.apiModal.title}</h2>
           </div>
           <button
             onClick={onClose}
@@ -67,28 +69,27 @@ export default function APIModal({
         <form onSubmit={handleSubmit} className="p-6 space-y-6">
           <div className="space-y-2">
             <label htmlFor="apiKey" className="block text-sm font-medium dark:text-gray-200">
-              OpenAI API Key
+              {messages.apiModal.apiKeyLabel}
             </label>
             <input
               id="apiKey"
               type="password"
               value={apiKey}
               onChange={(e) => setApiKey(e.target.value)}
-              placeholder="sk-..."
+              placeholder={messages.apiModal.apiKeyPlaceholder}
               className="w-full px-4 py-3 bg-white dark:bg-gray-700 border border-border dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary dark:text-white dark:placeholder-gray-400 transition-colors"
               autoFocus
             />
             <div className="flex items-start gap-2 text-xs text-foreground/60 dark:text-gray-400">
               <p className="flex-1">
-                Your API key is stored locally in your browser and never sent to
-                our servers.
+                {messages.apiModal.securityNote}
               </p>
             </div>
             <button
               onClick={handleOpenAPIKey}
               className="inline-flex items-center text-xs text-primary dark:text-blue-400 hover:underline cursor-pointer"
             >
-              Get your API key →
+              {messages.apiModal.getKeyInstructions} {messages.apiModal.openAiPlatform} →
             </button>
           </div>
 
@@ -108,13 +109,13 @@ export default function APIModal({
               onClick={onClose}
               className="flex-1 px-4 py-2 text-sm font-medium text-foreground dark:text-gray-300 hover:bg-foreground/5 dark:hover:bg-white/5 rounded-lg transition-colors"
             >
-              Cancel
+              {messages.apiModal.cancel}
             </button>
             <button
               type="submit"
               className="flex-1 px-4 py-2 text-sm font-medium bg-primary text-white rounded-lg hover:bg-primary-hover transition-colors"
             >
-              Save
+              {messages.apiModal.save}
             </button>
           </div>
         </form>

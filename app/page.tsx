@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useRef, FormEvent, KeyboardEvent } from 'react';
-import { Command, CornerDownLeft, Copy, Check, ChevronDown } from 'lucide-react';
+import { Command, CornerDownLeft, Copy, Check, ChevronDown, Lightbulb } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import { CorrectionResponse } from '@/lib/types';
@@ -11,8 +11,10 @@ import DraggableHeader from '@/components/DraggableHeader';
 import { OpenAICorrector } from '@/lib/openai';
 import { isTauri } from '@/lib/utils';
 import { useTheme } from '@/lib/useTheme';
+import { useLocale } from '@/lib/useLocale';
 
 export default function HomePage() {
+  const { messages } = useLocale();
   const [inputText, setInputText] = useState('');
   const [outputText, setOutputText] = useState('');
   const [apiKey, setApiKey] = useState('');
@@ -306,11 +308,11 @@ export default function HomePage() {
             <div className="space-y-2">
               <div className="flex items-center justify-between">
                 <label htmlFor="input" className="block text-sm font-medium dark:text-gray-200">
-                  Text to correct
+                  {messages.home.inputLabel}
                 </label>
                 <div className="flex items-center gap-2">
                   <label htmlFor="model" className="text-xs font-medium text-foreground/60 dark:text-gray-400">
-                    Model:
+                    {messages.home.modelLabel}
                   </label>
                   <div className="relative" ref={modelDropdownRef}>
                     <button
@@ -350,7 +352,7 @@ export default function HomePage() {
                 value={inputText}
                 onChange={(e) => setInputText(e.target.value)}
                 onKeyDown={handleKeyDown}
-                placeholder="Enter text to correct..."
+                placeholder={messages.home.inputPlaceholder}
                 className="w-full h-96 px-4 py-3 bg-white dark:bg-gray-800 border border-border dark:border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary resize-none text-foreground dark:text-gray-100 transition-colors"
                 disabled={isLoading}
               />
@@ -361,7 +363,7 @@ export default function HomePage() {
               disabled={isLoading || !inputText.trim()}
               className="w-full px-6 py-3 bg-primary text-white font-medium rounded-lg hover:bg-primary-hover focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 dark:focus:ring-offset-gray-950 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
             >
-              {isLoading ? 'Correcting...' : 'Correct'}
+              {isLoading ? messages.home.correctingButton : messages.home.correctButton}
             </button>
 
             <div className="flex items-center justify-center gap-4 text-sm text-foreground/60 dark:text-gray-400">
@@ -370,14 +372,14 @@ export default function HomePage() {
                   <Command className="w-3 h-3" />
                   <CornerDownLeft className="w-3 h-3" />
                 </kbd>
-                <span className="text-xs">Mac</span>
+                <span className="text-xs">{messages.home.shortcutMac}</span>
               </div>
-              <span className="text-foreground/30 dark:text-gray-600">or</span>
+              <span className="text-foreground/30 dark:text-gray-600">{messages.home.shortcutOr}</span>
               <div className="flex items-center gap-1.5">
                 <kbd className="px-2 py-1 bg-foreground/5 dark:bg-white/5 border border-foreground/10 dark:border-white/10 rounded text-xs font-medium">
                   Ctrl+Enter
                 </kbd>
-                <span className="text-xs">Win/Linux</span>
+                <span className="text-xs">{messages.home.shortcutWinLinux}</span>
               </div>
             </div>
           </form>
@@ -392,24 +394,24 @@ export default function HomePage() {
                 </div>
                 <div>
                   <h3 className="text-sm font-semibold text-red-800 dark:text-red-300 mb-1">
-                    No API Key Configured
+                    {messages.home.noApiKeyTitle}
                   </h3>
                   <p className="text-sm text-red-700 dark:text-red-400">
-                    You need to configure your OpenAI API key to use Correctify.{' '}
+                    {messages.home.noApiKeyMessage}{' '}
                     <button
                       onClick={() => setIsAPIModalOpen(true)}
                       className="font-semibold underline hover:no-underline"
                     >
-                      Click here to add your API key
+                      {messages.home.noApiKeyClickHere}
                     </button>
-                    {' '}or check the{' '}
+                    {' '}{messages.home.noApiKeyOr}{' '}
                     <button
                       onClick={() => setIsHelpModalOpen(true)}
                       className="font-semibold underline hover:no-underline"
                     >
-                      Help guide
+                      {messages.home.noApiKeyHelpGuide}
                     </button>
-                    {' '}for instructions.
+                    {' '}{messages.home.noApiKeyForInstructions}
                   </p>
                 </div>
               </div>
@@ -422,17 +424,18 @@ export default function HomePage() {
                 isInfoFadingOut ? 'opacity-0' : 'opacity-100'
               }`}
             >
-              <h3 className="text-sm font-semibold text-blue-900 dark:text-blue-300 mb-2">
-                💡 Quick Correction from Anywhere
+              <h3 className="text-sm font-semibold text-blue-900 flex items-center gap-2 dark:text-blue-300 mb-2">
+                <Lightbulb />
+                {messages.home.quickCorrectionTitle}
               </h3>
               <p className="text-sm text-blue-800 dark:text-blue-300 mb-2">
-                Use the global shortcut to correct text from any application:
+                {messages.home.quickCorrectionDescription}
               </p>
               <ol className="text-sm text-blue-800 dark:text-blue-300 space-y-1 ml-4 list-decimal">
-                <li>Select and copy text in any app (<kbd className="px-1.5 py-0.5 bg-blue-100 dark:bg-blue-800 rounded text-xs font-medium">Cmd+C</kbd> or <kbd className="px-1.5 py-0.5 bg-blue-100 dark:bg-blue-800 rounded text-xs font-medium">Ctrl+C</kbd>)</li>
-                <li>Press <kbd className="px-1.5 py-0.5 bg-blue-100 dark:bg-blue-800 rounded text-xs font-medium">Cmd+Shift+.</kbd> or <kbd className="px-1.5 py-0.5 bg-blue-100 dark:bg-blue-800 rounded text-xs font-medium">Ctrl+Shift+.</kbd></li>
-                <li>Wait for the notification</li>
-                <li>Paste the corrected text (<kbd className="px-1.5 py-0.5 bg-blue-100 dark:bg-blue-800 rounded text-xs font-medium">Cmd+V</kbd> or <kbd className="px-1.5 py-0.5 bg-blue-100 dark:bg-blue-800 rounded text-xs font-medium">Ctrl+V</kbd>)</li>
+                <li className="ml-3">Select and copy text in any app (<kbd className="px-1.5 py-0.5 bg-blue-100 dark:bg-blue-800 rounded text-xs font-medium">Cmd+C</kbd> or <kbd className="px-1.5 py-0.5 bg-blue-100 dark:bg-blue-800 rounded text-xs font-medium">Ctrl+C</kbd>)</li>
+                <li className="ml-3">Press <kbd className="px-1.5 py-0.5 bg-blue-100 dark:bg-blue-800 rounded text-xs font-medium">Cmd+Shift+.</kbd> or <kbd className="px-1.5 py-0.5 bg-blue-100 dark:bg-blue-800 rounded text-xs font-medium">Ctrl+Shift+.</kbd></li>
+                <li className="ml-3">Wait for the notification</li>
+                <li className="ml-3">Paste the corrected text (<kbd className="px-1.5 py-0.5 bg-blue-100 dark:bg-blue-800 rounded text-xs font-medium">Cmd+V</kbd> or <kbd className="px-1.5 py-0.5 bg-blue-100 dark:bg-blue-800 rounded text-xs font-medium">Ctrl+V</kbd>)</li>
               </ol>
             </div>
           )}
@@ -448,7 +451,7 @@ export default function HomePage() {
               <div className="space-y-2">
                 <div className="flex items-center justify-between">
                   <label className="block text-sm font-medium dark:text-gray-200">
-                    Corrected text
+                    {messages.home.outputLabel}
                   </label>
                   <button
                     onClick={handleCopy}
@@ -458,12 +461,12 @@ export default function HomePage() {
                     {isCopied ? (
                       <>
                         <Check className="w-3.5 h-3.5" />
-                        <span>Copied!</span>
+                        <span>{messages.home.copied}</span>
                       </>
                     ) : (
                       <>
                         <Copy className="w-3.5 h-3.5" />
-                        <span>Copy</span>
+                        <span>{messages.home.copy}</span>
                       </>
                     )}
                   </button>
@@ -480,10 +483,10 @@ export default function HomePage() {
               {meta && (
                 <div className="flex items-center justify-between text-xs text-foreground/60 dark:text-gray-400">
                   <span>
-                    Model: {meta.model}
+                    {messages.home.metaModel} {meta.model}
                   </span>
                   {meta.duration && (
-                    <span>Duration: {(meta.duration / 1000).toFixed(2)}s</span>
+                    <span>{messages.home.metaDuration} {(meta.duration / 1000).toFixed(2)}s</span>
                   )}
                 </div>
               )}

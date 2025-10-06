@@ -1,5 +1,4 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { OllamaCorrector } from '@/lib/ollama';
 import { OpenAICorrector } from '@/lib/openai';
 import { CorrectionRequest, CorrectionResponse } from '@/lib/types';
 
@@ -20,46 +19,32 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       );
     }
 
-    if (!provider || !['ollama', 'openai'].includes(provider)) {
+    if (!provider || provider !== 'openai') {
       return NextResponse.json(
         {
           ok: false,
-          error: 'Invalid provider. Must be "ollama" or "openai"',
+          error: 'Invalid provider. Must be "openai"',
         } as CorrectionResponse,
         { status: 400 }
       );
     }
 
-    let result: string;
-
-    if (provider === 'ollama') {
-      const corrector = new OllamaCorrector();
-      const response = await corrector.correct({ text, model, temperature });
-      result = response.result;
-    } else if (provider === 'openai') {
-      const apiKey = request.headers.get('x-openai-key');
-      if (!apiKey) {
-        return NextResponse.json(
-          {
-            ok: false,
-            error: 'OpenAI API key is required in X-OPENAI-KEY header',
-          } as CorrectionResponse,
-          { status: 400 }
-        );
-      }
-
-      const corrector = new OpenAICorrector(apiKey);
-      const response = await corrector.correct({ text, model, temperature });
-      result = response.result;
-    } else {
+    // Get API key
+    const apiKey = request.headers.get('x-openai-key');
+    if (!apiKey) {
       return NextResponse.json(
         {
           ok: false,
-          error: 'Unsupported provider',
+          error: 'OpenAI API key is required in X-OPENAI-KEY header',
         } as CorrectionResponse,
         { status: 400 }
       );
     }
+
+    // Perform correction
+    const corrector = new OpenAICorrector(apiKey);
+    const response = await corrector.correct({ text, model, temperature });
+    const result = response.result;
 
     const duration = Date.now() - startTime;
 
@@ -69,7 +54,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
         result,
         meta: {
           duration,
-          model: model || (provider === 'ollama' ? 'llama3.1:8b-instruct-q4' : 'gpt-4o-mini'),
+          model: model || 'gpt-4o-mini',
           provider,
         },
       } as CorrectionResponse,

@@ -2,6 +2,7 @@
 
 import { KeyRound, Sun, Moon, Monitor, HelpCircle } from 'lucide-react';
 import { Theme } from '@/lib/useTheme';
+import { useLocale } from '@/lib/useLocale';
 
 interface DraggableHeaderProps {
   onSettingsClick: () => void;
@@ -17,6 +18,7 @@ export default function DraggableHeader({
   onThemeToggle,
 }: DraggableHeaderProps) {
   const ThemeIcon = theme === 'system' ? Monitor : theme === 'dark' ? Moon : Sun;
+  const { messages } = useLocale();
 
   return (
     <div
@@ -41,24 +43,24 @@ export default function DraggableHeader({
         <button
           onClick={onHelpClick}
           className="p-2 hover:bg-foreground/5 dark:hover:bg-white/5 rounded-lg transition-colors"
-          aria-label="Help"
-          title="Help"
+          aria-label={messages.header.help}
+          title={messages.header.help}
         >
           <HelpCircle className="w-5 h-5 text-foreground/60 dark:text-gray-400 hover:text-foreground dark:hover:text-gray-200 transition-colors" />
         </button>
         <button
           onClick={onThemeToggle}
           className="p-2 hover:bg-foreground/5 dark:hover:bg-white/5 rounded-lg transition-colors"
-          aria-label={`Theme: ${theme}`}
-          title={`Theme: ${theme}`}
+          aria-label={messages.header.theme}
+          title={messages.header.theme}
         >
           <ThemeIcon className="w-5 h-5 text-foreground/60 dark:text-gray-400 hover:text-foreground dark:hover:text-gray-200 transition-colors" />
         </button>
         <button
           onClick={onSettingsClick}
           className="p-2 hover:bg-foreground/5 dark:hover:bg-white/5 rounded-lg transition-colors"
-          aria-label="Settings"
-          title="Settings"
+          aria-label={messages.header.settings}
+          title={messages.header.settings}
         >
           <KeyRound className="w-5 h-5 text-foreground/60 dark:text-gray-400 hover:text-foreground dark:hover:text-gray-200 transition-colors" />
         </button>
