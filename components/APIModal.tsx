@@ -1,0 +1,124 @@
+'use client';
+
+import { useState, useEffect, FormEvent } from 'react';
+import { X, KeyRound } from 'lucide-react';
+import { open } from '@tauri-apps/plugin-shell';
+
+interface APIModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+  onSave: (apiKey: string) => void;
+  currentApiKey: string;
+}
+
+export default function APIModal({
+  isOpen,
+  onClose,
+  onSave,
+  currentApiKey,
+}: APIModalProps) {
+  const [apiKey, setApiKey] = useState(currentApiKey);
+
+  useEffect(() => {
+    setApiKey(currentApiKey);
+  }, [currentApiKey, isOpen]);
+
+  const handleSubmit = (e: FormEvent) => {
+    e.preventDefault();
+    onSave(apiKey);
+    onClose();
+  };
+
+  const handleClear = () => {
+    setApiKey('');
+  };
+
+  const handleOpenAPIKey = async () => {
+    try {
+      await open('https://platform.openai.com/api-keys');
+    } catch (error) {
+      console.error('Failed to open API key URL:', error);
+    }
+  };
+
+  if (!isOpen) return null;
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
+      <div className="relative w-full max-w-md mx-4 bg-white dark:bg-gray-800 rounded-lg shadow-xl transition-colors">
+        {/* Header */}
+        <div className="flex items-center justify-between p-6 border-b border-border dark:border-gray-700">
+          <div className="flex items-center gap-3">
+            <div className="p-2 bg-primary/10 dark:bg-primary/20 rounded-lg">
+              <KeyRound className="w-5 h-5 text-primary dark:text-blue-400" />
+            </div>
+            <h2 className="text-xl font-semibold dark:text-white">API Key</h2>
+          </div>
+          <button
+            onClick={onClose}
+            className="p-1 hover:bg-foreground/5 dark:hover:bg-white/5 rounded-lg transition-colors"
+            aria-label="Close API settings"
+          >
+            <X className="w-5 h-5 dark:text-gray-300" />
+          </button>
+        </div>
+
+        {/* Body */}
+        <form onSubmit={handleSubmit} className="p-6 space-y-6">
+          <div className="space-y-2">
+            <label htmlFor="apiKey" className="block text-sm font-medium dark:text-gray-200">
+              OpenAI API Key
+            </label>
+            <input
+              id="apiKey"
+              type="password"
+              value={apiKey}
+              onChange={(e) => setApiKey(e.target.value)}
+              placeholder="sk-..."
+              className="w-full px-4 py-3 bg-white dark:bg-gray-700 border border-border dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary dark:text-white dark:placeholder-gray-400 transition-colors"
+              autoFocus
+            />
+            <div className="flex items-start gap-2 text-xs text-foreground/60 dark:text-gray-400">
+              <p className="flex-1">
+                Your API key is stored locally in your browser and never sent to
+                our servers.
+              </p>
+            </div>
+            <button
+              onClick={handleOpenAPIKey}
+              className="inline-flex items-center text-xs text-primary dark:text-blue-400 hover:underline cursor-pointer"
+            >
+              Get your API key →
+            </button>
+          </div>
+
+          {/* Footer */}
+          <div className="flex gap-3">
+            {apiKey && (
+              <button
+                type="button"
+                onClick={handleClear}
+                className="px-4 py-2 text-sm font-medium text-foreground/60 dark:text-gray-400 hover:text-foreground dark:hover:text-gray-200 hover:bg-foreground/5 dark:hover:bg-white/5 rounded-lg transition-colors"
+              >
+                Clear
+              </button>
+            )}
+            <button
+              type="button"
+              onClick={onClose}
+              className="flex-1 px-4 py-2 text-sm font-medium text-foreground dark:text-gray-300 hover:bg-foreground/5 dark:hover:bg-white/5 rounded-lg transition-colors"
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              className="flex-1 px-4 py-2 text-sm font-medium bg-primary text-white rounded-lg hover:bg-primary-hover transition-colors"
+            >
+              Save
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  );
+}

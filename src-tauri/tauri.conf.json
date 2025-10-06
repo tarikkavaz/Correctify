@@ -1,0 +1,65 @@
+{
+  "productName": "Correctify",
+  "version": "0.1.0",
+  "identifier": "com.correctify",
+  "build": {
+    "beforeDevCommand": "pnpm dev",
+    "devUrl": "http://localhost:3000",
+    "beforeBuildCommand": "pnpm build:tauri",
+    "frontendDist": "../out"
+  },
+  "app": {
+    "windows": [
+      {
+        "title": "Correctify",
+        "width": 1280,
+        "height": 950,
+        "resizable": true,
+        "fullscreen": false,
+        "titleBarStyle": "Overlay",
+        "hiddenTitle": true
+      }
+    ],
+    "security": {
+      "csp": null,
+      "capabilities": [
+        {
+          "identifier": "main-window-capability",
+          "windows": ["main"],
+          "permissions": [
+            "core:default",
+            "core:window:allow-start-dragging",
+            "core:window:allow-hide",
+            "core:window:allow-show",
+            "core:webview:allow-create-webview-window",
+            "core:webview:allow-webview-position",
+            "core:webview:allow-webview-size",
+            "shell:allow-open"
+          ]
+        },
+        {
+          "identifier": "about-window-capability",
+          "windows": ["about"],
+          "permissions": [
+            "core:default",
+            "core:window:allow-close",
+            "core:window:allow-set-focus",
+            "core:window:allow-show",
+            "shell:allow-open"
+          ]
+        }
+      ]
+    }
+  },
+  "bundle": {
+    "active": true,
+    "targets": "all",
+    "icon": [
+      "icons/32x32.png",
+      "icons/128x128.png",
+      "icons/128x128@2x.png",
+      "icons/icon.icns",
+      "icons/icon.ico"
+    ]
+  }
+}
