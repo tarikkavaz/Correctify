@@ -5,7 +5,7 @@ import { useTheme } from '@/lib/useTheme';
 import { open } from '@tauri-apps/plugin-shell';
 
 export default function AboutPage() {
-  const version = '0.1.0';
+  const version = '0.1.1';
   const [mounted, setMounted] = useState(false);
   
   // Apply theme to this window

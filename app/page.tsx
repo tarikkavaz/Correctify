@@ -6,6 +6,7 @@ import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import { CorrectionResponse } from '@/lib/types';
 import APIModal from '@/components/APIModal';
+import HelpModal from '@/components/HelpModal';
 import DraggableHeader from '@/components/DraggableHeader';
 import { OpenAICorrector } from '@/lib/openai';
 import { isTauri } from '@/lib/utils';
@@ -21,7 +22,10 @@ export default function HomePage() {
   const [error, setError] = useState('');
   const [meta, setMeta] = useState<CorrectionResponse['meta'] | null>(null);
   const [isAPIModalOpen, setIsAPIModalOpen] = useState(false);
+  const [isHelpModalOpen, setIsHelpModalOpen] = useState(false);
   const [isCopied, setIsCopied] = useState(false);
+  const [showGlobalShortcutInfo, setShowGlobalShortcutInfo] = useState(false);
+  const [isInfoFadingOut, setIsInfoFadingOut] = useState(false);
   const { theme, toggleTheme } = useTheme();
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const modelDropdownRef = useRef<HTMLDivElement>(null);
@@ -35,6 +39,111 @@ export default function HomePage() {
     const savedModel = localStorage.getItem('openai-model') as 'gpt-5' | 'gpt-5-mini' | 'gpt-4o-mini' | null;
     if (savedModel && (savedModel === 'gpt-5' || savedModel === 'gpt-5-mini' || savedModel === 'gpt-4o-mini')) {
       setModel(savedModel);
+    }
+
+    // Check if running in Tauri (client-side only)
+    setShowGlobalShortcutInfo(isTauri());
+
+    // Listen for global shortcut event from Rust backend
+    if (isTauri()) {
+      const setupListener = async () => {
+        const { listen } = await import('@tauri-apps/api/event');
+        const { invoke } = await import('@tauri-apps/api/core');
+        const { isPermissionGranted, requestPermission } = await import('@tauri-apps/plugin-notification');
+
+        console.log('Setting up global shortcut event listener...');
+
+        // Check and request notification permissions
+        let permissionGranted = await isPermissionGranted();
+        console.log('Notification permission granted:', permissionGranted);
+        
+        if (!permissionGranted) {
+          console.log('Requesting notification permission...');
+          const permission = await requestPermission();
+          permissionGranted = permission === 'granted';
+          console.log('Notification permission result:', permission);
+        }
+
+        // Send a test notification if permissions are granted
+        if (permissionGranted) {
+          const { sendNotification } = await import('@tauri-apps/plugin-notification');
+          const { platform } = await import('@tauri-apps/plugin-os');
+          
+          try {
+            const platformName = await platform();
+            const shortcutKey = platformName === 'macos' ? 'Cmd' : 'Ctrl';
+            
+            await sendNotification({
+              title: '🚀 Correctify Ready',
+              body: `Global shortcut ${shortcutKey}+Shift+. is active!`
+            });
+            console.log('✅ Test notification sent successfully');
+          } catch (err) {
+            console.error('❌ Failed to send test notification:', err);
+          }
+        } else {
+          console.warn('⚠️ Notification permission not granted. Notifications will not work.');
+          console.warn('Please enable notifications in System Settings > Notifications > Correctify');
+        }
+
+        const unlisten = await listen('correct-clipboard-text', async (event: any) => {
+          const textToCorrect = event.payload;
+          console.log('=== Received text to correct from global shortcut ===');
+          console.log('Text length:', textToCorrect.length);
+          console.log('Text preview:', textToCorrect.substring(0, 100));
+
+          // Check if API key is available
+          const currentApiKey = localStorage.getItem('openai-api-key');
+          if (!currentApiKey) {
+            console.error('❌ No API key available - please configure in settings');
+            // Send error notification
+            try {
+              const { sendNotification } = await import('@tauri-apps/plugin-notification');
+              await sendNotification({
+                title: '❌ Correctify Error',
+                body: 'Please configure your OpenAI API key in settings first!'
+              });
+              console.log('✅ Error notification sent for missing API key');
+            } catch (err) {
+              console.error('❌ Failed to send error notification:', err);
+            }
+            return;
+          }
+
+          try {
+            console.log('Starting correction...');
+            // Perform correction
+            const currentModel = localStorage.getItem('openai-model') as 'gpt-5' | 'gpt-5-mini' | 'gpt-4o-mini' || 'gpt-4o-mini';
+            const corrector = new OpenAICorrector(currentApiKey, currentModel);
+            const result = await corrector.correct({ text: textToCorrect });
+
+            console.log('Correction result:', result.result.substring(0, 100));
+            
+            // Send corrected text back to Rust
+            await invoke('handle_corrected_text', { text: result.result });
+            console.log('=== Correction completed successfully ===');
+          } catch (err) {
+            console.error('❌ Failed to correct text:', err);
+            // Send error notification
+            try {
+              const { sendNotification } = await import('@tauri-apps/plugin-notification');
+              await sendNotification({
+                title: '❌ Correctify Error',
+                body: 'Failed to correct text: ' + (err instanceof Error ? err.message : 'Unknown error')
+              });
+              console.log('✅ Error notification sent for correction failure');
+            } catch (notifErr) {
+              console.error('❌ Failed to send error notification:', notifErr);
+            }
+          }
+        });
+
+        return unlisten;
+      };
+
+      setupListener().catch(err => {
+        console.error('Failed to setup event listener:', err);
+      });
     }
   }, []);
 
@@ -96,6 +205,14 @@ export default function HomePage() {
       setError('Please add your OpenAI API key');
       setIsAPIModalOpen(true);
       return;
+    }
+
+    // Fade out the global shortcut info on first use
+    if (showGlobalShortcutInfo && !isInfoFadingOut) {
+      setIsInfoFadingOut(true);
+      setTimeout(() => {
+        setShowGlobalShortcutInfo(false);
+      }, 500); // Match the CSS transition duration
     }
 
     setIsLoading(true);
@@ -166,7 +283,7 @@ export default function HomePage() {
     <>
       <DraggableHeader
         onSettingsClick={() => setIsAPIModalOpen(true)}
-        hasApiKey={!!apiKey}
+        onHelpClick={() => setIsHelpModalOpen(true)}
         theme={theme}
         onThemeToggle={toggleTheme}
       />
@@ -176,6 +293,11 @@ export default function HomePage() {
         onClose={() => setIsAPIModalOpen(false)}
         onSave={handleSaveApiKey}
         currentApiKey={apiKey}
+      />
+
+      <HelpModal
+        isOpen={isHelpModalOpen}
+        onClose={() => setIsHelpModalOpen(false)}
       />
 
       <main className="min-h-screen flex justify-center p-6 bg-background dark:bg-gray-950 pt-20 transition-colors mt-6">
@@ -259,6 +381,61 @@ export default function HomePage() {
               </div>
             </div>
           </form>
+
+          {!apiKey && (
+            <div className="mt-6 p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg">
+              <div className="flex items-start gap-3">
+                <div className="flex-shrink-0">
+                  <svg className="w-5 h-5 text-red-600 dark:text-red-400" viewBox="0 0 20 20" fill="currentColor">
+                    <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+                  </svg>
+                </div>
+                <div>
+                  <h3 className="text-sm font-semibold text-red-800 dark:text-red-300 mb-1">
+                    No API Key Configured
+                  </h3>
+                  <p className="text-sm text-red-700 dark:text-red-400">
+                    You need to configure your OpenAI API key to use Correctify.{' '}
+                    <button
+                      onClick={() => setIsAPIModalOpen(true)}
+                      className="font-semibold underline hover:no-underline"
+                    >
+                      Click here to add your API key
+                    </button>
+                    {' '}or check the{' '}
+                    <button
+                      onClick={() => setIsHelpModalOpen(true)}
+                      className="font-semibold underline hover:no-underline"
+                    >
+                      Help guide
+                    </button>
+                    {' '}for instructions.
+                  </p>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {showGlobalShortcutInfo && (
+            <div 
+              className={`mt-6 p-4 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg transition-opacity duration-500 ${
+                isInfoFadingOut ? 'opacity-0' : 'opacity-100'
+              }`}
+            >
+              <h3 className="text-sm font-semibold text-blue-900 dark:text-blue-300 mb-2">
+                💡 Quick Correction from Anywhere
+              </h3>
+              <p className="text-sm text-blue-800 dark:text-blue-300 mb-2">
+                Use the global shortcut to correct text from any application:
+              </p>
+              <ol className="text-sm text-blue-800 dark:text-blue-300 space-y-1 ml-4 list-decimal">
+                <li>Select and copy text in any app (<kbd className="px-1.5 py-0.5 bg-blue-100 dark:bg-blue-800 rounded text-xs font-medium">Cmd+C</kbd> or <kbd className="px-1.5 py-0.5 bg-blue-100 dark:bg-blue-800 rounded text-xs font-medium">Ctrl+C</kbd>)</li>
+                <li>Press <kbd className="px-1.5 py-0.5 bg-blue-100 dark:bg-blue-800 rounded text-xs font-medium">Cmd+Shift+.</kbd> or <kbd className="px-1.5 py-0.5 bg-blue-100 dark:bg-blue-800 rounded text-xs font-medium">Ctrl+Shift+.</kbd></li>
+                <li>Wait for the notification</li>
+                <li>Paste the corrected text (<kbd className="px-1.5 py-0.5 bg-blue-100 dark:bg-blue-800 rounded text-xs font-medium">Cmd+V</kbd> or <kbd className="px-1.5 py-0.5 bg-blue-100 dark:bg-blue-800 rounded text-xs font-medium">Ctrl+V</kbd>)</li>
+              </ol>
+            </div>
+          )}
 
           {error && (
             <div className="mt-6 p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg">

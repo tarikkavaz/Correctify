@@ -1,11 +1,122 @@
-use tauri::Manager;
+use tauri::{Manager, Emitter};
 use tauri::menu::{MenuBuilder, MenuItemBuilder, PredefinedMenuItem, SubmenuBuilder};
+use std::thread;
+use std::time::Duration;
+
+// Tauri command to handle corrected text from frontend
+#[tauri::command]
+async fn handle_corrected_text(
+    text: String,
+    app: tauri::AppHandle,
+) -> Result<(), String> {
+    use tauri_plugin_clipboard_manager::ClipboardExt;
+    use tauri_plugin_notification::NotificationExt;
+
+    println!("Writing corrected text to clipboard (length: {} chars)", text.len());
+
+    // Write corrected text to clipboard
+    app.clipboard().write_text(text.clone())
+        .map_err(|e| format!("Failed to write to clipboard: {}", e))?;
+
+    println!("Corrected text written to clipboard successfully");
+
+    // Add a small delay to ensure the processing notification is visible
+    thread::sleep(Duration::from_millis(500));
+
+    // Show success notification
+    let result = app.notification()
+        .builder()
+        .title("✅ Correctify")
+        .body("Text corrected and copied to clipboard!")
+        .show();
+
+    match result {
+        Ok(id) => println!("Success notification shown with id: {:?}", id),
+        Err(e) => {
+            eprintln!("Failed to show notification: {}", e);
+            eprintln!("Error details: {:?}", e);
+        }
+    }
+
+    Ok(())
+}
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     tauri::Builder::default()
         .plugin(tauri_plugin_shell::init())
+        .plugin(tauri_plugin_clipboard_manager::init())
+        .plugin(tauri_plugin_notification::init())
+        .plugin(tauri_plugin_os::init())
+        .plugin(
+            tauri_plugin_global_shortcut::Builder::new()
+                .with_handler(|app, shortcut, event| {
+                    use tauri_plugin_global_shortcut::ShortcutState;
+                    use tauri_plugin_clipboard_manager::ClipboardExt;
+                    use tauri_plugin_notification::NotificationExt;
+
+                    if event.state == ShortcutState::Pressed {
+                        println!("🔔 Global shortcut triggered: {:?}", shortcut);
+
+                        // Read from clipboard directly (user should have copied text with Cmd+C first)
+                        match app.clipboard().read_text() {
+                            Ok(text) => {
+                                if text.is_empty() {
+                                    println!("❌ Clipboard is empty - no text to correct");
+                                    
+                                    #[cfg(target_os = "macos")]
+                                    let copy_instruction = "Please copy text first (Cmd+C), then use Cmd+Shift+.";
+                                    
+                                    #[cfg(not(target_os = "macos"))]
+                                    let copy_instruction = "Please copy text first (Ctrl+C), then use Ctrl+Shift+.";
+                                    
+                                    let _ = app.notification()
+                                        .builder()
+                                        .title("⚠️ Correctify")
+                                        .body(copy_instruction)
+                                        .show();
+                                    return;
+                                }
+                                
+                                println!("📋 Processing clipboard text ({} chars)", text.len());
+                                println!("   Preview: {}", 
+                                    if text.len() > 100 { &text[..100] } else { &text });
+                                
+                                // Emit event to frontend with text to correct
+                                match app.emit("correct-clipboard-text", text.clone()) {
+                                    Ok(_) => println!("✅ Event emitted to frontend"),
+                                    Err(e) => eprintln!("❌ Failed to emit event: {}", e),
+                                }
+                                
+                                // Show notification that we're processing
+                                let notification_result = app.notification()
+                                    .builder()
+                                    .title("⏳ Correctify")
+                                    .body("Processing text correction...")
+                                    .show();
+                                
+                                match notification_result {
+                                    Ok(id) => println!("✅ Processing notification shown (id: {:?})", id),
+                                    Err(e) => eprintln!("❌ Failed to show notification: {}", e),
+                                }
+                            }
+                            Err(e) => {
+                                eprintln!("❌ Failed to read clipboard: {}", e);
+                            }
+                        }
+                    }
+                })
+                .build(),
+        )
+        .invoke_handler(tauri::generate_handler![handle_corrected_text])
         .setup(|app| {
+            // Register the global shortcut
+            use tauri_plugin_global_shortcut::{GlobalShortcutExt, Shortcut};
+            let shortcut = "CmdOrCtrl+Shift+.".parse::<Shortcut>().unwrap();
+            app.global_shortcut().register(shortcut)
+                .expect("Failed to register global shortcut");
+            println!("Global shortcut registered: CmdOrCtrl+Shift+.");
+
             #[cfg(any(debug_assertions, target_os = "macos"))]
             let window = app.get_webview_window("main").unwrap();
             

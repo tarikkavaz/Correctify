@@ -1,6 +1,6 @@
 {
   "productName": "Correctify",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "identifier": "com.correctify",
   "build": {
     "beforeDevCommand": "pnpm dev",
@@ -34,7 +34,16 @@
             "core:webview:allow-create-webview-window",
             "core:webview:allow-webview-position",
             "core:webview:allow-webview-size",
-            "shell:allow-open"
+            "shell:allow-open",
+            "global-shortcut:default",
+            "global-shortcut:allow-register",
+            "global-shortcut:allow-unregister",
+            "global-shortcut:allow-is-registered",
+            "clipboard-manager:default",
+            "clipboard-manager:allow-read-text",
+            "clipboard-manager:allow-write-text",
+            "notification:default",
+            "os:allow-platform"
           ]
         },
         {
@@ -60,6 +69,13 @@
       "icons/128x128@2x.png",
       "icons/icon.icns",
       "icons/icon.ico"
-    ]
+    ],
+    "macOS": {
+      "entitlements": null,
+      "exceptionDomain": null,
+      "frameworks": [],
+      "providerShortName": null,
+      "signingIdentity": null
+    }
   }
 }

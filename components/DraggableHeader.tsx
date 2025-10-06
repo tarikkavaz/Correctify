@@ -1,18 +1,18 @@
 'use client';
 
-import { KeyRound, Sun, Moon, Monitor } from 'lucide-react';
+import { KeyRound, Sun, Moon, Monitor, HelpCircle } from 'lucide-react';
 import { Theme } from '@/lib/useTheme';
 
 interface DraggableHeaderProps {
   onSettingsClick: () => void;
-  hasApiKey: boolean;
+  onHelpClick: () => void;
   theme: Theme;
   onThemeToggle: () => void;
 }
 
 export default function DraggableHeader({
   onSettingsClick,
-  hasApiKey,
+  onHelpClick,
   theme,
   onThemeToggle,
 }: DraggableHeaderProps) {
@@ -38,11 +38,14 @@ export default function DraggableHeader({
         </div>
       </div>
       <div className="flex items-center gap-2">
-        {!hasApiKey && (
-          <span className="text-xs text-red-600 dark:text-red-400 font-medium mr-2">
-            No API key
-          </span>
-        )}
+        <button
+          onClick={onHelpClick}
+          className="p-2 hover:bg-foreground/5 dark:hover:bg-white/5 rounded-lg transition-colors"
+          aria-label="Help"
+          title="Help"
+        >
+          <HelpCircle className="w-5 h-5 text-foreground/60 dark:text-gray-400 hover:text-foreground dark:hover:text-gray-200 transition-colors" />
+        </button>
         <button
           onClick={onThemeToggle}
           className="p-2 hover:bg-foreground/5 dark:hover:bg-white/5 rounded-lg transition-colors"
