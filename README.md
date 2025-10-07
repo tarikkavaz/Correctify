@@ -16,7 +16,15 @@ Correctify corrects grammar, spelling, and punctuation while preserving your wri
   * No dock icon on macOS (stays in menubar only)
   * Launch at startup option available in Settings
   * Lightweight and always accessible
-* **Global Shortcut**: Correct text from any app with `Cmd+Shift+.` (macOS) or `Ctrl+Shift+.` (Windows/Linux)
+* **Customizable Shortcut**: Change the global shortcut to your preference
+  * Default: `Cmd+Shift+.` (macOS) or `Ctrl+Shift+.` (Windows/Linux)
+  * Customize the last key (e.g., A-Z, 0-9, special keys)
+  * Updates instantly without restarting the app
+* **Sound Notifications**: Optional audio feedback for all notifications
+  * Distinct sounds for different notification types
+  * Enable/disable in Settings (enabled by default)
+  * Works across all platforms
+* **Global Shortcut**: Correct text from any app using your configured shortcut
 * High-quality corrections using OpenAI models (GPT-4o Mini default, GPT-5 Mini, GPT-5)
 * Model selector to choose between different models based on speed, cost, and quality
 * Pay-per-use pricing (no subscriptions)
@@ -62,6 +70,8 @@ Correctify corrects grammar, spelling, and punctuation while preserving your wri
    * Click the Settings icon (⚙️) in the top-right corner
    * Paste your API key
    * Optional: Enable "Launch at startup" to start Correctify automatically
+   * Optional: Toggle "Sound notifications" to enable/disable audio feedback
+   * Optional: Customize your keyboard shortcut (default: period key)
    * Click Save
 
 That's it! Your API key is stored locally on your device and persists across restarts.
@@ -88,26 +98,26 @@ The app supports markdown formatting in both input and output—type `**bold**` 
 Correct text from any application:
 
 1. Select and copy text in any app (**Cmd+C** / **Ctrl+C**)
-2. Press **Cmd+Shift+.** (Mac) or **Ctrl+Shift+.** (Windows/Linux)
+2. Press your configured shortcut (default: **Cmd+Shift+.** on Mac or **Ctrl+Shift+.** on Windows/Linux)
 3. Wait for the notification ("Processing text correction...")
 4. Paste the corrected text (**Cmd+V** / **Ctrl+V**)
 
-The global shortcut works even when Correctify is minimized or hidden!
+The global shortcut works even when Correctify is minimized or hidden! You can customize the shortcut in Settings.
 
 **Note for macOS users:**
-
-* When opening Correctify for the first time, you may see a warning that the app is “damaged” or “cannot be opened because it is from an unidentified developer.” This is a standard macOS security measure for apps not distributed via the App Store. To proceed:
-
-  1. Go to **System Settings → Privacy & Security**
-  2. Scroll down until you see the message about **Correctify** being blocked
-  3. Click **Open Anyway**
-  4. Confirm in the popup
-
-  After this, macOS will remember your choice and you won’t need to repeat the step.
+> [!IMPORTANT]
+> When opening Correctify for the first time, you may see a warning that the app is “damaged” or “cannot be opened because it is from an unidentified developer.” This is a standard macOS security measure for apps not distributed via the App Store. To proceed:
+>
+>  1. Go to **System Settings → Privacy & Security**
+>  2. Scroll down until you see the message about **Correctify** being blocked
+>  3. Click **Open Anyway**
+>  4. Confirm in the popup
+>
+>  After this, macOS will remember your choice and you won’t need to repeat the step.
 
 * The first time you use the app, macOS may ask for notification permissions. Make sure to allow them to see completion notifications.
 * Correctify runs as a menubar-only app (no dock icon). Single-click the menubar icon to show/hide the window.
-* To quit the app, use **Cmd+Q** when the window is focused, or close it from Activity Monitor.
+* To quit the app, use **Cmd+Q** when the window is focused.
 
 ## Keyboard Shortcuts
 

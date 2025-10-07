@@ -119,6 +119,12 @@ export default function HelpModal({ isOpen, onClose }: HelpModalProps) {
                       <strong>{messages.helpModal.globalShortcutTip}</strong> {messages.helpModal.globalShortcutTipText}
                     </p>
                   </div>
+                  <div className="p-3 bg-purple-50 dark:bg-purple-900/20 border border-purple-200 dark:border-purple-800 rounded-lg mt-3 flex gap-2">
+                    <Keyboard className="w-4 h-4 text-purple-800 dark:text-purple-300 flex-shrink-0 mt-0.5" />
+                    <p className="text-xs text-purple-800 dark:text-purple-300">
+                      <strong>{messages.helpModal.globalShortcutCustomization}</strong> {messages.helpModal.globalShortcutCustomizationText}
+                    </p>
+                  </div>
                 </div>
               )}
             </div>
@@ -163,7 +169,7 @@ export default function HelpModal({ isOpen, onClose }: HelpModalProps) {
               </div>
               {isTauri() && (
                 <div className="flex justify-between items-center p-2 bg-foreground/5 dark:bg-white/5 rounded">
-                  <span>{messages.helpModal.shortcutGlobal}</span>
+                  <span>{messages.helpModal.shortcutGlobal} <span className="text-foreground/50 text-xs">(customizable)</span></span>
                   <div className="flex gap-2">
                     <kbd className="px-2 py-1 bg-foreground/10 dark:bg-white/10 rounded text-xs font-medium">Cmd+Shift+.</kbd>
                     <span className="text-foreground/40">or</span>
