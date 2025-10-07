@@ -32,7 +32,7 @@
     "metaDuration": "Dauer:"
   },
   "apiModal": {
-    "title": "API-Einstellungen",
+    "title": "Einstellungen",
     "apiKeyLabel": "OpenAI API-Schlüssel",
     "apiKeyPlaceholder": "sk-...",
     "getKeyInstructions": "Holen Sie sich Ihren API-Schlüssel von",

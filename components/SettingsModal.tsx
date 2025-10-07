@@ -4,12 +4,14 @@ import { useState, useEffect, FormEvent } from 'react';
 import { X, Settings } from 'lucide-react';
 import { open } from '@tauri-apps/plugin-shell';
 import { useLocale } from '@/lib/useLocale';
+import { isTauri } from '@/lib/utils';
 
 interface SettingsModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onSave: (apiKey: string) => void;
+  onSave: (apiKey: string, autostartEnabled: boolean) => void;
   currentApiKey: string;
+  currentAutostartEnabled: boolean;
 }
 
 export default function SettingsModal({
@@ -17,17 +19,25 @@ export default function SettingsModal({
   onClose,
   onSave,
   currentApiKey,
+  currentAutostartEnabled,
 }: SettingsModalProps) {
   const [apiKey, setApiKey] = useState(currentApiKey);
+  const [autostartEnabled, setAutostartEnabled] = useState(currentAutostartEnabled);
+  const [isTauriApp, setIsTauriApp] = useState(false);
   const { messages } = useLocale();
 
   useEffect(() => {
+    setIsTauriApp(isTauri());
+  }, []);
+
+  useEffect(() => {
     setApiKey(currentApiKey);
-  }, [currentApiKey, isOpen]);
+    setAutostartEnabled(currentAutostartEnabled);
+  }, [currentApiKey, currentAutostartEnabled, isOpen]);
 
   const handleSubmit = (e: FormEvent) => {
     e.preventDefault();
-    onSave(apiKey);
+    onSave(apiKey, autostartEnabled);
     onClose();
   };
 
@@ -92,6 +102,29 @@ export default function SettingsModal({
               {messages.apiModal.getKeyInstructions} {messages.apiModal.openAiPlatform} →
             </button>
           </div>
+
+          {/* Autostart Option (Desktop Only) */}
+          {isTauriApp && (
+            <div className="space-y-2 pt-2 border-t border-border dark:border-gray-700">
+              <div className="flex items-start gap-3">
+                <input
+                  id="autostart"
+                  type="checkbox"
+                  checked={autostartEnabled}
+                  onChange={(e) => setAutostartEnabled(e.target.checked)}
+                  className="mt-1 w-4 h-4 text-primary bg-white dark:bg-gray-700 border-border dark:border-gray-600 rounded focus:ring-2 focus:ring-primary"
+                />
+                <div className="flex-1">
+                  <label htmlFor="autostart" className="block text-sm font-medium dark:text-gray-200 cursor-pointer">
+                    Launch at startup
+                  </label>
+                  <p className="text-xs text-foreground/60 dark:text-gray-400 mt-1">
+                    Automatically start Correctify when your system boots
+                  </p>
+                </div>
+              </div>
+            </div>
+          )}
 
           {/* Footer */}
           <div className="flex gap-3">

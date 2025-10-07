@@ -5,6 +5,40 @@ All notable changes to Correctify will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.3.0] - 2025-01-XX
+
+### Added
+- **Menubar App**: Correctify now runs as a menubar/system tray app
+  - Click the tray icon to instantly show/hide the app window
+  - No dock icon on macOS (runs as an accessory app)
+  - Window hides instead of closing when clicking the close button
+  - Lightweight, always-accessible design
+- **Autostart Option**: Launch Correctify automatically when your system boots
+  - Enable/disable from Settings modal
+  - Cross-platform support (macOS, Windows, Linux)
+  - Setting persists across app restarts
+- **About Window**: New Info (ℹ️) icon in header
+  - Opens About window programmatically
+  - Shows app version and information
+  - Replaces previous menu-based About page
+
+### Changed
+- **Settings UI**: Renamed "API Key" modal to "Settings"
+  - Changed icon from Key (🔑) to Gear (⚙️) icon
+  - Added Autostart checkbox option for desktop app
+  - Improved modal organization
+  - Updated title in all language translations (EN, DE, FR, TR)
+- **Window Behavior**: Main window now starts hidden and appears via tray icon
+- **Header Icons**: Reorganized header with Info, Help, Theme, and Settings icons
+- **Removed Test Files**: Cleaned up Jest test files and configuration
+
+### Technical
+- Added `tauri-plugin-autostart` for startup management
+- Implemented system tray icon with direct click-to-toggle functionality
+- Updated window configuration for menubar behavior
+- Enhanced cross-platform desktop experience
+- Removed application menu on all platforms (menubar-only app)
+
 ## [0.2.0] - 2025-01-10
 
 ### Added
@@ -87,6 +121,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - No text storage or logging
 - Direct communication with OpenAI API only
 
+[0.3.0]: https://github.com/tarikkavaz/Correctify/compare/v0.2.0...v0.3.0
 [0.2.0]: https://github.com/tarikkavaz/Correctify/compare/v0.1.1...v0.2.0
 [0.1.1]: https://github.com/tarikkavaz/Correctify/compare/v0.1.0...v0.1.1
 [0.1.0]: https://github.com/tarikkavaz/Correctify/releases/tag/v0.1.0

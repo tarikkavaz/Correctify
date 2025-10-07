@@ -6,9 +6,14 @@ A simple, cross-platform grammar correction app powered by OpenAI. Bring your ow
 
 ## What It Does
 
-Correctify corrects grammar, spelling, and punctuation while preserving your writing style and formatting. It's a minimal, distraction-free tool that works on macOS, Windows, and Linux.
+Correctify corrects grammar, spelling, and punctuation while preserving your writing style and formatting. It's a minimal, distraction-free menubar app that works on macOS, Windows, and Linux.
 
 **Features:**
+- **Menubar App**: Lives in your system tray/menubar for instant access
+  - Single click on tray icon to show/hide the app
+  - No dock icon on macOS (stays in menubar only)
+  - Launch at startup option available in Settings
+  - Lightweight and always accessible
 - **Global Shortcut**: Correct text from any app with `Cmd+Shift+.` (macOS) or `Ctrl+Shift+.` (Windows/Linux)
 - High-quality corrections using OpenAI models (GPT-4o Mini default, GPT-5 Mini, GPT-5)
 - Model selector to choose between different models based on speed, cost, and quality
@@ -47,13 +52,21 @@ Correctify corrects grammar, spelling, and punctuation while preserving your wri
    - Copy the key (starts with `sk-...`)
 
 2. Add your API key to Correctify:
-   - Click the Settings icon (🔑) in the top-right corner
+   - Click the tray/menubar icon to open Correctify
+   - Click the Settings icon (⚙️) in the top-right corner
    - Paste your API key
+   - Optional: Enable "Launch at startup" to start Correctify automatically
    - Click Save
 
 That's it! Your API key is stored locally on your device and persists across restarts.
 
 ## How to Use
+
+### Opening the App
+
+- **First time**: The app will appear in your system tray/menubar (look for the Correctify icon)
+- **Click the tray icon** to instantly show/hide the main window
+- The window starts hidden - click the icon to reveal it
 
 ### In-App Correction
 
@@ -73,9 +86,12 @@ Correct text from any application:
 3. Wait for the notification ("Processing text correction...")
 4. Paste the corrected text (**Cmd+V** / **Ctrl+V**)
 
-The global shortcut works even when Correctify is minimized or in the background!
+The global shortcut works even when Correctify is minimized or hidden!
 
-**Note for macOS users:** The first time you use the app, macOS may ask for notification permissions. Make sure to allow them to see completion notifications.
+**Note for macOS users:** 
+- The first time you use the app, macOS may ask for notification permissions. Make sure to allow them to see completion notifications.
+- Correctify runs as a menubar-only app (no dock icon). Single-click the menubar icon to show/hide the window.
+- To quit the app, use **Cmd+Q** when the window is focused, or close it from Activity Monitor.
 
 ## Keyboard Shortcuts
 

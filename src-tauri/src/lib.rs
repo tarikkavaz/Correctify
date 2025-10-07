@@ -1,5 +1,7 @@
 use tauri::{Manager, Emitter};
 use tauri::menu::{MenuBuilder, MenuItemBuilder, PredefinedMenuItem, SubmenuBuilder};
+use tauri::tray::{TrayIconBuilder, TrayIconEvent, MouseButton, MouseButtonState};
+use tauri::image::Image;
 use std::thread;
 use std::time::Duration;
 
@@ -48,6 +50,10 @@ pub fn run() {
         .plugin(tauri_plugin_clipboard_manager::init())
         .plugin(tauri_plugin_notification::init())
         .plugin(tauri_plugin_os::init())
+        .plugin(tauri_plugin_autostart::init(
+            tauri_plugin_autostart::MacosLauncher::LaunchAgent,
+            Some(vec![]),
+        ))
         .plugin(
             tauri_plugin_global_shortcut::Builder::new()
                 .with_handler(|app, shortcut, event| {
@@ -110,6 +116,39 @@ pub fn run() {
         )
         .invoke_handler(tauri::generate_handler![handle_corrected_text])
         .setup(|app| {
+            // Set activation policy to Accessory on macOS to hide dock icon
+            #[cfg(target_os = "macos")]
+            {
+                app.set_activation_policy(tauri::ActivationPolicy::Accessory);
+            }
+
+            // Create system tray icon (no menu - click to toggle)
+            let tray_icon = Image::from_bytes(include_bytes!("../icons/tray.png"))
+                .expect("Failed to load tray icon");
+
+            let app_handle = app.app_handle().clone();
+            TrayIconBuilder::new()
+                .icon(tray_icon)
+                .icon_as_template(true)
+                .tooltip("Correctify - Click to toggle")
+                .on_tray_icon_event(move |_tray, event| {
+                    if let TrayIconEvent::Click { button, button_state, .. } = event {
+                        if button == MouseButton::Left && button_state == MouseButtonState::Up {
+                            if let Some(window) = app_handle.get_webview_window("main") {
+                                if window.is_visible().unwrap_or(false) {
+                                    let _ = window.hide();
+                                } else {
+                                    let _ = window.show();
+                                    let _ = window.set_focus();
+                                }
+                            }
+                        }
+                    }
+                })
+                .build(app)
+                .expect("Failed to build tray icon");
+
+
             // Register the global shortcut
             use tauri_plugin_global_shortcut::{GlobalShortcutExt, Shortcut};
             let shortcut = "CmdOrCtrl+Shift+.".parse::<Shortcut>().unwrap();
@@ -125,8 +164,7 @@ pub fn run() {
                 window.open_devtools();
             }
 
-            // Handle close event: hide window instead of closing on macOS
-            #[cfg(target_os = "macos")]
+            // Handle close event: hide window instead of closing (all platforms for menubar behavior)
             {
                 let window_clone = window.clone();
                 window.on_window_event(move |event| {
@@ -246,7 +284,7 @@ pub fn run() {
                     app.set_menu(menu)?;
                 }
 
-                // Handle menu events (all platforms)
+                // Handle all menu events (application menu only - no tray menu)
                 app.on_menu_event(move |app, event| {
                     match event.id().as_ref() {
                         #[cfg(target_os = "macos")]

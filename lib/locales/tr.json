@@ -32,7 +32,7 @@
     "metaDuration": "Süre:"
   },
   "apiModal": {
-    "title": "API Ayarları",
+    "title": "Ayarlar",
     "apiKeyLabel": "OpenAI API Anahtarı",
     "apiKeyPlaceholder": "sk-...",
     "getKeyInstructions": "API anahtarınızı şuradan alın",
