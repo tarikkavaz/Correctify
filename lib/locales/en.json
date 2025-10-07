@@ -69,6 +69,8 @@
     "globalShortcutStep4": "Paste the corrected text (",
     "globalShortcutTip": "Tip:",
     "globalShortcutTipText": "The global shortcut works even when the app is minimized or in the background!",
+    "globalShortcutCustomization": "Customize Your Shortcut:",
+    "globalShortcutCustomizationText": "You can change the shortcut key in Settings. The default is period (.), but you can use any key you prefer (A-Z, 0-9, or special keys). Cmd+Shift (or Ctrl+Shift) will always be required.",
     "modelSelection": "Model Selection",
     "modelSelectionDescription": "Choose the AI model that best fits your needs:",
     "model1Name": "GPT-4o Mini:",

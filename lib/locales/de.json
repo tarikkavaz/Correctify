@@ -69,6 +69,8 @@
     "globalShortcutStep4": "Korrigierten Text einfügen (",
     "globalShortcutTip": "Tipp:",
     "globalShortcutTipText": "Die globale Tastenkombination funktioniert auch, wenn die App minimiert ist oder im Hintergrund läuft!",
+    "globalShortcutCustomization": "Passen Sie Ihre Tastenkombination an:",
+    "globalShortcutCustomizationText": "Sie können die Taste in den Einstellungen ändern. Die Standardeinstellung ist der Punkt (.), aber Sie können jede beliebige Taste verwenden (A-Z, 0-9 oder Sondertasten). Cmd+Shift (oder Strg+Shift) ist immer erforderlich.",
     "modelSelection": "Modellauswahl",
     "modelSelectionDescription": "Wählen Sie das KI-Modell, das am besten zu Ihren Bedürfnissen passt:",
     "model1Name": "GPT-4o Mini:",

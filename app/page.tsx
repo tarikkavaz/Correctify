@@ -19,6 +19,8 @@ export default function HomePage() {
   const [outputText, setOutputText] = useState('');
   const [apiKey, setApiKey] = useState('');
   const [autostartEnabled, setAutostartEnabled] = useState(false);
+  const [soundEnabled, setSoundEnabled] = useState(true); // Default: enabled
+  const [shortcutKey, setShortcutKey] = useState('.'); // Default: period
   const [model, setModel] = useState<'gpt-5' | 'gpt-5-mini' | 'gpt-4o-mini'>('gpt-4o-mini');
   const [isModelDropdownOpen, setIsModelDropdownOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -49,6 +51,16 @@ export default function HomePage() {
       setAutostartEnabled(true);
     }
 
+    const savedSoundEnabled = localStorage.getItem('sound-enabled');
+    if (savedSoundEnabled !== null) {
+      setSoundEnabled(savedSoundEnabled === 'true');
+    }
+
+    const savedShortcutKey = localStorage.getItem('shortcut-key');
+    if (savedShortcutKey) {
+      setShortcutKey(savedShortcutKey);
+    }
+
     // Check if running in Tauri (client-side only)
     setShowGlobalShortcutInfo(isTauri());
 
@@ -60,6 +72,22 @@ export default function HomePage() {
         const { isPermissionGranted, requestPermission } = await import('@tauri-apps/plugin-notification');
 
         console.log('Setting up global shortcut event listener...');
+
+        // Initialize Rust settings from localStorage
+        const currentSoundEnabled = localStorage.getItem('sound-enabled') !== 'false'; // Default: true
+        const currentShortcutKey = localStorage.getItem('shortcut-key') || '.';
+        
+        try {
+          await invoke('set_sound_enabled', { enabled: currentSoundEnabled });
+          console.log('Sound enabled set to:', currentSoundEnabled);
+          
+          if (currentShortcutKey !== '.') {
+            await invoke('update_shortcut', { newKey: currentShortcutKey });
+            console.log('Shortcut key set to:', currentShortcutKey);
+          }
+        } catch (err) {
+          console.error('Failed to initialize settings:', err);
+        }
 
         // Check and request notification permissions
         let permissionGranted = await isPermissionGranted();
@@ -219,9 +247,11 @@ export default function HomePage() {
     }
   };
 
-  const handleSaveApiKey = async (newApiKey: string, newAutostartEnabled: boolean) => {
+  const handleSaveApiKey = async (newApiKey: string, newAutostartEnabled: boolean, newSoundEnabled: boolean, newShortcutKey: string) => {
     setApiKey(newApiKey);
     setAutostartEnabled(newAutostartEnabled);
+    setSoundEnabled(newSoundEnabled);
+    setShortcutKey(newShortcutKey);
     
     if (newApiKey) {
       localStorage.setItem('openai-api-key', newApiKey);
@@ -230,10 +260,25 @@ export default function HomePage() {
     }
 
     localStorage.setItem('autostart-enabled', newAutostartEnabled.toString());
+    localStorage.setItem('sound-enabled', newSoundEnabled.toString());
+    localStorage.setItem('shortcut-key', newShortcutKey);
 
-    // Handle autostart via Tauri plugin
+    // Handle settings via Tauri
     if (isTauri()) {
       try {
+        const { invoke } = await import('@tauri-apps/api/core');
+        
+        // Update sound setting in Rust
+        await invoke('set_sound_enabled', { enabled: newSoundEnabled });
+        console.log('Sound enabled updated to:', newSoundEnabled);
+        
+        // Update shortcut if changed
+        if (newShortcutKey !== shortcutKey) {
+          await invoke('update_shortcut', { newKey: newShortcutKey });
+          console.log('Shortcut updated to: Cmd+Shift+' + newShortcutKey);
+        }
+        
+        // Handle autostart
         const { enable, disable, isEnabled } = await import('@tauri-apps/plugin-autostart');
         const currentlyEnabled = await isEnabled();
         
@@ -245,7 +290,7 @@ export default function HomePage() {
           console.log('Autostart disabled');
         }
       } catch (err) {
-        console.error('Failed to update autostart setting:', err);
+        console.error('Failed to update settings:', err);
       }
     }
   };
@@ -354,6 +399,8 @@ export default function HomePage() {
         onSave={handleSaveApiKey}
         currentApiKey={apiKey}
         currentAutostartEnabled={autostartEnabled}
+        currentSoundEnabled={soundEnabled}
+        currentShortcutKey={shortcutKey}
       />
 
       <HelpModal
@@ -361,7 +408,7 @@ export default function HomePage() {
         onClose={() => setIsHelpModalOpen(false)}
       />
 
-      <main className="min-h-screen flex justify-center p-6 bg-background dark:bg-gray-950 pt-20 transition-colors mt-6">
+      <main className="h-screen flex justify-center p-6 bg-background dark:bg-gray-950 pt-24 transition-colors overflow-auto">
         <div className="w-full max-w-4xl">
           <form onSubmit={handleSubmit} className="space-y-6">
             <div className="space-y-2">

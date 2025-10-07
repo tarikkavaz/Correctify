@@ -4,6 +4,52 @@ use tauri::tray::{TrayIconBuilder, TrayIconEvent, MouseButton, MouseButtonState}
 use tauri::image::Image;
 use std::thread;
 use std::time::Duration;
+use std::sync::{Arc, Mutex};
+use std::io::Cursor;
+
+// Application state for settings
+struct AppState {
+    sound_enabled: Arc<Mutex<bool>>,
+    shortcut_key: Arc<Mutex<String>>,
+}
+
+// Sound playback function (non-blocking)
+fn play_sound(sound_type: &str, sound_enabled: bool) {
+    if !sound_enabled {
+        return;
+    }
+    
+    let sound_bytes: &'static [u8] = match sound_type {
+        "empty" => include_bytes!("../sounds/empty.wav"),
+        "processing" => include_bytes!("../sounds/processing.wav"),
+        "completed" => include_bytes!("../sounds/completed.wav"),
+        _ => return,
+    };
+    
+    let bytes = sound_bytes.to_vec();
+    
+    // Play sound in a separate thread to avoid blocking
+    thread::spawn(move || {
+        if let Err(e) = play_sound_blocking(&bytes) {
+            eprintln!("Failed to play sound: {}", e);
+        }
+    });
+}
+
+fn play_sound_blocking(bytes: &[u8]) -> Result<(), Box<dyn std::error::Error>> {
+    use rodio::{Decoder, OutputStream, Sink};
+    
+    let (_stream, stream_handle) = OutputStream::try_default()?;
+    let sink = Sink::try_new(&stream_handle)?;
+    
+    let cursor = Cursor::new(bytes.to_vec());
+    let source = Decoder::new(cursor)?;
+    
+    sink.append(source);
+    sink.sleep_until_end();
+    
+    Ok(())
+}
 
 // Tauri command to handle corrected text from frontend
 #[tauri::command]
@@ -24,8 +70,12 @@ async fn handle_corrected_text(
 
     // Add a small delay to ensure the processing notification is visible
     thread::sleep(Duration::from_millis(500));
+    
+    // Get sound enabled state
+    let state = app.state::<AppState>();
+    let sound_enabled = *state.sound_enabled.lock().unwrap();
 
-    // Show success notification
+    // Show success notification and play sound
     let result = app.notification()
         .builder()
         .title("✅ Correctify")
@@ -39,13 +89,88 @@ async fn handle_corrected_text(
             eprintln!("Error details: {:?}", e);
         }
     }
+    
+    // Play completed sound
+    play_sound("completed", sound_enabled);
 
     Ok(())
 }
 
+// Tauri command to update sound setting
+#[tauri::command]
+fn set_sound_enabled(enabled: bool, state: tauri::State<AppState>) -> Result<(), String> {
+    let mut sound_enabled = state.sound_enabled.lock().unwrap();
+    *sound_enabled = enabled;
+    println!("Sound notifications set to: {}", enabled);
+    Ok(())
+}
+
+// Tauri command to get sound setting
+#[tauri::command]
+fn get_sound_enabled(state: tauri::State<AppState>) -> Result<bool, String> {
+    let sound_enabled = state.sound_enabled.lock().unwrap();
+    Ok(*sound_enabled)
+}
+
+// Tauri command to update shortcut key
+#[tauri::command]
+fn update_shortcut(
+    new_key: String,
+    app: tauri::AppHandle,
+    state: tauri::State<AppState>,
+) -> Result<(), String> {
+    use tauri_plugin_global_shortcut::{GlobalShortcutExt, Shortcut};
+    
+    // Get the current shortcut key
+    let mut shortcut_key = state.shortcut_key.lock().unwrap();
+    let old_shortcut_str = format!("CmdOrCtrl+Shift+{}", *shortcut_key);
+    let new_shortcut_str = format!("CmdOrCtrl+Shift+{}", new_key);
+    
+    // Unregister old shortcut
+    if let Ok(old_shortcut) = old_shortcut_str.parse::<Shortcut>() {
+        let _ = app.global_shortcut().unregister(old_shortcut);
+        println!("Unregistered old shortcut: {}", old_shortcut_str);
+    }
+    
+    // Register new shortcut
+    match new_shortcut_str.parse::<Shortcut>() {
+        Ok(new_shortcut) => {
+            match app.global_shortcut().register(new_shortcut) {
+                Ok(_) => {
+                    *shortcut_key = new_key.clone();
+                    println!("Registered new shortcut: {}", new_shortcut_str);
+                    Ok(())
+                }
+                Err(e) => {
+                    // If registration fails, re-register the old one
+                    if let Ok(old_shortcut) = old_shortcut_str.parse::<Shortcut>() {
+                        let _ = app.global_shortcut().register(old_shortcut);
+                    }
+                    Err(format!("Failed to register shortcut: {}", e))
+                }
+            }
+        }
+        Err(e) => Err(format!("Invalid shortcut format: {}", e))
+    }
+}
+
+// Tauri command to get current shortcut key
+#[tauri::command]
+fn get_shortcut_key(state: tauri::State<AppState>) -> Result<String, String> {
+    let shortcut_key = state.shortcut_key.lock().unwrap();
+    Ok(shortcut_key.clone())
+}
+
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
+    // Initialize app state with default values
+    let app_state = AppState {
+        sound_enabled: Arc::new(Mutex::new(true)), // Default: sound enabled
+        shortcut_key: Arc::new(Mutex::new(".".to_string())), // Default: period key
+    };
+    
     tauri::Builder::default()
+        .manage(app_state)
         .plugin(tauri_plugin_shell::init())
         .plugin(tauri_plugin_clipboard_manager::init())
         .plugin(tauri_plugin_notification::init())
@@ -63,6 +188,10 @@ pub fn run() {
 
                     if event.state == ShortcutState::Pressed {
                         println!("🔔 Global shortcut triggered: {:?}", shortcut);
+                        
+                        // Get sound enabled state
+                        let state = app.state::<AppState>();
+                        let sound_enabled = *state.sound_enabled.lock().unwrap();
 
                         // Read from clipboard directly (user should have copied text with Cmd+C first)
                         match app.clipboard().read_text() {
@@ -81,6 +210,9 @@ pub fn run() {
                                         .title("⚠️ Correctify")
                                         .body(copy_instruction)
                                         .show();
+                                    
+                                    // Play empty sound
+                                    play_sound("empty", sound_enabled);
                                     return;
                                 }
                                 
@@ -105,6 +237,9 @@ pub fn run() {
                                     Ok(id) => println!("✅ Processing notification shown (id: {:?})", id),
                                     Err(e) => eprintln!("❌ Failed to show notification: {}", e),
                                 }
+                                
+                                // Play processing sound
+                                play_sound("processing", sound_enabled);
                             }
                             Err(e) => {
                                 eprintln!("❌ Failed to read clipboard: {}", e);
@@ -114,7 +249,13 @@ pub fn run() {
                 })
                 .build(),
         )
-        .invoke_handler(tauri::generate_handler![handle_corrected_text])
+        .invoke_handler(tauri::generate_handler![
+            handle_corrected_text,
+            set_sound_enabled,
+            get_sound_enabled,
+            update_shortcut,
+            get_shortcut_key
+        ])
         .setup(|app| {
             // Set activation policy to Accessory on macOS to hide dock icon
             #[cfg(target_os = "macos")]

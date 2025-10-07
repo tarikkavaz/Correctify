@@ -9,9 +9,11 @@ import { isTauri } from '@/lib/utils';
 interface SettingsModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onSave: (apiKey: string, autostartEnabled: boolean) => void;
+  onSave: (apiKey: string, autostartEnabled: boolean, soundEnabled: boolean, shortcutKey: string) => void;
   currentApiKey: string;
   currentAutostartEnabled: boolean;
+  currentSoundEnabled: boolean;
+  currentShortcutKey: string;
 }
 
 export default function SettingsModal({
@@ -20,9 +22,13 @@ export default function SettingsModal({
   onSave,
   currentApiKey,
   currentAutostartEnabled,
+  currentSoundEnabled,
+  currentShortcutKey,
 }: SettingsModalProps) {
   const [apiKey, setApiKey] = useState(currentApiKey);
   const [autostartEnabled, setAutostartEnabled] = useState(currentAutostartEnabled);
+  const [soundEnabled, setSoundEnabled] = useState(currentSoundEnabled);
+  const [shortcutKey, setShortcutKey] = useState(currentShortcutKey);
   const [isTauriApp, setIsTauriApp] = useState(false);
   const { messages } = useLocale();
 
@@ -33,11 +39,13 @@ export default function SettingsModal({
   useEffect(() => {
     setApiKey(currentApiKey);
     setAutostartEnabled(currentAutostartEnabled);
-  }, [currentApiKey, currentAutostartEnabled, isOpen]);
+    setSoundEnabled(currentSoundEnabled);
+    setShortcutKey(currentShortcutKey);
+  }, [currentApiKey, currentAutostartEnabled, currentSoundEnabled, currentShortcutKey, isOpen]);
 
   const handleSubmit = (e: FormEvent) => {
     e.preventDefault();
-    onSave(apiKey, autostartEnabled);
+    onSave(apiKey, autostartEnabled, soundEnabled, shortcutKey);
     onClose();
   };
 
@@ -123,6 +131,55 @@ export default function SettingsModal({
                   </p>
                 </div>
               </div>
+            </div>
+          )}
+
+          {/* Sound Notifications (Desktop Only) */}
+          {isTauriApp && (
+            <div className="space-y-2 pt-2 border-t border-border dark:border-gray-700">
+              <div className="flex items-start gap-3">
+                <input
+                  id="soundEnabled"
+                  type="checkbox"
+                  checked={soundEnabled}
+                  onChange={(e) => setSoundEnabled(e.target.checked)}
+                  className="mt-1 w-4 h-4 text-primary bg-white dark:bg-gray-700 border-border dark:border-gray-600 rounded focus:ring-2 focus:ring-primary"
+                />
+                <div className="flex-1">
+                  <label htmlFor="soundEnabled" className="block text-sm font-medium dark:text-gray-200 cursor-pointer">
+                    Sound notifications
+                  </label>
+                  <p className="text-xs text-foreground/60 dark:text-gray-400 mt-1">
+                    Play sound effects when notifications appear
+                  </p>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Keyboard Shortcut Customization (Desktop Only) */}
+          {isTauriApp && (
+            <div className="space-y-2 pt-2 border-t border-border dark:border-gray-700">
+              <label htmlFor="shortcutKey" className="block text-sm font-medium dark:text-gray-200">
+                Keyboard shortcut
+              </label>
+              <div className="flex items-center gap-2">
+                <div className="text-sm text-foreground/60 dark:text-gray-400">
+                  Cmd+Shift+
+                </div>
+                <input
+                  id="shortcutKey"
+                  type="text"
+                  value={shortcutKey}
+                  onChange={(e) => setShortcutKey(e.target.value.slice(-1).toUpperCase())}
+                  maxLength={1}
+                  placeholder="."
+                  className="w-16 text-center px-3 py-2 bg-white dark:bg-gray-700 border border-border dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary dark:text-white dark:placeholder-gray-400 transition-colors uppercase"
+                />
+              </div>
+              <p className="text-xs text-foreground/60 dark:text-gray-400">
+                Customize the last key of your shortcut (e.g., A-Z, 0-9, or special keys)
+              </p>
             </div>
           )}
 

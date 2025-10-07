@@ -5,6 +5,38 @@ All notable changes to Correctify will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.4.0] - 2025-01-XX
+
+### Added
+- **Sound Notifications**: Optional audio feedback for notifications
+  - Play sound effects when notifications appear
+  - Three distinct sounds: empty clipboard warning, processing, and completion
+  - Enable/disable from Settings modal
+  - Cross-platform support (WAV format via rodio)
+  - Default: enabled
+- **Customizable Keyboard Shortcut**: Configure your preferred global shortcut key
+  - Change the last key while keeping Cmd+Shift (or Ctrl+Shift)
+  - Default remains period (.) key
+  - Supports A-Z, 0-9, and special keys
+  - Dynamically updates without app restart
+  - Setting persists across app restarts
+
+### Changed
+- **Settings Modal**: Added two new configuration options
+  - Sound notifications toggle
+  - Keyboard shortcut customization input field
+  - Improved settings organization with visual separators
+- **Startup**: Settings now synchronize between frontend and Rust backend
+  - Sound preference persists and applies immediately
+  - Shortcut changes take effect instantly
+
+### Technical
+- Added `rodio` audio playback library
+- Implemented non-blocking sound playback in separate threads
+- Added Tauri commands for sound and shortcut management
+- Dynamic global shortcut registration/unregistration
+- Enhanced state management with Arc and Mutex for thread-safe settings
+
 ## [0.3.0] - 2025-01-XX
 
 ### Added
@@ -121,6 +153,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - No text storage or logging
 - Direct communication with OpenAI API only
 
+[0.4.0]: https://github.com/tarikkavaz/Correctify/compare/v0.3.0...v0.4.0
 [0.3.0]: https://github.com/tarikkavaz/Correctify/compare/v0.2.0...v0.3.0
 [0.2.0]: https://github.com/tarikkavaz/Correctify/compare/v0.1.1...v0.2.0
 [0.1.1]: https://github.com/tarikkavaz/Correctify/compare/v0.1.0...v0.1.1
