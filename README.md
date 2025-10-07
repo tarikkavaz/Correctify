@@ -9,28 +9,31 @@ A simple, cross-platform grammar correction app powered by OpenAI. Bring your ow
 Correctify corrects grammar, spelling, and punctuation while preserving your writing style and formatting. It's a minimal, distraction-free menubar app that works on macOS, Windows, and Linux.
 
 **Features:**
-- **Menubar App**: Lives in your system tray/menubar for instant access
-  - Single click on tray icon to show/hide the app
-  - No dock icon on macOS (stays in menubar only)
-  - Launch at startup option available in Settings
-  - Lightweight and always accessible
-- **Global Shortcut**: Correct text from any app with `Cmd+Shift+.` (macOS) or `Ctrl+Shift+.` (Windows/Linux)
-- High-quality corrections using OpenAI models (GPT-4o Mini default, GPT-5 Mini, GPT-5)
-- Model selector to choose between different models based on speed, cost, and quality
-- Pay-per-use pricing (no subscriptions)
-- Your API key stays local and is never logged
-- Preserves formatting (bold, italic, lists, line breaks)
-- Keyboard shortcuts for faster workflow
-- System notifications for background corrections
-- Dark mode support with system theme detection
-- Copy corrected text with one click
-- Comprehensive in-app help and documentation
+
+* **Menubar App**: Lives in your system tray/menubar for instant access
+
+  * Single click on tray icon to show/hide the app
+  * No dock icon on macOS (stays in menubar only)
+  * Launch at startup option available in Settings
+  * Lightweight and always accessible
+* **Global Shortcut**: Correct text from any app with `Cmd+Shift+.` (macOS) or `Ctrl+Shift+.` (Windows/Linux)
+* High-quality corrections using OpenAI models (GPT-4o Mini default, GPT-5 Mini, GPT-5)
+* Model selector to choose between different models based on speed, cost, and quality
+* Pay-per-use pricing (no subscriptions)
+* Your API key stays local and is never logged
+* Preserves formatting (bold, italic, lists, line breaks)
+* Keyboard shortcuts for faster workflow
+* System notifications for background corrections
+* Dark mode support with system theme detection
+* Copy corrected text with one click
+* Comprehensive in-app help and documentation
 
 **What It Doesn't Do:**
-- No text storage or database
-- No analytics or tracking
-- No subscriptions or accounts
-- No complicated setup
+
+* No text storage or database
+* No analytics or tracking
+* No subscriptions or accounts
+* No complicated setup
 
 ## Download
 
@@ -38,25 +41,28 @@ Correctify corrects grammar, spelling, and punctuation while preserving your wri
 
 1. Go to the [Releases](../../releases) page
 2. Download the installer for your platform:
-   - **macOS**: Download `.dmg` file (Apple Silicon or Intel)
-   - **Windows**: Download `.msi` or `.exe` file
-   - **Linux**: Download `.AppImage`, `.deb`, or `.rpm` file
+
+   * **macOS**: Download `.dmg` file (Apple Silicon or Intel)
+   * **Windows**: Download `.msi` or `.exe` file
+   * **Linux**: Download `.AppImage`, `.deb`, or `.rpm` file
 3. Install and run the app
 
 ### First-Time Setup
 
 1. Get an OpenAI API key:
-   - Visit the [API keys](https://platform.openai.com/api-keys) page on OpenAI
-   - Sign in or create an account (requires credit card)
-   - Click "Create new secret key"
-   - Copy the key (starts with `sk-...`)
+
+   * Visit the [API keys](https://platform.openai.com/api-keys) page on OpenAI
+   * Sign in or create an account (requires credit card)
+   * Click "Create new secret key"
+   * Copy the key (starts with `sk-...`)
 
 2. Add your API key to Correctify:
-   - Click the tray/menubar icon to open Correctify
-   - Click the Settings icon (⚙️) in the top-right corner
-   - Paste your API key
-   - Optional: Enable "Launch at startup" to start Correctify automatically
-   - Click Save
+
+   * Click the tray/menubar icon to open Correctify
+   * Click the Settings icon (⚙️) in the top-right corner
+   * Paste your API key
+   * Optional: Enable "Launch at startup" to start Correctify automatically
+   * Click Save
 
 That's it! Your API key is stored locally on your device and persists across restarts.
 
@@ -64,9 +70,9 @@ That's it! Your API key is stored locally on your device and persists across res
 
 ### Opening the App
 
-- **First time**: The app will appear in your system tray/menubar (look for the Correctify icon)
-- **Click the tray icon** to instantly show/hide the main window
-- The window starts hidden - click the icon to reveal it
+* **First time**: The app will appear in your system tray/menubar (look for the Correctify icon)
+* **Click the tray icon** to instantly show/hide the main window
+* The window starts hidden - click the icon to reveal it
 
 ### In-App Correction
 
@@ -88,30 +94,40 @@ Correct text from any application:
 
 The global shortcut works even when Correctify is minimized or hidden!
 
-**Note for macOS users:** 
-- The first time you use the app, macOS may ask for notification permissions. Make sure to allow them to see completion notifications.
-- Correctify runs as a menubar-only app (no dock icon). Single-click the menubar icon to show/hide the window.
-- To quit the app, use **Cmd+Q** when the window is focused, or close it from Activity Monitor.
+**Note for macOS users:**
+
+* When opening Correctify for the first time, you may see a warning that the app is “damaged” or “cannot be opened because it is from an unidentified developer.” This is a standard macOS security measure for apps not distributed via the App Store. To proceed:
+
+  1. Go to **System Settings → Privacy & Security**
+  2. Scroll down until you see the message about **Correctify** being blocked
+  3. Click **Open Anyway**
+  4. Confirm in the popup
+
+  After this, macOS will remember your choice and you won’t need to repeat the step.
+
+* The first time you use the app, macOS may ask for notification permissions. Make sure to allow them to see completion notifications.
+* Correctify runs as a menubar-only app (no dock icon). Single-click the menubar icon to show/hide the window.
+* To quit the app, use **Cmd+Q** when the window is focused, or close it from Activity Monitor.
 
 ## Keyboard Shortcuts
 
-| Action | macOS | Windows/Linux |
-|--------|-------|---------------|
-| Submit for correction | `Cmd+Enter` | `Ctrl+Enter` |
-| Global correction | `Cmd+Shift+.` | `Ctrl+Shift+.` |
-| Copy result | Click Copy button | Click Copy button |
+| Action                | macOS             | Windows/Linux     |
+| --------------------- | ----------------- | ----------------- |
+| Submit for correction | `Cmd+Enter`       | `Ctrl+Enter`      |
+| Global correction     | `Cmd+Shift+.`     | `Ctrl+Shift+.`    |
+| Copy result           | Click Copy button | Click Copy button |
 
 ## Privacy
 
-- Your text is sent to OpenAI's servers for correction
-- Your API key is stored locally on your device (never sent to any servers)
-- The app doesn't log, store, or track anything
-- No analytics, no telemetry, no database
+* Your text is sent to OpenAI's servers for correction
+* Your API key is stored locally on your device (never sent to any servers)
+* The app doesn't log, store, or track anything
+* No analytics, no telemetry, no database
 
 ## Requirements
 
-- An OpenAI API key (get one at [OpenAI API](https://platform.openai.com/api-keys))
-- Internet connection (to reach OpenAI's API)
+* An OpenAI API key (get one at [OpenAI API](https://platform.openai.com/api-keys))
+* Internet connection (to reach OpenAI's API)
 
 ## Support
 
