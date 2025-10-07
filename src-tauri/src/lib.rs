@@ -156,7 +156,7 @@ pub fn run() {
                 .expect("Failed to register global shortcut");
             println!("Global shortcut registered: CmdOrCtrl+Shift+.");
 
-            #[cfg(any(debug_assertions, target_os = "macos"))]
+            // Get window for all platforms
             let window = app.get_webview_window("main").unwrap();
             
             #[cfg(debug_assertions)]
