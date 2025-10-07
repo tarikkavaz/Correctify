@@ -5,7 +5,7 @@ import { Command, CornerDownLeft, Copy, Check, ChevronDown, Lightbulb } from 'lu
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import { CorrectionResponse } from '@/lib/types';
-import APIModal from '@/components/APIModal';
+import SettingsModal from '@/components/SettingsModal';
 import HelpModal from '@/components/HelpModal';
 import DraggableHeader from '@/components/DraggableHeader';
 import { OpenAICorrector } from '@/lib/openai';
@@ -18,12 +18,13 @@ export default function HomePage() {
   const [inputText, setInputText] = useState('');
   const [outputText, setOutputText] = useState('');
   const [apiKey, setApiKey] = useState('');
+  const [autostartEnabled, setAutostartEnabled] = useState(false);
   const [model, setModel] = useState<'gpt-5' | 'gpt-5-mini' | 'gpt-4o-mini'>('gpt-4o-mini');
   const [isModelDropdownOpen, setIsModelDropdownOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
   const [meta, setMeta] = useState<CorrectionResponse['meta'] | null>(null);
-  const [isAPIModalOpen, setIsAPIModalOpen] = useState(false);
+  const [isSettingsModalOpen, setIsSettingsModalOpen] = useState(false);
   const [isHelpModalOpen, setIsHelpModalOpen] = useState(false);
   const [isCopied, setIsCopied] = useState(false);
   const [showGlobalShortcutInfo, setShowGlobalShortcutInfo] = useState(false);
@@ -41,6 +42,11 @@ export default function HomePage() {
     const savedModel = localStorage.getItem('openai-model') as 'gpt-5' | 'gpt-5-mini' | 'gpt-4o-mini' | null;
     if (savedModel && (savedModel === 'gpt-5' || savedModel === 'gpt-5-mini' || savedModel === 'gpt-4o-mini')) {
       setModel(savedModel);
+    }
+
+    const savedAutostart = localStorage.getItem('autostart-enabled');
+    if (savedAutostart === 'true') {
+      setAutostartEnabled(true);
     }
 
     // Check if running in Tauri (client-side only)
@@ -184,12 +190,63 @@ export default function HomePage() {
     { value: 'gpt-5', label: 'GPT-5' },
   ] as const;
 
-  const handleSaveApiKey = (newApiKey: string) => {
+  const handleOpenAbout = async () => {
+    if (isTauri()) {
+      try {
+        const { WebviewWindow, getAllWebviewWindows } = await import('@tauri-apps/api/webviewWindow');
+        
+        // Check if about window already exists
+        const windows = await getAllWebviewWindows();
+        const aboutWindow = windows.find(w => w.label === 'about');
+        
+        if (aboutWindow) {
+          await aboutWindow.show();
+          await aboutWindow.setFocus();
+        } else {
+          // Create new about window
+          new WebviewWindow('about', {
+            url: '/about',
+            title: 'About Correctify',
+            width: 400,
+            height: 550,
+            resizable: false,
+            center: true,
+          });
+        }
+      } catch (err) {
+        console.error('Failed to open about window:', err);
+      }
+    }
+  };
+
+  const handleSaveApiKey = async (newApiKey: string, newAutostartEnabled: boolean) => {
     setApiKey(newApiKey);
+    setAutostartEnabled(newAutostartEnabled);
+    
     if (newApiKey) {
       localStorage.setItem('openai-api-key', newApiKey);
     } else {
       localStorage.removeItem('openai-api-key');
+    }
+
+    localStorage.setItem('autostart-enabled', newAutostartEnabled.toString());
+
+    // Handle autostart via Tauri plugin
+    if (isTauri()) {
+      try {
+        const { enable, disable, isEnabled } = await import('@tauri-apps/plugin-autostart');
+        const currentlyEnabled = await isEnabled();
+        
+        if (newAutostartEnabled && !currentlyEnabled) {
+          await enable();
+          console.log('Autostart enabled');
+        } else if (!newAutostartEnabled && currentlyEnabled) {
+          await disable();
+          console.log('Autostart disabled');
+        }
+      } catch (err) {
+        console.error('Failed to update autostart setting:', err);
+      }
     }
   };
 
@@ -205,7 +262,7 @@ export default function HomePage() {
 
     if (!apiKey.trim()) {
       setError('Please add your OpenAI API key');
-      setIsAPIModalOpen(true);
+      setIsSettingsModalOpen(true);
       return;
     }
 
@@ -284,17 +341,19 @@ export default function HomePage() {
   return (
     <>
       <DraggableHeader
-        onSettingsClick={() => setIsAPIModalOpen(true)}
+        onSettingsClick={() => setIsSettingsModalOpen(true)}
         onHelpClick={() => setIsHelpModalOpen(true)}
+        onAboutClick={handleOpenAbout}
         theme={theme}
         onThemeToggle={toggleTheme}
       />
 
-      <APIModal
-        isOpen={isAPIModalOpen}
-        onClose={() => setIsAPIModalOpen(false)}
+      <SettingsModal
+        isOpen={isSettingsModalOpen}
+        onClose={() => setIsSettingsModalOpen(false)}
         onSave={handleSaveApiKey}
         currentApiKey={apiKey}
+        currentAutostartEnabled={autostartEnabled}
       />
 
       <HelpModal
@@ -399,7 +458,7 @@ export default function HomePage() {
                   <p className="text-sm text-red-700 dark:text-red-400">
                     {messages.home.noApiKeyMessage}{' '}
                     <button
-                      onClick={() => setIsAPIModalOpen(true)}
+                      onClick={() => setIsSettingsModalOpen(true)}
                       className="font-semibold underline hover:no-underline"
                     >
                       {messages.home.noApiKeyClickHere}

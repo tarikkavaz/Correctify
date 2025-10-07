@@ -1,12 +1,13 @@
 'use client';
 
-import { KeyRound, Sun, Moon, Monitor, HelpCircle } from 'lucide-react';
+import { Settings, Sun, Moon, Monitor, HelpCircle, Info } from 'lucide-react';
 import { Theme } from '@/lib/useTheme';
 import { useLocale } from '@/lib/useLocale';
 
 interface DraggableHeaderProps {
   onSettingsClick: () => void;
   onHelpClick: () => void;
+  onAboutClick: () => void;
   theme: Theme;
   onThemeToggle: () => void;
 }
@@ -14,6 +15,7 @@ interface DraggableHeaderProps {
 export default function DraggableHeader({
   onSettingsClick,
   onHelpClick,
+  onAboutClick,
   theme,
   onThemeToggle,
 }: DraggableHeaderProps) {
@@ -41,6 +43,14 @@ export default function DraggableHeader({
       </div>
       <div className="flex items-center gap-2">
         <button
+          onClick={onAboutClick}
+          className="p-2 hover:bg-foreground/5 dark:hover:bg-white/5 rounded-lg transition-colors"
+          aria-label="About"
+          title="About"
+        >
+          <Info className="w-5 h-5 text-foreground/60 dark:text-gray-400 hover:text-foreground dark:hover:text-gray-200 transition-colors" />
+        </button>
+        <button
           onClick={onHelpClick}
           className="p-2 hover:bg-foreground/5 dark:hover:bg-white/5 rounded-lg transition-colors"
           aria-label={messages.header.help}
@@ -62,7 +72,7 @@ export default function DraggableHeader({
           aria-label={messages.header.settings}
           title={messages.header.settings}
         >
-          <KeyRound className="w-5 h-5 text-foreground/60 dark:text-gray-400 hover:text-foreground dark:hover:text-gray-200 transition-colors" />
+          <Settings className="w-5 h-5 text-foreground/60 dark:text-gray-400 hover:text-foreground dark:hover:text-gray-200 transition-colors" />
         </button>
       </div>
     </div>
