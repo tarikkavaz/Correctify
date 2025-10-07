@@ -28,6 +28,7 @@
     "quickCorrectionStep2": "Press",
     "quickCorrectionStep3": "Wait for the notification",
     "quickCorrectionStep4": "Paste the corrected text (",
+    "quickCorrectionCustomize": "You can customize this shortcut in Settings.",
     "metaModel": "Model:",
     "metaDuration": "Duration:"
   },

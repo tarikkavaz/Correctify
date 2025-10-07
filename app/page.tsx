@@ -538,11 +538,29 @@ export default function HomePage() {
                 {messages.home.quickCorrectionDescription}
               </p>
               <ol className="text-sm text-blue-800 dark:text-blue-300 space-y-1 ml-4 list-decimal">
-                <li className="ml-3">Select and copy text in any app (<kbd className="px-1.5 py-0.5 bg-blue-100 dark:bg-blue-800 rounded text-xs font-medium">Cmd+C</kbd> or <kbd className="px-1.5 py-0.5 bg-blue-100 dark:bg-blue-800 rounded text-xs font-medium">Ctrl+C</kbd>)</li>
-                <li className="ml-3">Press <kbd className="px-1.5 py-0.5 bg-blue-100 dark:bg-blue-800 rounded text-xs font-medium">Cmd+Shift+.</kbd> or <kbd className="px-1.5 py-0.5 bg-blue-100 dark:bg-blue-800 rounded text-xs font-medium">Ctrl+Shift+.</kbd></li>
-                <li className="ml-3">Wait for the notification</li>
-                <li className="ml-3">Paste the corrected text (<kbd className="px-1.5 py-0.5 bg-blue-100 dark:bg-blue-800 rounded text-xs font-medium">Cmd+V</kbd> or <kbd className="px-1.5 py-0.5 bg-blue-100 dark:bg-blue-800 rounded text-xs font-medium">Ctrl+V</kbd>)</li>
+                <li className="ml-3">
+                  {messages.home.quickCorrectionStep1}
+                  <kbd className="px-1.5 py-0.5 bg-blue-100 dark:bg-blue-800 rounded text-xs font-medium">Cmd+C</kbd>
+                  {' '}{messages.home.shortcutOr}{' '}
+                  <kbd className="px-1.5 py-0.5 bg-blue-100 dark:bg-blue-800 rounded text-xs font-medium">Ctrl+C</kbd>)
+                </li>
+                <li className="ml-3">
+                  {messages.home.quickCorrectionStep2}{' '}
+                  <kbd className="px-1.5 py-0.5 bg-blue-100 dark:bg-blue-800 rounded text-xs font-medium">Cmd+Shift+{shortcutKey}</kbd>
+                  {' '}{messages.home.shortcutOr}{' '}
+                  <kbd className="px-1.5 py-0.5 bg-blue-100 dark:bg-blue-800 rounded text-xs font-medium">Ctrl+Shift+{shortcutKey}</kbd>
+                </li>
+                <li className="ml-3">{messages.home.quickCorrectionStep3}</li>
+                <li className="ml-3">
+                  {messages.home.quickCorrectionStep4}
+                  <kbd className="px-1.5 py-0.5 bg-blue-100 dark:bg-blue-800 rounded text-xs font-medium">Cmd+V</kbd>
+                  {' '}{messages.home.shortcutOr}{' '}
+                  <kbd className="px-1.5 py-0.5 bg-blue-100 dark:bg-blue-800 rounded text-xs font-medium">Ctrl+V</kbd>)
+                </li>
               </ol>
+              <p className="text-sm text-blue-800 dark:text-blue-300 mt-3 italic">
+                {messages.home.quickCorrectionCustomize}
+              </p>
             </div>
           )}
 
