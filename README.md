@@ -34,7 +34,6 @@ Correctify corrects grammar, spelling, and punctuation while preserving your wri
 * System notifications for background corrections
 * Dark mode support with system theme detection
 * Copy corrected text with one click
-* Comprehensive in-app help and documentation
 
 **What It Doesn't Do:**
 
