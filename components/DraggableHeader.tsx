@@ -30,7 +30,7 @@ export default function DraggableHeader({
       className="fixed top-0 left-0 right-0 flex items-center justify-between px-4 py-4 bg-background/80 dark:bg-gray-900/80 backdrop-blur-sm border-b border-border dark:border-gray-700 z-40 transition-colors"
     >
       <div data-tauri-drag-region className="flex-1" />
-      <div data-tauri-drag-region className="flex items-center gap-3 absolute left-1/2 transform -translate-x-1/2 select-none">
+      <div data-tauri-drag-region className="flex items-center gap-3 absolute left-1/2 transform -translate-x-1/2 select-none cursor-default">
         <img 
           data-tauri-drag-region
           src="/logo.png" 
