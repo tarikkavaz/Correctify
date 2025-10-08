@@ -148,15 +148,23 @@ export default function HomePage() {
 
           try {
             console.log('Starting correction...');
+            const correctionStartTime = Date.now();
+            
             // Perform correction
             const currentModel = localStorage.getItem('openai-model') as 'gpt-5' | 'gpt-5-mini' | 'gpt-4o-mini' || 'gpt-4o-mini';
             const corrector = new OpenAICorrector(currentApiKey, currentModel);
             const result = await corrector.correct({ text: textToCorrect });
 
+            const correctionDuration = Date.now() - correctionStartTime;
             console.log('Correction result:', result.result.substring(0, 100));
+            console.log('Correction duration:', correctionDuration, 'ms');
             
-            // Send corrected text back to Rust
-            await invoke('handle_corrected_text', { text: result.result });
+            // Send corrected text back to Rust with model and duration
+            await invoke('handle_corrected_text', { 
+              text: result.result,
+              model: currentModel,
+              duration: correctionDuration
+            });
             console.log('=== Correction completed successfully ===');
           } catch (err) {
             console.error('❌ Failed to correct text:', err);
@@ -247,6 +255,16 @@ export default function HomePage() {
     }
   };
 
+  const handleReload = () => {
+    if (isTauri()) {
+      try {
+        window.location.reload();
+      } catch (err) {
+        console.error('Failed to reload window:', err);
+      }
+    }
+  };
+
   const handleSaveApiKey = async (newApiKey: string, newAutostartEnabled: boolean, newSoundEnabled: boolean, newShortcutKey: string) => {
     setApiKey(newApiKey);
     setAutostartEnabled(newAutostartEnabled);
@@ -329,6 +347,15 @@ export default function HomePage() {
     try {
       // In Tauri, call OpenAI directly since static export doesn't support API routes
       if (isTauri()) {
+        const { invoke } = await import('@tauri-apps/api/core');
+        
+        // Play processing sound
+        try {
+          await invoke('play_sound_in_app', { soundType: 'processing' });
+        } catch (err) {
+          console.error('Failed to play processing sound:', err);
+        }
+        
         const corrector = new OpenAICorrector(apiKey, model);
         const result = await corrector.correct({
           text: inputText,
@@ -342,6 +369,13 @@ export default function HomePage() {
           model: model,
           provider: 'openai',
         });
+        
+        // Play completed sound
+        try {
+          await invoke('play_sound_in_app', { soundType: 'completed' });
+        } catch (err) {
+          console.error('Failed to play completed sound:', err);
+        }
       } else {
         // In browser, use API route to keep API key more secure
         const headers: Record<string, string> = {
@@ -389,6 +423,7 @@ export default function HomePage() {
         onSettingsClick={() => setIsSettingsModalOpen(true)}
         onHelpClick={() => setIsHelpModalOpen(true)}
         onAboutClick={handleOpenAbout}
+        onReloadClick={handleReload}
         theme={theme}
         onThemeToggle={toggleTheme}
       />
@@ -406,6 +441,7 @@ export default function HomePage() {
       <HelpModal
         isOpen={isHelpModalOpen}
         onClose={() => setIsHelpModalOpen(false)}
+        shortcutKey={shortcutKey}
       />
 
       <main className="h-screen flex justify-center p-6 bg-background dark:bg-gray-950 pt-24 transition-colors overflow-auto">
@@ -571,7 +607,7 @@ export default function HomePage() {
           )}
 
           {outputText && (
-            <div className="mt-6 space-y-4">
+            <div className="mt-6 space-y-4 pb-6">
               <div className="space-y-2">
                 <div className="flex items-center justify-between">
                   <label className="block text-sm font-medium dark:text-gray-200">
@@ -595,7 +631,7 @@ export default function HomePage() {
                     )}
                   </button>
                 </div>
-                <div className="p-4 bg-white dark:bg-gray-800 border border-border dark:border-gray-700 rounded-lg min-h-[12rem] transition-colors">
+                <div className="p-4 pb-8 bg-white dark:bg-gray-800 border border-border dark:border-gray-700 rounded-lg min-h-[12rem] transition-colors">
                   <div className="prose max-w-none">
                     <ReactMarkdown remarkPlugins={[remarkGfm]}>
                       {outputText}

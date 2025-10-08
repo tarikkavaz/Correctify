@@ -7,9 +7,10 @@ import { useLocale } from '@/lib/useLocale';
 interface HelpModalProps {
   isOpen: boolean;
   onClose: () => void;
+  shortcutKey: string;
 }
 
-export default function HelpModal({ isOpen, onClose }: HelpModalProps) {
+export default function HelpModal({ isOpen, onClose, shortcutKey }: HelpModalProps) {
   const { messages } = useLocale();
   
   if (!isOpen) return null;
@@ -103,8 +104,8 @@ export default function HelpModal({ isOpen, onClose }: HelpModalProps) {
                     </li>
                     <li>
                       Press{' '}
-                      <kbd className="px-1.5 py-0.5 bg-foreground/10 dark:bg-white/10 rounded text-xs font-medium">Cmd+Shift+.</kbd> (Mac) or{' '}
-                      <kbd className="px-1.5 py-0.5 bg-foreground/10 dark:bg-white/10 rounded text-xs font-medium">Ctrl+Shift+.</kbd> (Windows/Linux)
+                      <kbd className="px-1.5 py-0.5 bg-foreground/10 dark:bg-white/10 rounded text-xs font-medium">Cmd+Shift+{shortcutKey}</kbd> (Mac) or{' '}
+                      <kbd className="px-1.5 py-0.5 bg-foreground/10 dark:bg-white/10 rounded text-xs font-medium">Ctrl+Shift+{shortcutKey}</kbd> (Windows/Linux)
                     </li>
                     <li>Wait for the notification (you'll see "Processing...")</li>
                     <li>
@@ -171,9 +172,9 @@ export default function HelpModal({ isOpen, onClose }: HelpModalProps) {
                 <div className="flex justify-between items-center p-2 bg-foreground/5 dark:bg-white/5 rounded">
                   <span>{messages.helpModal.shortcutGlobal} <span className="text-foreground/50 text-xs">(customizable)</span></span>
                   <div className="flex gap-2">
-                    <kbd className="px-2 py-1 bg-foreground/10 dark:bg-white/10 rounded text-xs font-medium">Cmd+Shift+.</kbd>
+                    <kbd className="px-2 py-1 bg-foreground/10 dark:bg-white/10 rounded text-xs font-medium">Cmd+Shift+{shortcutKey}</kbd>
                     <span className="text-foreground/40">or</span>
-                    <kbd className="px-2 py-1 bg-foreground/10 dark:bg-white/10 rounded text-xs font-medium">Ctrl+Shift+.</kbd>
+                    <kbd className="px-2 py-1 bg-foreground/10 dark:bg-white/10 rounded text-xs font-medium">Ctrl+Shift+{shortcutKey}</kbd>
                   </div>
                 </div>
               )}

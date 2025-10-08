@@ -86,9 +86,20 @@ export default function SettingsModal({
         {/* Body */}
         <form onSubmit={handleSubmit} className="p-6 space-y-6">
           <div className="space-y-2">
-            <label htmlFor="apiKey" className="block text-sm font-medium dark:text-gray-200">
-              {messages.apiModal.apiKeyLabel}
-            </label>
+            <div className="flex items-center justify-between">
+              <label htmlFor="apiKey" className="block text-sm font-medium dark:text-gray-200">
+                {messages.apiModal.apiKeyLabel}
+              </label>
+              {apiKey && (
+                <button
+                  type="button"
+                  onClick={handleClear}
+                  className="text-sm font-medium text-foreground/60 dark:text-gray-400 hover:text-foreground dark:hover:text-gray-200 transition-colors"
+                >
+                  {messages.apiModal.clear}
+                </button>
+              )}
+            </div>
             <input
               id="apiKey"
               type="password"
@@ -124,10 +135,10 @@ export default function SettingsModal({
                 />
                 <div className="flex-1">
                   <label htmlFor="autostart" className="block text-sm font-medium dark:text-gray-200 cursor-pointer">
-                    Launch at startup
+                    {messages.apiModal.autostartLabel}
                   </label>
                   <p className="text-xs text-foreground/60 dark:text-gray-400 mt-1">
-                    Automatically start Correctify when your system boots
+                    {messages.apiModal.autostartDescription}
                   </p>
                 </div>
               </div>
@@ -147,21 +158,21 @@ export default function SettingsModal({
                 />
                 <div className="flex-1">
                   <label htmlFor="soundEnabled" className="block text-sm font-medium dark:text-gray-200 cursor-pointer">
-                    Sound notifications
+                    {messages.apiModal.soundLabel}
                   </label>
                   <p className="text-xs text-foreground/60 dark:text-gray-400 mt-1">
-                    Play sound effects when notifications appear
+                    {messages.apiModal.soundDescription}
                   </p>
                 </div>
               </div>
             </div>
           )}
 
-          {/* Keyboard Shortcut Customization (Desktop Only) */}
+          {/* Global Shortcut Customization (Desktop Only) */}
           {isTauriApp && (
             <div className="space-y-2 pt-2 border-t border-border dark:border-gray-700">
               <label htmlFor="shortcutKey" className="block text-sm font-medium dark:text-gray-200">
-                Keyboard shortcut
+                {messages.apiModal.globalShortcutLabel}
               </label>
               <div className="flex items-center gap-2">
                 <div className="text-sm text-foreground/60 dark:text-gray-400">
@@ -178,22 +189,13 @@ export default function SettingsModal({
                 />
               </div>
               <p className="text-xs text-foreground/60 dark:text-gray-400">
-                Customize the last key of your shortcut (e.g., A-Z, 0-9, or special keys)
+                {messages.apiModal.shortcutDescription}
               </p>
             </div>
           )}
 
           {/* Footer */}
           <div className="flex gap-3">
-            {apiKey && (
-              <button
-                type="button"
-                onClick={handleClear}
-                className="px-4 py-2 text-sm font-medium text-foreground/60 dark:text-gray-400 hover:text-foreground dark:hover:text-gray-200 hover:bg-foreground/5 dark:hover:bg-white/5 rounded-lg transition-colors"
-              >
-                Clear
-              </button>
-            )}
             <button
               type="button"
               onClick={onClose}
