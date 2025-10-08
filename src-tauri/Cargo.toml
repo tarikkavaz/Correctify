@@ -1,6 +1,6 @@
 [package]
 name = "correctify"
-version = "0.5.0"
+version = "0.5.1"
 description = "Grammar correction with local LLMs"
 authors = ["you"]
 edition = "2021"

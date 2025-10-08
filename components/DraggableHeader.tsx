@@ -30,15 +30,16 @@ export default function DraggableHeader({
       className="fixed top-0 left-0 right-0 flex items-center justify-between px-4 py-4 bg-background/80 dark:bg-gray-900/80 backdrop-blur-sm border-b border-border dark:border-gray-700 z-40 transition-colors"
     >
       <div data-tauri-drag-region className="flex-1" />
-      <div data-tauri-drag-region className="flex items-center gap-3 absolute left-1/2 transform -translate-x-1/2">
+      <div data-tauri-drag-region className="flex items-center gap-3 absolute left-1/2 transform -translate-x-1/2 select-none">
         <img 
+          data-tauri-drag-region
           src="/logo.png" 
           alt="Correctify Logo" 
           className="w-10 h-10"
         />
-        <div className="">
-          <h1 className="text-xl font-bold dark:text-white">Correctify</h1>
-          <p className="text-xs text-foreground/60 dark:text-gray-400">
+        <div data-tauri-drag-region>
+          <h1 data-tauri-drag-region className="text-xl font-bold dark:text-white">Correctify</h1>
+          <p data-tauri-drag-region className="text-xs text-foreground/60 dark:text-gray-400">
             {messages.header.subtitle}
           </p>
         </div>

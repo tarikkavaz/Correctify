@@ -5,6 +5,14 @@ All notable changes to Correctify will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.5.1] - 2025-10-08
+
+### Fixed
+- **Draggable Header**: Fixed text selection issue in header area
+  - Added `select-none` class to prevent accidental text selection while dragging
+  - Added `data-tauri-drag-region` to all child elements for proper drag functionality
+  - Users can now drag the window from the title/logo area without selecting text
+
 ## [0.5.0] - 2025-10-08
 
 ### Added
@@ -198,6 +206,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - No text storage or logging
 - Direct communication with OpenAI API only
 
+[0.5.1]: https://github.com/tarikkavaz/Correctify/compare/v0.5.0...v0.5.1
 [0.5.0]: https://github.com/tarikkavaz/Correctify/compare/v0.4.0...v0.5.0
 [0.4.0]: https://github.com/tarikkavaz/Correctify/compare/v0.3.0...v0.4.0
 [0.3.0]: https://github.com/tarikkavaz/Correctify/compare/v0.2.0...v0.3.0

@@ -6,7 +6,7 @@ import { useLocale } from '@/lib/useLocale';
 import { open } from '@tauri-apps/plugin-shell';
 
 export default function AboutPage() {
-  const version = '0.5.0';
+  const version = '0.5.1';
   const [mounted, setMounted] = useState(false);
   const { messages } = useLocale();
   
