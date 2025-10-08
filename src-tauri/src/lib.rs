@@ -54,8 +54,10 @@ fn play_sound_blocking(bytes: &[u8]) -> Result<(), Box<dyn std::error::Error>> {
 // Tauri command to handle corrected text from frontend
 #[tauri::command]
 async fn handle_corrected_text(
-    text: String,
     app: tauri::AppHandle,
+    text: String,
+    model: Option<String>,
+    duration: Option<f64>,
 ) -> Result<(), String> {
     use tauri_plugin_clipboard_manager::ClipboardExt;
     use tauri_plugin_notification::NotificationExt;
@@ -75,11 +77,20 @@ async fn handle_corrected_text(
     let state = app.state::<AppState>();
     let sound_enabled = *state.sound_enabled.lock().unwrap();
 
+    // Build notification body with optional model and duration
+    let mut body = String::from("Text corrected and copied to clipboard!");
+    if let Some(model_name) = model {
+        body.push_str(&format!("\nModel: {}", model_name));
+    }
+    if let Some(dur) = duration {
+        body.push_str(&format!("\nDuration: {:.2}s", dur / 1000.0));
+    }
+
     // Show success notification and play sound
     let result = app.notification()
         .builder()
         .title("✅ Correctify")
-        .body("Text corrected and copied to clipboard!")
+        .body(&body)
         .show();
 
     match result {
@@ -159,6 +170,14 @@ fn update_shortcut(
 fn get_shortcut_key(state: tauri::State<AppState>) -> Result<String, String> {
     let shortcut_key = state.shortcut_key.lock().unwrap();
     Ok(shortcut_key.clone())
+}
+
+// Tauri command to play sound in app (respects sound_enabled setting)
+#[tauri::command]
+fn play_sound_in_app(sound_type: String, state: tauri::State<AppState>) -> Result<(), String> {
+    let sound_enabled = *state.sound_enabled.lock().unwrap();
+    play_sound(&sound_type, sound_enabled);
+    Ok(())
 }
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
@@ -254,7 +273,8 @@ pub fn run() {
             set_sound_enabled,
             get_sound_enabled,
             update_shortcut,
-            get_shortcut_key
+            get_shortcut_key,
+            play_sound_in_app
         ])
         .setup(|app| {
             // Set activation policy to Accessory on macOS to hide dock icon

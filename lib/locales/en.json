@@ -2,7 +2,10 @@
   "header": {
     "settings": "Settings",
     "help": "Help",
-    "theme": "Toggle theme"
+    "about": "About",
+    "theme": "Toggle theme",
+    "reload": "Reload",
+    "subtitle": "AI-powered grammar correction"
   },
   "home": {
     "inputLabel": "Text to correct",
@@ -40,7 +43,14 @@
     "openAiPlatform": "OpenAI Platform",
     "securityNote": "Your API key is stored locally and never sent to any server other than OpenAI.",
     "cancel": "Cancel",
-    "save": "Save"
+    "save": "Save",
+    "clear": "Clear",
+    "autostartLabel": "Launch at startup",
+    "autostartDescription": "Automatically start Correctify when your system boots",
+    "soundLabel": "Sound notifications",
+    "soundDescription": "Play sound effects when notifications appear",
+    "globalShortcutLabel": "Global Shortcut",
+    "shortcutDescription": "Customize the last key of your shortcut (e.g., A-Z, 0-9, or special keys)"
   },
   "helpModal": {
     "title": "Help & Guide",

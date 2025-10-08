@@ -5,6 +5,51 @@ All notable changes to Correctify will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.5.0] - 2025-10-08
+
+### Added
+- **Reload Button**: Added reload button to header for refreshing the webview
+  - Uses RefreshCcw icon from lucide-react
+  - Positioned next to Settings button
+  - Calls Tauri's window reload API
+- **In-App Correction Sounds**: Sound notifications now play during in-app corrections
+  - Processing sound plays when correction starts
+  - Completed sound plays when correction finishes
+  - Respects the sound enabled setting
+- **Enhanced Notifications**: Global shortcut notifications now include additional details
+  - Model name displayed in notification body
+  - Duration displayed in notification body (e.g., "Duration: 15.99s")
+  - Applied to global shortcut corrections only
+
+### Changed
+- **Settings Modal UI Improvements**:
+  - Changed "Keyboard shortcut" label to "Global Shortcut" for clarity
+  - Moved Clear button to be right-aligned with "OpenAI API Key" title
+  - Replaced all hardcoded text with locale strings
+- **Help Modal**: Made keyboard shortcuts dynamic
+  - Shortcut key now updates based on user's customized setting
+  - Shows current configured shortcut instead of hardcoded period
+- **Result Text Area**: Added bottom padding (pb-8) to prevent text from being too close to window bottom
+- **Header Subtitle**: Changed from hardcoded "AI-powered grammar correction" to use locale string
+
+### Localization
+- **Added New Locale Keys** across all languages (EN, DE, FR, TR):
+  - header.reload: Reload button label
+  - header.subtitle: Header subtitle text
+  - apiModal.clear: Clear button text
+  - apiModal.autostartLabel: Autostart checkbox label
+  - apiModal.autostartDescription: Autostart description text
+  - apiModal.soundLabel: Sound notifications label
+  - apiModal.soundDescription: Sound notifications description
+  - apiModal.globalShortcutLabel: Global Shortcut label
+  - apiModal.shortcutDescription: Shortcut customization description
+
+### Technical
+- Added play_sound_in_app Tauri command for in-app sound playback
+- Updated handle_corrected_text command to accept optional model and duration parameters
+- Enhanced notification body building with model and duration information
+- Improved global shortcut event handler with duration tracking
+
 ## [0.4.0] - 2025-10-08
 
 ### Added
@@ -153,6 +198,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - No text storage or logging
 - Direct communication with OpenAI API only
 
+[0.5.0]: https://github.com/tarikkavaz/Correctify/compare/v0.4.0...v0.5.0
 [0.4.0]: https://github.com/tarikkavaz/Correctify/compare/v0.3.0...v0.4.0
 [0.3.0]: https://github.com/tarikkavaz/Correctify/compare/v0.2.0...v0.3.0
 [0.2.0]: https://github.com/tarikkavaz/Correctify/compare/v0.1.1...v0.2.0

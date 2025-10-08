@@ -2,7 +2,10 @@
   "header": {
     "settings": "Paramètres",
     "help": "Aide",
-    "theme": "Changer de thème"
+    "about": "À propos",
+    "theme": "Changer de thème",
+    "reload": "Recharger",
+    "subtitle": "Correction grammaticale alimentée par l'IA"
   },
   "home": {
     "inputLabel": "Texte à corriger",
@@ -40,7 +43,14 @@
     "openAiPlatform": "Plateforme OpenAI",
     "securityNote": "Votre clé API est stockée localement et n'est jamais envoyée à un serveur autre qu'OpenAI.",
     "cancel": "Annuler",
-    "save": "Enregistrer"
+    "save": "Enregistrer",
+    "clear": "Effacer",
+    "autostartLabel": "Lancer au démarrage",
+    "autostartDescription": "Démarrer automatiquement Correctify au démarrage du système",
+    "soundLabel": "Notifications sonores",
+    "soundDescription": "Jouer des effets sonores lorsque les notifications apparaissent",
+    "globalShortcutLabel": "Raccourci global",
+    "shortcutDescription": "Personnalisez la dernière touche de votre raccourci (par exemple, A-Z, 0-9 ou touches spéciales)"
   },
   "helpModal": {
     "title": "Aide & Guide",

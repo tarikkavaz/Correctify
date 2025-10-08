@@ -2,7 +2,10 @@
   "header": {
     "settings": "Einstellungen",
     "help": "Hilfe",
-    "theme": "Theme umschalten"
+    "about": "Über",
+    "theme": "Theme umschalten",
+    "reload": "Neu laden",
+    "subtitle": "KI-gestützte Grammatikkorrektur"
   },
   "home": {
     "inputLabel": "Zu korrigierender Text",
@@ -40,7 +43,14 @@
     "openAiPlatform": "OpenAI-Plattform",
     "securityNote": "Ihr API-Schlüssel wird lokal gespeichert und niemals an einen anderen Server als OpenAI gesendet.",
     "cancel": "Abbrechen",
-    "save": "Speichern"
+    "save": "Speichern",
+    "clear": "Löschen",
+    "autostartLabel": "Beim Start ausführen",
+    "autostartDescription": "Correctify automatisch beim Systemstart starten",
+    "soundLabel": "Tonbenachrichtigungen",
+    "soundDescription": "Soundeffekte abspielen, wenn Benachrichtigungen erscheinen",
+    "globalShortcutLabel": "Globale Tastenkombination",
+    "shortcutDescription": "Passen Sie die letzte Taste Ihrer Tastenkombination an (z. B. A-Z, 0-9 oder Sondertasten)"
   },
   "helpModal": {
     "title": "Hilfe & Anleitung",

@@ -2,7 +2,10 @@
   "header": {
     "settings": "Ayarlar",
     "help": "Yardım",
-    "theme": "Temayı değiştir"
+    "about": "Hakkında",
+    "theme": "Temayı değiştir",
+    "reload": "Yenile",
+    "subtitle": "AI destekli dilbilgisi düzeltmesi"
   },
   "home": {
     "inputLabel": "Düzeltilecek metin",
@@ -40,7 +43,14 @@
     "openAiPlatform": "OpenAI Platformu",
     "securityNote": "API anahtarınız yerel olarak saklanır ve OpenAI dışında hiçbir sunucuya gönderilmez.",
     "cancel": "İptal",
-    "save": "Kaydet"
+    "save": "Kaydet",
+    "clear": "Temizle",
+    "autostartLabel": "Başlangıçta çalıştır",
+    "autostartDescription": "Sistem başlatıldığında Correctify'ı otomatik olarak başlat",
+    "soundLabel": "Ses bildirimleri",
+    "soundDescription": "Bildirimler göründüğünde ses efektleri çal",
+    "globalShortcutLabel": "Genel Kısayol",
+    "shortcutDescription": "Kısayolunuzun son tuşunu özelleştirin (örneğin, A-Z, 0-9 veya özel tuşlar)"
   },
   "helpModal": {
     "title": "Yardım & Kılavuz",
