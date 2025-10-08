@@ -3,12 +3,49 @@
 
 @custom-variant dark (&:where(.dark, .dark *));
 
-@theme {
+/* Light mode colors */
+:root {
   --color-background: oklch(0.98 0 0);
   --color-foreground: oklch(0.2 0 0);
   --color-border: oklch(0.88 0 0);
   --color-primary: oklch(0.45 0.2 250);
   --color-primary-hover: oklch(0.35 0.2 250);
+  --color-primary-link: oklch(0.45 0.2 250);
+  
+  --color-prose-text: oklch(0.2 0 0);
+  --color-code-bg: rgba(0, 0, 0, 0.05);
+  --color-code-text: oklch(0.3 0 0);
+  --color-code-pre-bg: rgba(0, 0, 0, 0.05);
+  --color-code-pre-text: oklch(0.35 0 0);
+  --color-selection: rgba(45, 112, 250, 0.3);
+  --color-placeholder: oklch(0.6 0 0);
+}
+
+/* Dark mode colors */
+.dark {
+  --color-background: oklch(0.15 0 0);
+  --color-foreground: oklch(0.95 0 0);
+  --color-border: oklch(0.3 0 0);
+  --color-primary: oklch(0.6 0.2 250);
+  --color-primary-hover: oklch(0.7 0.2 250);
+  --color-primary-link: oklch(0.6 0.2 250);
+  
+  --color-prose-text: oklch(0.95 0 0);
+  --color-code-bg: rgba(0, 0, 0, 0.3);
+  --color-code-text: oklch(0.9 0 0);
+  --color-code-pre-bg: rgba(0, 0, 0, 0.3);
+  --color-code-pre-text: oklch(0.85 0 0);
+  --color-selection: rgba(100, 150, 255, 0.3);
+  --color-placeholder: oklch(0.5 0 0);
+}
+
+/* Tailwind theme integration */
+@theme {
+  --color-background: var(--color-background);
+  --color-foreground: var(--color-foreground);
+  --color-border: var(--color-border);
+  --color-primary: var(--color-primary);
+  --color-primary-hover: var(--color-primary-hover);
 }
 
 body {
@@ -18,15 +55,36 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
-/* Custom prose styling for dark mode and better markdown rendering */
-.prose {
-  color: oklch(0.2 0 0);
-  font-size: 0.95rem;
-  line-height: 1.5;
+/* Placeholder styling */
+input::placeholder,
+textarea::placeholder {
+  color: var(--color-placeholder);
+  opacity: 1;
 }
 
-.dark .prose {
-  color: oklch(0.95 0 0);
+input::-webkit-input-placeholder,
+textarea::-webkit-input-placeholder {
+  color: var(--color-placeholder);
+  opacity: 1;
+}
+
+input::-moz-placeholder,
+textarea::-moz-placeholder {
+  color: var(--color-placeholder);
+  opacity: 1;
+}
+
+input:-ms-input-placeholder,
+textarea:-ms-input-placeholder {
+  color: var(--color-placeholder);
+  opacity: 1;
+}
+
+/* Custom prose styling for dark mode and better markdown rendering */
+.prose {
+  color: var(--color-prose-text);
+  font-size: 0.95rem;
+  line-height: 1.5;
 }
 
 .prose strong {
@@ -73,11 +131,11 @@ body {
 }
 
 .prose code {
-  background-color: rgba(0, 0, 0, 0.05);
+  background-color: var(--color-code-bg);
   padding: 0.2em 0.4em;
   border-radius: 0.25rem;
   font-size: 0.875em;
-  color: oklch(0.3 0 0);
+  color: var(--color-code-text);
   font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
 }
 
@@ -86,13 +144,8 @@ body {
   content: none;
 }
 
-.dark .prose code {
-  background-color: rgba(0, 0, 0, 0.3);
-  color: oklch(0.9 0 0);
-}
-
 .prose pre {
-  background-color: rgba(0, 0, 0, 0.05);
+  background-color: var(--color-code-pre-bg);
   padding: 0.75em;
   border-radius: 0.375rem;
   overflow-x: auto;
@@ -108,20 +161,12 @@ body {
   margin-bottom: 0;
 }
 
-.dark .prose pre {
-  background-color: rgba(0, 0, 0, 0.3);
-}
-
 .prose pre code {
   background-color: transparent;
   padding: 0;
   border-radius: 0;
   font-size: 0.875em;
-  color: oklch(0.35 0 0);
-}
-
-.dark .prose pre code {
-  color: oklch(0.85 0 0);
+  color: var(--color-code-pre-text);
 }
 
 .prose h1,
@@ -143,12 +188,8 @@ body {
 }
 
 .prose a {
-  color: var(--color-primary);
+  color: var(--color-primary-link);
   text-decoration: underline;
-}
-
-.dark .prose a {
-  color: oklch(0.6 0.2 250);
 }
 
 /* Caret visibility for transparent textarea */
@@ -157,11 +198,7 @@ textarea.text-transparent {
 }
 
 textarea.text-transparent::selection {
-  background-color: rgba(45, 112, 250, 0.3);
-}
-
-.dark textarea.text-transparent::selection {
-  background-color: rgba(100, 150, 255, 0.3);
+  background-color: var(--color-selection);
 }
 
 /* Overlay prose styling - remove all margins to match textarea */
@@ -202,11 +239,11 @@ textarea.text-transparent::selection {
 }
 
 .prose-overlay code {
-  background-color: rgba(0, 0, 0, 0.05);
+  background-color: var(--color-code-bg);
   padding: 0;
   border-radius: 0.25rem;
   font-size: inherit;
-  color: oklch(0.3 0 0);
+  color: var(--color-code-text);
   font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
 }
 
@@ -215,21 +252,12 @@ textarea.text-transparent::selection {
   content: none;
 }
 
-.dark .prose-overlay code {
-  background-color: rgba(0, 0, 0, 0.3);
-  color: oklch(0.9 0 0);
-}
-
 .prose-overlay pre {
-  background-color: rgba(0, 0, 0, 0.05);
+  background-color: var(--color-code-pre-bg);
   padding: 0;
   border-radius: 0.375rem;
   overflow-x: auto;
   margin: 0;
-}
-
-.dark .prose-overlay pre {
-  background-color: rgba(0, 0, 0, 0.3);
 }
 
 .prose-overlay pre code {
@@ -237,11 +265,7 @@ textarea.text-transparent::selection {
   padding: 0;
   border-radius: 0;
   font-size: inherit;
-  color: oklch(0.35 0 0);
-}
-
-.dark .prose-overlay pre code {
-  color: oklch(0.85 0 0);
+  color: var(--color-code-pre-text);
 }
 
 .prose-overlay h1,
@@ -256,10 +280,6 @@ textarea.text-transparent::selection {
 }
 
 .prose-overlay a {
-  color: var(--color-primary);
+  color: var(--color-primary-link);
   text-decoration: underline;
-}
-
-.dark .prose-overlay a {
-  color: oklch(0.6 0.2 250);
 }
