@@ -444,23 +444,23 @@ export default function HomePage() {
         shortcutKey={shortcutKey}
       />
 
-      <main className="h-screen flex justify-center p-6 bg-background dark:bg-gray-950 pt-24 transition-colors overflow-auto">
+      <main className="h-screen flex justify-center p-6 bg-background pt-24 transition-colors overflow-auto">
         <div className="w-full max-w-4xl">
           <form onSubmit={handleSubmit} className="space-y-6">
             <div className="space-y-2">
               <div className="flex items-center justify-between">
-                <label htmlFor="input" className="block text-sm font-medium dark:text-gray-200">
+                <label htmlFor="input" className="block text-sm font-medium text-foreground">
                   {messages.home.inputLabel}
                 </label>
                 <div className="flex items-center gap-2">
-                  <label htmlFor="model" className="text-xs font-medium text-foreground/60 dark:text-gray-400">
+                  <label htmlFor="model" className="text-xs font-medium text-foreground/60">
                     {messages.home.modelLabel}
                   </label>
                   <div className="relative" ref={modelDropdownRef}>
                     <button
                       type="button"
                       onClick={() => setIsModelDropdownOpen(!isModelDropdownOpen)}
-                      className="flex items-center gap-2 px-3 py-1.5 text-xs font-medium text-foreground/70 dark:text-gray-300 bg-foreground/5 dark:bg-white/5 hover:bg-foreground/10 dark:hover:bg-white/10 hover:text-foreground dark:hover:text-white border-0 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed transition-colors min-w-[120px]"
+                      className="flex items-center gap-2 px-3 py-1.5 text-xs font-medium text-foreground/70 bg-foreground/5 hover:bg-foreground/10 hover:text-foreground border-0 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed transition-colors min-w-[120px]"
                       disabled={isLoading}
                     >
                       <span className="flex-1 text-left">{modelOptions.find(option => option.value === model)?.label}</span>
@@ -468,7 +468,7 @@ export default function HomePage() {
                     </button>
                     
                     {isModelDropdownOpen && (
-                      <div className="absolute top-full left-0 mt-1 w-full min-w-[120px] bg-white dark:bg-gray-800 border border-border dark:border-gray-700 rounded-lg shadow-lg z-10">
+                      <div className="absolute top-full left-0 mt-1 w-full min-w-[120px] bg-white dark:bg-stone-800 border border-border rounded-lg shadow-lg z-10">
                         {modelOptions.map((option) => (
                           <button
                             key={option.value}
@@ -476,8 +476,8 @@ export default function HomePage() {
                             onClick={() => handleModelChange(option.value)}
                             className={`w-full text-left px-3 py-2 text-xs font-medium transition-colors first:rounded-t-lg last:rounded-b-lg ${
                               model === option.value
-                                ? 'bg-primary text-white'
-                                : 'text-foreground dark:text-gray-100 hover:bg-foreground/5 dark:hover:bg-white/5'
+                                ? 'bg-primary text-button-text'
+                                : 'text-foreground hover:bg-foreground/5'
                             }`}
                           >
                             {option.label}
@@ -495,7 +495,7 @@ export default function HomePage() {
                 onChange={(e) => setInputText(e.target.value)}
                 onKeyDown={handleKeyDown}
                 placeholder={messages.home.inputPlaceholder}
-                className="w-full h-96 px-4 py-3 bg-white dark:bg-gray-800 border border-border dark:border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary resize-none text-foreground dark:text-gray-100 transition-colors"
+                className="w-full h-96 px-4 py-3 bg-white dark:bg-stone-900 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary resize-none text-foreground transition-colors"
                 disabled={isLoading}
               />
             </div>
@@ -503,22 +503,22 @@ export default function HomePage() {
             <button
               type="submit"
               disabled={isLoading || !inputText.trim()}
-              className="w-full px-6 py-3 bg-primary text-white font-medium rounded-lg hover:bg-primary-hover focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 dark:focus:ring-offset-gray-950 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              className="w-full px-6 py-3 bg-primary text-button-text font-medium rounded-lg hover:bg-primary-hover focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 focus:ring-offset-background disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
             >
               {isLoading ? messages.home.correctingButton : messages.home.correctButton}
             </button>
 
-            <div className="flex items-center justify-center gap-4 text-sm text-foreground/60 dark:text-gray-400">
+            <div className="flex items-center justify-center gap-4 text-sm text-foreground/60">
               <div className="flex items-center gap-1.5">
-                <kbd className="px-2 py-1 bg-foreground/5 dark:bg-white/5 border border-foreground/10 dark:border-white/10 rounded text-xs font-medium flex items-center gap-1">
+                <kbd className="px-2 py-1 bg-foreground/5 border border-foreground/10 rounded text-xs font-medium flex items-center gap-1">
                   <Command className="w-3 h-3" />
                   <CornerDownLeft className="w-3 h-3" />
                 </kbd>
                 <span className="text-xs">{messages.home.shortcutMac}</span>
               </div>
-              <span className="text-foreground/30 dark:text-gray-600">{messages.home.shortcutOr}</span>
+              <span className="text-foreground/30">{messages.home.shortcutOr}</span>
               <div className="flex items-center gap-1.5">
-                <kbd className="px-2 py-1 bg-foreground/5 dark:bg-white/5 border border-foreground/10 dark:border-white/10 rounded text-xs font-medium">
+                <kbd className="px-2 py-1 bg-foreground/5 border border-foreground/10 rounded text-xs font-medium">
                   Ctrl+Enter
                 </kbd>
                 <span className="text-xs">{messages.home.shortcutWinLinux}</span>
@@ -527,18 +527,18 @@ export default function HomePage() {
           </form>
 
           {!apiKey && (
-            <div className="mt-6 p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg">
+            <div className="mt-6 p-4 bg-error-bg border border-error-border rounded-lg">
               <div className="flex items-start gap-3">
                 <div className="flex-shrink-0">
-                  <svg className="w-5 h-5 text-red-600 dark:text-red-400" viewBox="0 0 20 20" fill="currentColor">
+                  <svg className="w-5 h-5 text-error-icon" viewBox="0 0 20 20" fill="currentColor">
                     <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
                   </svg>
                 </div>
                 <div>
-                  <h3 className="text-sm font-semibold text-red-800 dark:text-red-300 mb-1">
+                  <h3 className="text-sm font-semibold text-error-text mb-1">
                     {messages.home.noApiKeyTitle}
                   </h3>
-                  <p className="text-sm text-red-700 dark:text-red-400">
+                  <p className="text-sm text-error-text">
                     {messages.home.noApiKeyMessage}{' '}
                     <button
                       onClick={() => setIsSettingsModalOpen(true)}
@@ -562,47 +562,47 @@ export default function HomePage() {
 
           {showGlobalShortcutInfo && (
             <div 
-              className={`mt-6 p-4 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg transition-opacity duration-500 ${
+              className={`mt-6 p-4 bg-info-bg border border-info-border rounded-lg transition-opacity duration-500 ${
                 isInfoFadingOut ? 'opacity-0' : 'opacity-100'
               }`}
             >
-              <h3 className="text-sm font-semibold text-blue-900 flex items-center gap-2 dark:text-blue-300 mb-2">
+              <h3 className="text-sm font-semibold text-info-text flex items-center gap-2 mb-2">
                 <Lightbulb />
                 {messages.home.quickCorrectionTitle}
               </h3>
-              <p className="text-sm text-blue-800 dark:text-blue-300 mb-2">
+              <p className="text-sm text-info-text mb-2">
                 {messages.home.quickCorrectionDescription}
               </p>
-              <ol className="text-sm text-blue-800 dark:text-blue-300 space-y-1 ml-4 list-decimal">
+              <ol className="text-sm text-info-text space-y-1 ml-4 list-decimal">
                 <li className="ml-3">
                   {messages.home.quickCorrectionStep1}
-                  <kbd className="px-1.5 py-0.5 bg-blue-100 dark:bg-blue-800 rounded text-xs font-medium">Cmd+C</kbd>
+                  <kbd className="px-1.5 py-0.5 bg-foreground/10 rounded text-xs font-medium">Cmd+C</kbd>
                   {' '}{messages.home.shortcutOr}{' '}
-                  <kbd className="px-1.5 py-0.5 bg-blue-100 dark:bg-blue-800 rounded text-xs font-medium">Ctrl+C</kbd>)
+                  <kbd className="px-1.5 py-0.5 bg-foreground/10 rounded text-xs font-medium">Ctrl+C</kbd>)
                 </li>
                 <li className="ml-3">
                   {messages.home.quickCorrectionStep2}{' '}
-                  <kbd className="px-1.5 py-0.5 bg-blue-100 dark:bg-blue-800 rounded text-xs font-medium">Cmd+Shift+{shortcutKey}</kbd>
+                  <kbd className="px-1.5 py-0.5 bg-foreground/10 rounded text-xs font-medium">Cmd+Shift+{shortcutKey}</kbd>
                   {' '}{messages.home.shortcutOr}{' '}
-                  <kbd className="px-1.5 py-0.5 bg-blue-100 dark:bg-blue-800 rounded text-xs font-medium">Ctrl+Shift+{shortcutKey}</kbd>
+                  <kbd className="px-1.5 py-0.5 bg-foreground/10 rounded text-xs font-medium">Ctrl+Shift+{shortcutKey}</kbd>
                 </li>
                 <li className="ml-3">{messages.home.quickCorrectionStep3}</li>
                 <li className="ml-3">
                   {messages.home.quickCorrectionStep4}
-                  <kbd className="px-1.5 py-0.5 bg-blue-100 dark:bg-blue-800 rounded text-xs font-medium">Cmd+V</kbd>
+                  <kbd className="px-1.5 py-0.5 bg-foreground/10 rounded text-xs font-medium">Cmd+V</kbd>
                   {' '}{messages.home.shortcutOr}{' '}
-                  <kbd className="px-1.5 py-0.5 bg-blue-100 dark:bg-blue-800 rounded text-xs font-medium">Ctrl+V</kbd>)
+                  <kbd className="px-1.5 py-0.5 bg-foreground/10 rounded text-xs font-medium">Ctrl+V</kbd>)
                 </li>
               </ol>
-              <p className="text-sm text-blue-800 dark:text-blue-300 mt-3 italic">
+              <p className="text-sm text-info-text mt-3 italic">
                 {messages.home.quickCorrectionCustomize}
               </p>
             </div>
           )}
 
           {error && (
-            <div className="mt-6 p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg">
-              <p className="text-sm text-red-800 dark:text-red-300">{error}</p>
+            <div className="mt-6 p-4 bg-error-bg border border-error-border rounded-lg">
+              <p className="text-sm text-error-text">{error}</p>
             </div>
           )}
 
@@ -610,12 +610,12 @@ export default function HomePage() {
             <div className="mt-6 space-y-4 pb-6">
               <div className="space-y-2">
                 <div className="flex items-center justify-between">
-                  <label className="block text-sm font-medium dark:text-gray-200">
+                  <label className="block text-sm font-medium text-foreground">
                     {messages.home.outputLabel}
                   </label>
                   <button
                     onClick={handleCopy}
-                    className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-foreground/70 dark:text-gray-300 hover:text-foreground dark:hover:text-white bg-foreground/5 dark:bg-white/5 hover:bg-foreground/10 dark:hover:bg-white/10 rounded-lg transition-colors"
+                    className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-foreground/70 hover:text-foreground bg-foreground/5 hover:bg-foreground/10 rounded-lg transition-colors"
                     aria-label="Copy to clipboard"
                   >
                     {isCopied ? (
@@ -631,7 +631,7 @@ export default function HomePage() {
                     )}
                   </button>
                 </div>
-                <div className="p-4 pb-8 bg-white dark:bg-gray-800 border border-border dark:border-gray-700 rounded-lg min-h-[12rem] transition-colors">
+                <div className="p-4 pb-8 bg-white dark:bg-stone-900 border border-border rounded-lg min-h-[12rem] transition-colors">
                   <div className="prose max-w-none">
                     <ReactMarkdown remarkPlugins={[remarkGfm]}>
                       {outputText}
@@ -641,7 +641,7 @@ export default function HomePage() {
               </div>
 
               {meta && (
-                <div className="flex items-center justify-between text-xs text-foreground/60 dark:text-gray-400">
+                <div className="flex items-center justify-between text-xs text-text-muted">
                   <span>
                     {messages.home.metaModel} {meta.model}
                   </span>

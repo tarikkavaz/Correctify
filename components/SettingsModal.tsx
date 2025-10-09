@@ -64,22 +64,22 @@ export default function SettingsModal({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
-      <div className="relative w-full max-w-md mx-4 bg-white dark:bg-gray-800 rounded-lg shadow-xl transition-colors">
+    <div className="fixed inset-0 z-50 flex items-center justify-center backdrop-blur-sm" style={{backgroundColor: 'var(--color-modal-backdrop)'}}>
+      <div className="relative w-full max-w-md mx-4 bg-card-bg rounded-lg shadow-xl transition-colors">
         {/* Header */}
-        <div className="flex items-center justify-between p-6 border-b border-border dark:border-gray-700">
+        <div className="flex items-center justify-between p-6 border-b border-border">
           <div className="flex items-center gap-3">
-            <div className="p-2 bg-primary/10 dark:bg-primary/20 rounded-lg">
-              <Settings className="w-5 h-5 text-primary dark:text-blue-400" />
+            <div className="p-2 bg-primary/10 rounded-lg">
+              <Settings className="w-5 h-5 text-primary" />
             </div>
-            <h2 className="text-xl font-semibold dark:text-white">{messages.apiModal.title}</h2>
+            <h2 className="text-xl font-semibold text-foreground">{messages.apiModal.title}</h2>
           </div>
           <button
             onClick={onClose}
-            className="p-1 hover:bg-foreground/5 dark:hover:bg-white/5 rounded-lg transition-colors"
+            className="p-1 hover:bg-foreground/5 rounded-lg transition-colors"
             aria-label="Close API settings"
           >
-            <X className="w-5 h-5 dark:text-gray-300" />
+            <X className="w-5 h-5 text-foreground" />
           </button>
         </div>
 
@@ -87,14 +87,14 @@ export default function SettingsModal({
         <form onSubmit={handleSubmit} className="p-6 space-y-6">
           <div className="space-y-2">
             <div className="flex items-center justify-between">
-              <label htmlFor="apiKey" className="block text-sm font-medium dark:text-gray-200">
+              <label htmlFor="apiKey" className="block text-sm font-medium text-foreground">
                 {messages.apiModal.apiKeyLabel}
               </label>
               {apiKey && (
                 <button
                   type="button"
                   onClick={handleClear}
-                  className="text-sm font-medium text-foreground/60 dark:text-gray-400 hover:text-foreground dark:hover:text-gray-200 transition-colors"
+                  className="text-sm font-medium text-text-muted hover:text-foreground transition-colors"
                 >
                   {messages.apiModal.clear}
                 </button>
@@ -106,17 +106,17 @@ export default function SettingsModal({
               value={apiKey}
               onChange={(e) => setApiKey(e.target.value)}
               placeholder={messages.apiModal.apiKeyPlaceholder}
-              className="w-full px-4 py-3 bg-white dark:bg-gray-700 border border-border dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary dark:text-white dark:placeholder-gray-400 transition-colors"
+              className="w-full px-4 py-3 bg-background border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary text-foreground transition-colors"
               autoFocus
             />
-            <div className="flex items-start gap-2 text-xs text-foreground/60 dark:text-gray-400">
+            <div className="flex items-start gap-2 text-xs text-foreground/60">
               <p className="flex-1">
                 {messages.apiModal.securityNote}
               </p>
             </div>
             <button
               onClick={handleOpenAPIKey}
-              className="inline-flex items-center text-xs text-primary dark:text-blue-400 hover:underline cursor-pointer"
+              className="inline-flex items-center text-xs text-primary hover:underline cursor-pointer"
             >
               {messages.apiModal.getKeyInstructions} {messages.apiModal.openAiPlatform} →
             </button>
@@ -124,20 +124,20 @@ export default function SettingsModal({
 
           {/* Autostart Option (Desktop Only) */}
           {isTauriApp && (
-            <div className="space-y-2 pt-2 border-t border-border dark:border-gray-700">
+            <div className="space-y-2 pt-2 border-t border-border">
               <div className="flex items-start gap-3">
                 <input
                   id="autostart"
                   type="checkbox"
                   checked={autostartEnabled}
                   onChange={(e) => setAutostartEnabled(e.target.checked)}
-                  className="mt-1 w-4 h-4 text-primary bg-white dark:bg-gray-700 border-border dark:border-gray-600 rounded focus:ring-2 focus:ring-primary"
+                  className="mt-1 w-4 h-4 text-primary bg-background border-border rounded focus:ring-2 focus:ring-primary"
                 />
                 <div className="flex-1">
-                  <label htmlFor="autostart" className="block text-sm font-medium dark:text-gray-200 cursor-pointer">
+                  <label htmlFor="autostart" className="block text-sm font-medium text-foreground cursor-pointer">
                     {messages.apiModal.autostartLabel}
                   </label>
-                  <p className="text-xs text-foreground/60 dark:text-gray-400 mt-1">
+                  <p className="text-xs text-foreground/60 mt-1">
                     {messages.apiModal.autostartDescription}
                   </p>
                 </div>
@@ -147,20 +147,20 @@ export default function SettingsModal({
 
           {/* Sound Notifications (Desktop Only) */}
           {isTauriApp && (
-            <div className="space-y-2 pt-2 border-t border-border dark:border-gray-700">
+            <div className="space-y-2 pt-2 border-t border-border">
               <div className="flex items-start gap-3">
                 <input
                   id="soundEnabled"
                   type="checkbox"
                   checked={soundEnabled}
                   onChange={(e) => setSoundEnabled(e.target.checked)}
-                  className="mt-1 w-4 h-4 text-primary bg-white dark:bg-gray-700 border-border dark:border-gray-600 rounded focus:ring-2 focus:ring-primary"
+                  className="mt-1 w-4 h-4 text-primary bg-background border-border rounded focus:ring-2 focus:ring-primary"
                 />
                 <div className="flex-1">
-                  <label htmlFor="soundEnabled" className="block text-sm font-medium dark:text-gray-200 cursor-pointer">
+                  <label htmlFor="soundEnabled" className="block text-sm font-medium text-foreground cursor-pointer">
                     {messages.apiModal.soundLabel}
                   </label>
-                  <p className="text-xs text-foreground/60 dark:text-gray-400 mt-1">
+                  <p className="text-xs text-foreground/60 mt-1">
                     {messages.apiModal.soundDescription}
                   </p>
                 </div>
@@ -170,7 +170,7 @@ export default function SettingsModal({
 
           {/* Global Shortcut Customization (Desktop Only) */}
           {isTauriApp && (
-            <div className="space-y-2 pt-2 border-t border-border dark:border-gray-700">
+            <div className="space-y-2 pt-2 border-t border-border">
               <label htmlFor="shortcutKey" className="block text-sm font-medium dark:text-gray-200">
                 {messages.apiModal.globalShortcutLabel}
               </label>
@@ -185,10 +185,10 @@ export default function SettingsModal({
                   onChange={(e) => setShortcutKey(e.target.value.slice(-1).toUpperCase())}
                   maxLength={1}
                   placeholder="."
-                  className="w-16 text-center px-3 py-2 bg-white dark:bg-gray-700 border border-border dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary dark:text-white dark:placeholder-gray-400 transition-colors uppercase"
+                  className="w-16 text-center px-3 py-2 bg-background border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary text-foreground transition-colors uppercase"
                 />
               </div>
-              <p className="text-xs text-foreground/60 dark:text-gray-400">
+              <p className="text-xs text-foreground/60">
                 {messages.apiModal.shortcutDescription}
               </p>
             </div>
@@ -199,13 +199,13 @@ export default function SettingsModal({
             <button
               type="button"
               onClick={onClose}
-              className="flex-1 px-4 py-2 text-sm font-medium text-foreground dark:text-gray-300 hover:bg-foreground/5 dark:hover:bg-white/5 rounded-lg transition-colors"
+              className="flex-1 px-4 py-2 text-sm font-medium text-foreground hover:bg-foreground/5 rounded-lg transition-colors"
             >
               {messages.apiModal.cancel}
             </button>
             <button
               type="submit"
-              className="flex-1 px-4 py-2 text-sm font-medium bg-primary text-white rounded-lg hover:bg-primary-hover transition-colors"
+              className="flex-1 px-4 py-2 text-sm font-medium bg-primary text-button-text rounded-lg hover:bg-primary-hover transition-colors"
             >
               {messages.apiModal.save}
             </button>

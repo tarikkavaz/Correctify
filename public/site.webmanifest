@@ -1,7 +1,7 @@
 {
   "name": "Correctify",
   "short_name": "Correctify",
-  "description": "AI-powered grammar correction",
+  "description": "AI-powered text correction tool",
   "icons": [
     {
       "src": "/android-chrome-192x192.png",
@@ -14,7 +14,9 @@
       "type": "image/png"
     }
   ],
-  "theme_color": "#2d70fa",
-  "background_color": "#ffffff",
-  "display": "standalone"
+  "theme_color": "#84cc16",
+  "background_color": "#fafaf9",
+  "display": "standalone",
+  "start_url": "/",
+  "scope": "/"
 }

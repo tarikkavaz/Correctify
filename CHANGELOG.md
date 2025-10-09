@@ -5,6 +5,16 @@ All notable changes to Correctify will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.6.0] - 2025-01-10
+
+### Changed
+- **Theme Colors**: Updated color scheme from gray/blue to Stone and Lime
+  - Base colors now use Tailwind's Stone palette for a warmer, more sophisticated look
+  - Primary accent color changed to Lime for better visibility and modern aesthetic
+  - All colors are now customizable via CSS variables in `globals.css`
+  - Improved dark mode contrast with adjusted button text colors
+  - Updated site manifest with new theme colors
+
 ## [0.5.1] - 2025-10-08
 
 ### Fixed
@@ -206,6 +216,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - No text storage or logging
 - Direct communication with OpenAI API only
 
+[0.6.0]: https://github.com/tarikkavaz/Correctify/compare/v0.5.1...v0.6.0
 [0.5.1]: https://github.com/tarikkavaz/Correctify/compare/v0.5.0...v0.5.1
 [0.5.0]: https://github.com/tarikkavaz/Correctify/compare/v0.4.0...v0.5.0
 [0.4.0]: https://github.com/tarikkavaz/Correctify/compare/v0.3.0...v0.4.0
