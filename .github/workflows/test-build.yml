@@ -4,11 +4,10 @@ on:
   workflow_dispatch: # Allows manual trigger
   push:
     branches:
-      - v0.4.0
-      - main
+      - master
   pull_request:
     branches:
-      - main
+      - master
 
 jobs:
   test-build:
