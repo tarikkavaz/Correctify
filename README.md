@@ -4,6 +4,13 @@ A simple, cross-platform grammar correction app powered by OpenAI. Bring your ow
 
 ![Correctify Screenshot](public/screenshot.png)
 
+## Disclaimer
+
+This is a **hobby "boilerplate" project** built for personal use and experimentation.  
+It is **not intended for public release or production use**.  
+
+That said, the code is open source—if you find it useful, feel free to use, modify, or adapt it as you wish, either as an app or as a starting point for your own project.
+
 ## What It Does
 
 Correctify corrects grammar, spelling, and punctuation while preserving your writing style and formatting. It's a minimal, distraction-free menubar app that works on macOS, Windows, and Linux.
