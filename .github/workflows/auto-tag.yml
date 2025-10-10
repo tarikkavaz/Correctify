@@ -37,3 +37,11 @@ jobs:
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git tag ${{ steps.extract.outputs.version }}
           git push origin ${{ steps.extract.outputs.version }}
+
+      - name: Trigger Release workflow
+        if: steps.extract.outputs.version != ''
+        uses: peter-evans/repository-dispatch@v3
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          event-type: release-trigger
+          client-payload: '{"tag": "${{ steps.extract.outputs.version }}"}'
