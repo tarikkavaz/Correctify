@@ -1,20 +1,48 @@
-name: Release
+name: Release on Commit
 
 on:
   push:
-    tags:
-      - 'v*'
-  workflow_dispatch:
-    inputs:
-      tag:
-        description: 'Tag to release (e.g., v0.6.1)'
-        required: true
-        type: string
-  repository_dispatch:
-    types: [release-trigger]
+    branches:
+      - master
 
 jobs:
-  release:
+  check-release:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    outputs:
+      is_release: ${{ steps.extract.outputs.version != '' }}
+      version: ${{ steps.extract.outputs.version }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Extract version from commit message
+        id: extract
+        run: |
+          msg=$(git log -1 --pretty=%B)
+          echo "Commit message: $msg"
+
+          if [[ $msg =~ release:\ (v[0-9]+\.[0-9]+\.[0-9]+) ]]; then
+            echo "version=${BASH_REMATCH[1]}" >> $GITHUB_OUTPUT
+            echo "✅ Found version: ${BASH_REMATCH[1]}"
+          elif [[ $msg =~ release: ]]; then
+            echo "❌ Invalid release commit format. Use: release: vX.Y.Z"
+            exit 1
+          else
+            echo "ℹ️ No release commit. Skipping."
+          fi
+
+      - name: Create and push tag
+        if: steps.extract.outputs.version != ''
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git tag ${{ steps.extract.outputs.version }}
+          git push origin ${{ steps.extract.outputs.version }}
+
+  build-release:
+    needs: check-release
+    if: needs.check-release.outputs.is_release == 'true'
     permissions:
       contents: write
     strategy:
@@ -71,8 +99,8 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          tagName: ${{ github.event.inputs.tag || github.event.client_payload.tag || github.ref_name }}
-          releaseName: "Correctify ${{ github.event.inputs.tag || github.event.client_payload.tag || github.ref_name }}"
+          tagName: ${{ needs.check-release.outputs.version }}
+          releaseName: "Correctify ${{ needs.check-release.outputs.version }}"
           releaseBody: |
             ## Changelog
             ${{ steps.changelog.outputs.changelog }}
