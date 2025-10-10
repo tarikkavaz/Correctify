@@ -4,6 +4,12 @@ on:
   push:
     tags:
       - 'v*'
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: 'Tag to release (e.g., v0.6.1)'
+        required: true
+        type: string
 
 jobs:
   release:
@@ -63,8 +69,8 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          tagName: ${{ github.ref_name }}
-          releaseName: "Correctify ${{ github.ref_name }}"
+          tagName: ${{ github.event.inputs.tag || github.ref_name }}
+          releaseName: "Correctify ${{ github.event.inputs.tag || github.ref_name }}"
           releaseBody: |
             ## Changelog
             ${{ steps.changelog.outputs.changelog }}
