@@ -1,7 +1,10 @@
+export type WritingStyle = 'grammar' | 'formal' | 'informal' | 'collaborative' | 'concise';
+
 export interface CorrectionInput {
   text: string;
   model?: string;
   temperature?: number;
+  writingStyle?: WritingStyle;
 }
 
 export interface CorrectionResult {
@@ -19,6 +22,7 @@ export interface CorrectionRequest {
   provider: Provider;
   model?: string;
   temperature?: number;
+  writingStyle?: WritingStyle;
 }
 
 export interface CorrectionResponse {

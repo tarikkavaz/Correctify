@@ -5,6 +5,23 @@ All notable changes to Correctify will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.7.0] - 2025-01-21
+
+### Added
+- Writing Style Selector: Choose from 5 different writing styles to customize corrections
+  - Grammar Only: Fixes grammar and typos only (default)
+  - Formal: Polished and professional tone with no contractions
+  - Informal: Natural and conversational tone with friendly phrasing
+  - Collaborative: Friendly, inclusive team tone with cooperative language
+  - Concise: Clear and to the point, removing redundancy
+- Style dropdown with descriptions below each option name
+- Writing style preference persists across sessions via localStorage
+- Global shortcut now respects the selected writing style
+
+### Changed
+- Improved UI with style selector positioned next to model selector
+- Enhanced system prompts with style-specific instructions
+
 ## [0.6.0] - 2025-01-10
 
 ### Changed
@@ -216,6 +233,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - No text storage or logging
 - Direct communication with OpenAI API only
 
+[0.7.0]: https://github.com/tarikkavaz/Correctify/compare/v0.6.0...v0.7.0
 [0.6.0]: https://github.com/tarikkavaz/Correctify/compare/v0.5.1...v0.6.0
 [0.5.1]: https://github.com/tarikkavaz/Correctify/compare/v0.5.0...v0.5.1
 [0.5.0]: https://github.com/tarikkavaz/Correctify/compare/v0.4.0...v0.5.0

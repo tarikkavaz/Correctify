@@ -4,7 +4,7 @@ import { useState, useEffect, useRef, FormEvent, KeyboardEvent } from 'react';
 import { Command, CornerDownLeft, Copy, Check, ChevronDown, Lightbulb } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
-import { CorrectionResponse } from '@/lib/types';
+import { CorrectionResponse, WritingStyle } from '@/lib/types';
 import SettingsModal from '@/components/SettingsModal';
 import HelpModal from '@/components/HelpModal';
 import DraggableHeader from '@/components/DraggableHeader';
@@ -23,6 +23,8 @@ export default function HomePage() {
   const [shortcutKey, setShortcutKey] = useState('.'); // Default: period
   const [model, setModel] = useState<'gpt-5' | 'gpt-5-mini' | 'gpt-4o-mini'>('gpt-4o-mini');
   const [isModelDropdownOpen, setIsModelDropdownOpen] = useState(false);
+  const [writingStyle, setWritingStyle] = useState<WritingStyle>('grammar');
+  const [isStyleDropdownOpen, setIsStyleDropdownOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
   const [meta, setMeta] = useState<CorrectionResponse['meta'] | null>(null);
@@ -34,6 +36,7 @@ export default function HomePage() {
   const { theme, toggleTheme } = useTheme();
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const modelDropdownRef = useRef<HTMLDivElement>(null);
+  const styleDropdownRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const savedKey = localStorage.getItem('openai-api-key');
@@ -44,6 +47,11 @@ export default function HomePage() {
     const savedModel = localStorage.getItem('openai-model') as 'gpt-5' | 'gpt-5-mini' | 'gpt-4o-mini' | null;
     if (savedModel && (savedModel === 'gpt-5' || savedModel === 'gpt-5-mini' || savedModel === 'gpt-4o-mini')) {
       setModel(savedModel);
+    }
+
+    const savedStyle = localStorage.getItem('writing-style') as WritingStyle | null;
+    if (savedStyle && ['grammar', 'formal', 'informal', 'collaborative', 'concise'].includes(savedStyle)) {
+      setWritingStyle(savedStyle);
     }
 
     const savedAutostart = localStorage.getItem('autostart-enabled');
@@ -152,8 +160,9 @@ export default function HomePage() {
             
             // Perform correction
             const currentModel = localStorage.getItem('openai-model') as 'gpt-5' | 'gpt-5-mini' | 'gpt-4o-mini' || 'gpt-4o-mini';
+            const currentStyle = localStorage.getItem('writing-style') as WritingStyle || 'grammar';
             const corrector = new OpenAICorrector(currentApiKey, currentModel);
-            const result = await corrector.correct({ text: textToCorrect });
+            const result = await corrector.correct({ text: textToCorrect, writingStyle: currentStyle });
 
             const correctionDuration = Date.now() - correctionStartTime;
             console.log('Correction result:', result.result.substring(0, 100));
@@ -196,6 +205,9 @@ export default function HomePage() {
       if (modelDropdownRef.current && !modelDropdownRef.current.contains(event.target as Node)) {
         setIsModelDropdownOpen(false);
       }
+      if (styleDropdownRef.current && !styleDropdownRef.current.contains(event.target as Node)) {
+        setIsStyleDropdownOpen(false);
+      }
     };
 
     document.addEventListener('mousedown', handleClickOutside);
@@ -220,10 +232,24 @@ export default function HomePage() {
     setIsModelDropdownOpen(false);
   };
 
+  const handleStyleChange = (newStyle: WritingStyle) => {
+    setWritingStyle(newStyle);
+    localStorage.setItem('writing-style', newStyle);
+    setIsStyleDropdownOpen(false);
+  };
+
   const modelOptions = [
     { value: 'gpt-4o-mini', label: 'GPT-4o Mini' },
     { value: 'gpt-5-mini', label: 'GPT-5 Mini' },
     { value: 'gpt-5', label: 'GPT-5' },
+  ] as const;
+
+  const styleOptions = [
+    { value: 'grammar', label: 'Grammar Only', description: 'Fixes grammar and typos only' },
+    { value: 'formal', label: 'Formal', description: 'Polished and professional tone' },
+    { value: 'informal', label: 'Informal', description: 'Natural and conversational tone' },
+    { value: 'collaborative', label: 'Collaborative', description: 'Friendly, inclusive team tone' },
+    { value: 'concise', label: 'Concise', description: 'Clear and to the point' },
   ] as const;
 
   const handleOpenAbout = async () => {
@@ -359,6 +385,7 @@ export default function HomePage() {
         const corrector = new OpenAICorrector(apiKey, model);
         const result = await corrector.correct({
           text: inputText,
+          writingStyle: writingStyle,
         });
 
         const duration = Date.now() - startTime;
@@ -390,6 +417,7 @@ export default function HomePage() {
             text: inputText,
             provider: 'openai',
             model: model,
+            writingStyle: writingStyle,
           }),
         });
 
@@ -452,39 +480,83 @@ export default function HomePage() {
                 <label htmlFor="input" className="block text-sm font-medium text-foreground">
                   {messages.home.inputLabel}
                 </label>
-                <div className="flex items-center gap-2">
-                  <label htmlFor="model" className="text-xs font-medium text-foreground/60">
-                    {messages.home.modelLabel}
-                  </label>
-                  <div className="relative" ref={modelDropdownRef}>
-                    <button
-                      type="button"
-                      onClick={() => setIsModelDropdownOpen(!isModelDropdownOpen)}
-                      className="flex items-center gap-2 px-3 py-1.5 text-xs font-medium text-foreground/70 bg-foreground/5 hover:bg-foreground/10 hover:text-foreground border-0 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed transition-colors min-w-[120px]"
-                      disabled={isLoading}
-                    >
-                      <span className="flex-1 text-left">{modelOptions.find(option => option.value === model)?.label}</span>
-                      <ChevronDown className={`w-3 h-3 transition-transform flex-shrink-0 ${isModelDropdownOpen ? 'rotate-180' : ''}`} />
-                    </button>
-                    
-                    {isModelDropdownOpen && (
-                      <div className="absolute top-full left-0 mt-1 w-full min-w-[120px] bg-white dark:bg-stone-800 border border-border rounded-lg shadow-lg z-10">
-                        {modelOptions.map((option) => (
-                          <button
-                            key={option.value}
-                            type="button"
-                            onClick={() => handleModelChange(option.value)}
-                            className={`w-full text-left px-3 py-2 text-xs font-medium transition-colors first:rounded-t-lg last:rounded-b-lg ${
-                              model === option.value
-                                ? 'bg-primary text-button-text'
-                                : 'text-foreground hover:bg-foreground/5'
-                            }`}
-                          >
-                            {option.label}
-                          </button>
-                        ))}
-                      </div>
-                    )}
+                <div className="flex items-center gap-4">
+                  <div className="flex items-center gap-2">
+                    <label className="text-xs font-medium text-foreground/60">
+                      Style
+                    </label>
+                    <div className="relative" ref={styleDropdownRef}>
+                      <button
+                        type="button"
+                        onClick={() => setIsStyleDropdownOpen(!isStyleDropdownOpen)}
+                        className="flex items-center gap-2 px-3 py-1.5 text-xs font-medium text-foreground/70 bg-foreground/5 hover:bg-foreground/10 hover:text-foreground border-0 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed transition-colors min-w-[140px]"
+                        disabled={isLoading}
+                      >
+                        <span className="flex-1 text-left">{styleOptions.find(option => option.value === writingStyle)?.label}</span>
+                        <ChevronDown className={`w-3 h-3 transition-transform flex-shrink-0 ${isStyleDropdownOpen ? 'rotate-180' : ''}`} />
+                      </button>
+                      
+                      {isStyleDropdownOpen && (
+                        <div className="absolute top-full right-0 mt-1 w-64 bg-white dark:bg-stone-800 border border-border rounded-lg shadow-lg z-10">
+                          {styleOptions.map((option) => (
+                            <button
+                              key={option.value}
+                              type="button"
+                              onClick={() => handleStyleChange(option.value)}
+                              className={`w-full text-left px-3 py-2.5 transition-colors first:rounded-t-lg last:rounded-b-lg ${
+                                writingStyle === option.value
+                                  ? 'bg-primary text-button-text'
+                                  : 'text-foreground hover:bg-foreground/5'
+                              }`}
+                            >
+                              <div className="font-medium text-xs">{option.label}</div>
+                              <div className={`text-xs mt-0.5 ${
+                                writingStyle === option.value
+                                  ? 'text-button-text/80'
+                                  : 'text-foreground/60'
+                              }`}>
+                                {option.description}
+                              </div>
+                            </button>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <label htmlFor="model" className="text-xs font-medium text-foreground/60">
+                      {messages.home.modelLabel}
+                    </label>
+                    <div className="relative" ref={modelDropdownRef}>
+                      <button
+                        type="button"
+                        onClick={() => setIsModelDropdownOpen(!isModelDropdownOpen)}
+                        className="flex items-center gap-2 px-3 py-1.5 text-xs font-medium text-foreground/70 bg-foreground/5 hover:bg-foreground/10 hover:text-foreground border-0 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed transition-colors min-w-[120px]"
+                        disabled={isLoading}
+                      >
+                        <span className="flex-1 text-left">{modelOptions.find(option => option.value === model)?.label}</span>
+                        <ChevronDown className={`w-3 h-3 transition-transform flex-shrink-0 ${isModelDropdownOpen ? 'rotate-180' : ''}`} />
+                      </button>
+                      
+                      {isModelDropdownOpen && (
+                        <div className="absolute top-full left-0 mt-1 w-full min-w-[120px] bg-white dark:bg-stone-800 border border-border rounded-lg shadow-lg z-10">
+                          {modelOptions.map((option) => (
+                            <button
+                              key={option.value}
+                              type="button"
+                              onClick={() => handleModelChange(option.value)}
+                              className={`w-full text-left px-3 py-2 text-xs font-medium transition-colors first:rounded-t-lg last:rounded-b-lg ${
+                                model === option.value
+                                  ? 'bg-primary text-button-text'
+                                  : 'text-foreground hover:bg-foreground/5'
+                              }`}
+                            >
+                              {option.label}
+                            </button>
+                          ))}
+                        </div>
+                      )}
+                    </div>
                   </div>
                 </div>
               </div>
