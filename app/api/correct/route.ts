@@ -7,7 +7,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
 
   try {
     const body: CorrectionRequest = await request.json();
-    const { text, provider, model, temperature = 0 } = body;
+    const { text, provider, model, temperature = 0, writingStyle } = body;
 
     if (!text || typeof text !== 'string' || text.trim().length === 0) {
       return NextResponse.json(
@@ -43,7 +43,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
 
     // Perform correction
     const corrector = new OpenAICorrector(apiKey);
-    const response = await corrector.correct({ text, model, temperature });
+    const response = await corrector.correct({ text, model, temperature, writingStyle });
     const result = response.result;
 
     const duration = Date.now() - startTime;

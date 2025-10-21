@@ -20,6 +20,13 @@ Correctify corrects grammar, spelling, and punctuation while preserving your wri
   * No dock icon on macOS (stays in menubar only)
   * Launch at startup option available in Settings
   * Lightweight and always accessible
+* **Writing Style Selector**: Choose from 5 different writing styles
+  * Grammar Only: Fixes grammar and typos only
+  * Formal: Polished and professional tone
+  * Informal: Natural and conversational tone
+  * Collaborative: Friendly, inclusive team tone
+  * Concise: Clear and to the point
+  * Style preference persists across sessions
 * **Customizable Shortcut**: Change the global shortcut to your preference
   * Default: `Cmd+Shift+.` (macOS) or `Ctrl+Shift+.` (Windows/Linux)
   * Customize the last key (e.g., A-Z, 0-9, special keys)
