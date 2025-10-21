@@ -1,6 +1,6 @@
 'use client';
 
-import { X, KeyRound, FileText, Bot, Keyboard, Lightbulb, AlertCircle, HelpCircle } from 'lucide-react';
+import { X, KeyRound, FileText, Bot, Keyboard, Lightbulb, AlertCircle, HelpCircle, Palette } from 'lucide-react';
 import { isTauri } from '@/lib/utils';
 import { useLocale } from '@/lib/useLocale';
 
@@ -150,6 +150,40 @@ export default function HelpModal({ isOpen, onClose, shortcutKey }: HelpModalPro
                   <strong className="text-foreground">{messages.helpModal.model3Name}</strong> {messages.helpModal.model3Description}
                 </li>
               </ul>
+            </div>
+          </section>
+
+          {/* Writing Style Selection */}
+          <section>
+            <h3 className="text-lg font-semibold text-foreground mb-3 flex items-center gap-2">
+              <Palette className="w-5 h-5" />
+              Writing Style Selection
+            </h3>
+            <div className="space-y-2 text-sm text-foreground/80">
+              <p>Choose from 5 different writing styles to customize how your text is corrected and rewritten:</p>
+              <ul className="space-y-2 ml-2">
+                <li>
+                  <strong className="text-foreground">Grammar Only</strong> - Fixes grammar and typos only (default behavior)
+                </li>
+                <li>
+                  <strong className="text-foreground">Formal</strong> - Professional tone with no contractions, suitable for business or academic writing
+                </li>
+                <li>
+                  <strong className="text-foreground">Informal</strong> - Conversational and friendly tone with natural phrasing
+                </li>
+                <li>
+                  <strong className="text-foreground">Collaborative</strong> - Inclusive team-oriented language with cooperative phrasing
+                </li>
+                <li>
+                  <strong className="text-foreground">Concise</strong> - Brief and to the point, removing redundancy while maintaining meaning
+                </li>
+              </ul>
+              <div className="p-3 bg-info-bg border border-info-border rounded-lg mt-3 flex gap-2">
+                <Lightbulb className="w-4 h-4 text-info-text flex-shrink-0 mt-0.5" />
+                <p className="text-xs text-info-text">
+                  <strong>Note:</strong> Your selected writing style persists across sessions and is used for both in-app corrections and global shortcut corrections.
+                </p>
+              </div>
             </div>
           </section>
 
