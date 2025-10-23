@@ -4,10 +4,6 @@ A simple, cross-platform grammar correction app powered by OpenAI. Bring your ow
 
 ![Correctify Screenshot](public/screenshot.png)
 
-> [!NOTE]
-> This is a hobby "boilerplate" project built for personal use and experimentation. It is **not intended for public release or production use**.
-> That said, the code is open source—if you find it useful, feel free to use, modify, or adapt it as you wish, either as an app or as a starting point for your own project.
-
 ## What It Does
 
 Correctify corrects grammar, spelling, and punctuation while preserving your writing style and formatting. It's a minimal, distraction-free menubar app that works on macOS, Windows, and Linux.
@@ -113,15 +109,8 @@ Correct text from any application:
 The global shortcut works even when Correctify is minimized or hidden! You can customize the shortcut in Settings.
 
 **Note for macOS users:**
-> [!IMPORTANT]
-> When opening Correctify for the first time, you may see a warning that the app is “damaged” or “cannot be opened because it is from an unidentified developer.” This is a standard macOS security measure for apps not distributed via the App Store. To proceed:
->
->  1. Go to **System Settings → Privacy & Security**
->  2. Scroll down until you see the message about **Correctify** being blocked
->  3. Click **Open Anyway**
->  4. Confirm in the popup
->
->  After this, macOS will remember your choice and you won’t need to repeat the step.
+> [!NOTE]
+> Correctify is code signed and notarized by Apple, so it should open without any security warnings. If you do encounter any issues, try right-clicking the app and selecting "Open" from the context menu.
 
 * The first time you use the app, macOS may ask for notification permissions. Make sure to allow them to see completion notifications.
 * Correctify runs as a menubar-only app (no dock icon). Single-click the menubar icon to show/hide the window.
