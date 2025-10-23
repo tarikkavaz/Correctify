@@ -6,7 +6,7 @@ import { useLocale } from '@/lib/useLocale';
 import { open } from '@tauri-apps/plugin-shell';
 
 export default function AboutPage() {
-  const version = '0.7.0';
+  const [version, setVersion] = useState('1.0.0');
   const [mounted, setMounted] = useState(false);
   const { messages } = useLocale();
   
@@ -15,6 +15,14 @@ export default function AboutPage() {
 
   useEffect(() => {
     setMounted(true);
+    // Read version from package.json
+    fetch('/package.json')
+      .then(response => response.json())
+      .then(data => setVersion(data.version))
+      .catch(() => {
+        // Fallback to hardcoded version if fetch fails
+        setVersion('1.0.0');
+      });
   }, []);
 
   const handleOpenGitHub = async () => {

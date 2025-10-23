@@ -9,11 +9,12 @@ import { isTauri } from '@/lib/utils';
 interface SettingsModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onSave: (apiKey: string, autostartEnabled: boolean, soundEnabled: boolean, shortcutKey: string) => void;
+  onSave: (apiKey: string, autostartEnabled: boolean, soundEnabled: boolean, shortcutKey: string, autoUpdateEnabled: boolean) => void;
   currentApiKey: string;
   currentAutostartEnabled: boolean;
   currentSoundEnabled: boolean;
   currentShortcutKey: string;
+  currentAutoUpdateEnabled: boolean;
 }
 
 export default function SettingsModal({
@@ -24,11 +25,13 @@ export default function SettingsModal({
   currentAutostartEnabled,
   currentSoundEnabled,
   currentShortcutKey,
+  currentAutoUpdateEnabled,
 }: SettingsModalProps) {
   const [apiKey, setApiKey] = useState(currentApiKey);
   const [autostartEnabled, setAutostartEnabled] = useState(currentAutostartEnabled);
   const [soundEnabled, setSoundEnabled] = useState(currentSoundEnabled);
   const [shortcutKey, setShortcutKey] = useState(currentShortcutKey);
+  const [autoUpdateEnabled, setAutoUpdateEnabled] = useState(currentAutoUpdateEnabled);
   const [isTauriApp, setIsTauriApp] = useState(false);
   const { messages } = useLocale();
 
@@ -41,11 +44,12 @@ export default function SettingsModal({
     setAutostartEnabled(currentAutostartEnabled);
     setSoundEnabled(currentSoundEnabled);
     setShortcutKey(currentShortcutKey);
-  }, [currentApiKey, currentAutostartEnabled, currentSoundEnabled, currentShortcutKey, isOpen]);
+    setAutoUpdateEnabled(currentAutoUpdateEnabled);
+  }, [currentApiKey, currentAutostartEnabled, currentSoundEnabled, currentShortcutKey, currentAutoUpdateEnabled, isOpen]);
 
   const handleSubmit = (e: FormEvent) => {
     e.preventDefault();
-    onSave(apiKey, autostartEnabled, soundEnabled, shortcutKey);
+    onSave(apiKey, autostartEnabled, soundEnabled, shortcutKey, autoUpdateEnabled);
     onClose();
   };
 
@@ -191,6 +195,52 @@ export default function SettingsModal({
               <p className="text-xs text-foreground/60">
                 {messages.apiModal.shortcutDescription}
               </p>
+            </div>
+          )}
+
+          {/* Auto-Update Settings (Desktop Only) */}
+          {isTauriApp && (
+            <div className="space-y-2 pt-2 border-t border-border">
+              <div className="flex items-start gap-3">
+                <input
+                  id="autoUpdateEnabled"
+                  type="checkbox"
+                  checked={autoUpdateEnabled}
+                  onChange={(e) => setAutoUpdateEnabled(e.target.checked)}
+                  className="mt-1 w-4 h-4 text-primary bg-background border-border rounded focus:ring-2 focus:ring-primary"
+                />
+                <div className="flex-1">
+                  <label htmlFor="autoUpdateEnabled" className="block text-sm font-medium text-foreground cursor-pointer">
+                    {messages.apiModal.autoUpdateLabel}
+                  </label>
+                  <p className="text-xs text-foreground/60 mt-1">
+                    {messages.apiModal.autoUpdateDescription}
+                  </p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={async () => {
+                  try {
+                    const { invoke } = await import('@tauri-apps/api/core');
+                    const updateAvailable = await invoke('check_for_updates');
+                    if (updateAvailable) {
+                      const shouldInstall = confirm(messages.apiModal.updateAvailableMessage);
+                      if (shouldInstall) {
+                        await invoke('install_update');
+                      }
+                    } else {
+                      alert(messages.apiModal.noUpdatesMessage);
+                    }
+                  } catch (error) {
+                    console.error('Update check failed:', error);
+                    alert(messages.apiModal.updateErrorMessage);
+                  }
+                }}
+                className="w-full px-3 py-2 text-sm font-medium text-primary border border-primary/20 rounded-lg hover:bg-primary/5 transition-colors"
+              >
+                {messages.apiModal.checkUpdatesButton}
+              </button>
             </div>
           )}
 

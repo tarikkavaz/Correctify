@@ -50,7 +50,19 @@
     "soundLabel": "Tonbenachrichtigungen",
     "soundDescription": "Soundeffekte abspielen, wenn Benachrichtigungen erscheinen",
     "globalShortcutLabel": "Globale Tastenkombination",
-    "shortcutDescription": "Passen Sie die letzte Taste Ihrer Tastenkombination an (z. B. A-Z, 0-9 oder Sondertasten)"
+    "shortcutDescription": "Passen Sie die letzte Taste Ihrer Tastenkombination an (z. B. A-Z, 0-9 oder Sondertasten)",
+    "autoUpdateLabel": "Automatische Updates",
+    "autoUpdateDescription": "Automatisch nach App-Updates suchen und benachrichtigen",
+    "checkUpdatesButton": "Nach Updates suchen",
+    "updateAvailable": "Update verfügbar",
+    "updateAvailableMessage": "Eine neue Version von Correctify ist verfügbar. Möchten Sie sie herunterladen und installieren?",
+    "updateDownloading": "Update wird heruntergeladen...",
+    "updateInstalling": "Update wird installiert...",
+    "updateComplete": "Update abgeschlossen! Die App wird neu gestartet.",
+    "updateError": "Update fehlgeschlagen",
+    "updateErrorMessage": "Update-Prüfung fehlgeschlagen. Bitte versuchen Sie es später erneut.",
+    "noUpdatesAvailable": "Keine Updates verfügbar",
+    "noUpdatesMessage": "Sie verwenden die neueste Version von Correctify."
   },
   "helpModal": {
     "title": "Hilfe & Anleitung",

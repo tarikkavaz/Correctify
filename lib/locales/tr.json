@@ -50,7 +50,19 @@
     "soundLabel": "Ses bildirimleri",
     "soundDescription": "Bildirimler göründüğünde ses efektleri çal",
     "globalShortcutLabel": "Genel Kısayol",
-    "shortcutDescription": "Kısayolunuzun son tuşunu özelleştirin (örneğin, A-Z, 0-9 veya özel tuşlar)"
+    "shortcutDescription": "Kısayolunuzun son tuşunu özelleştirin (örneğin, A-Z, 0-9 veya özel tuşlar)",
+    "autoUpdateLabel": "Otomatik güncellemeler",
+    "autoUpdateDescription": "Uygulama güncellemelerini otomatik olarak kontrol et ve bildir",
+    "checkUpdatesButton": "Güncellemeleri kontrol et",
+    "updateAvailable": "Güncelleme mevcut",
+    "updateAvailableMessage": "Correctify'in yeni bir sürümü mevcut. İndirip yüklemek ister misiniz?",
+    "updateDownloading": "Güncelleme indiriliyor...",
+    "updateInstalling": "Güncelleme yükleniyor...",
+    "updateComplete": "Güncelleme tamamlandı! Uygulama yeniden başlatılacak.",
+    "updateError": "Güncelleme başarısız",
+    "updateErrorMessage": "Güncelleme kontrolü başarısız. Lütfen daha sonra tekrar deneyin.",
+    "noUpdatesAvailable": "Güncelleme mevcut değil",
+    "noUpdatesMessage": "Correctify'in en son sürümünü kullanıyorsunuz."
   },
   "helpModal": {
     "title": "Yardım & Kılavuz",

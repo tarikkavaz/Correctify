@@ -21,6 +21,7 @@ export default function HomePage() {
   const [autostartEnabled, setAutostartEnabled] = useState(false);
   const [soundEnabled, setSoundEnabled] = useState(true); // Default: enabled
   const [shortcutKey, setShortcutKey] = useState('.'); // Default: period
+  const [autoUpdateEnabled, setAutoUpdateEnabled] = useState(true); // Default: enabled
   const [model, setModel] = useState<'gpt-5' | 'gpt-5-mini' | 'gpt-4o-mini'>('gpt-4o-mini');
   const [isModelDropdownOpen, setIsModelDropdownOpen] = useState(false);
   const [writingStyle, setWritingStyle] = useState<WritingStyle>('grammar');
@@ -67,6 +68,11 @@ export default function HomePage() {
     const savedShortcutKey = localStorage.getItem('shortcut-key');
     if (savedShortcutKey) {
       setShortcutKey(savedShortcutKey);
+    }
+
+    const savedAutoUpdateEnabled = localStorage.getItem('auto-update-enabled');
+    if (savedAutoUpdateEnabled !== null) {
+      setAutoUpdateEnabled(savedAutoUpdateEnabled === 'true');
     }
 
     // Check if running in Tauri (client-side only)
@@ -291,11 +297,12 @@ export default function HomePage() {
     }
   };
 
-  const handleSaveApiKey = async (newApiKey: string, newAutostartEnabled: boolean, newSoundEnabled: boolean, newShortcutKey: string) => {
+  const handleSaveApiKey = async (newApiKey: string, newAutostartEnabled: boolean, newSoundEnabled: boolean, newShortcutKey: string, newAutoUpdateEnabled: boolean) => {
     setApiKey(newApiKey);
     setAutostartEnabled(newAutostartEnabled);
     setSoundEnabled(newSoundEnabled);
     setShortcutKey(newShortcutKey);
+    setAutoUpdateEnabled(newAutoUpdateEnabled);
     
     if (newApiKey) {
       localStorage.setItem('openai-api-key', newApiKey);
@@ -306,6 +313,7 @@ export default function HomePage() {
     localStorage.setItem('autostart-enabled', newAutostartEnabled.toString());
     localStorage.setItem('sound-enabled', newSoundEnabled.toString());
     localStorage.setItem('shortcut-key', newShortcutKey);
+    localStorage.setItem('auto-update-enabled', newAutoUpdateEnabled.toString());
 
     // Handle settings via Tauri
     if (isTauri()) {
@@ -321,6 +329,10 @@ export default function HomePage() {
           await invoke('update_shortcut', { newKey: newShortcutKey });
           console.log('Shortcut updated to: Cmd+Shift+' + newShortcutKey);
         }
+        
+        // Update auto-update setting in Rust
+        await invoke('set_auto_update_enabled', { enabled: newAutoUpdateEnabled });
+        console.log('Auto-update enabled updated to:', newAutoUpdateEnabled);
         
         // Handle autostart
         const { enable, disable, isEnabled } = await import('@tauri-apps/plugin-autostart');
@@ -464,6 +476,7 @@ export default function HomePage() {
         currentAutostartEnabled={autostartEnabled}
         currentSoundEnabled={soundEnabled}
         currentShortcutKey={shortcutKey}
+        currentAutoUpdateEnabled={autoUpdateEnabled}
       />
 
       <HelpModal

@@ -50,7 +50,19 @@
     "soundLabel": "Sound notifications",
     "soundDescription": "Play sound effects when notifications appear",
     "globalShortcutLabel": "Global Shortcut",
-    "shortcutDescription": "Customize the last key of your shortcut (e.g., A-Z, 0-9, or special keys)"
+    "shortcutDescription": "Customize the last key of your shortcut (e.g., A-Z, 0-9, or special keys)",
+    "autoUpdateLabel": "Automatic updates",
+    "autoUpdateDescription": "Automatically check for and notify about app updates",
+    "checkUpdatesButton": "Check for updates",
+    "updateAvailable": "Update available",
+    "updateAvailableMessage": "A new version of Correctify is available. Would you like to download and install it?",
+    "updateDownloading": "Downloading update...",
+    "updateInstalling": "Installing update...",
+    "updateComplete": "Update complete! The app will restart.",
+    "updateError": "Update failed",
+    "updateErrorMessage": "Failed to check for updates. Please try again later.",
+    "noUpdatesAvailable": "No updates available",
+    "noUpdatesMessage": "You're using the latest version of Correctify."
   },
   "helpModal": {
     "title": "Help & Guide",

@@ -10,8 +10,12 @@ Correctify corrects grammar, spelling, and punctuation while preserving your wri
 
 **Features:**
 
+* **Auto-Updates**: Automatically check for and install updates from GitHub releases
+  * Toggle automatic update checking in Settings
+  * Manual "Check for updates" button
+  * Secure update verification with code signing
+  * Update notifications with release notes
 * **Menubar App**: Lives in your system tray/menubar for instant access
-
   * Single click on tray icon to show/hide the app
   * No dock icon on macOS (stays in menubar only)
   * Launch at startup option available in Settings
@@ -76,6 +80,7 @@ Correctify corrects grammar, spelling, and punctuation while preserving your wri
    * Optional: Enable "Launch at startup" to start Correctify automatically
    * Optional: Toggle "Sound notifications" to enable/disable audio feedback
    * Optional: Customize your keyboard shortcut (default: period key)
+   * Optional: Enable "Automatic updates" to check for updates automatically
    * Click Save
 
 That's it! Your API key is stored locally on your device and persists across restarts.

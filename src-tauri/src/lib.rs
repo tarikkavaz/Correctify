@@ -11,6 +11,7 @@ use std::io::Cursor;
 struct AppState {
     sound_enabled: Arc<Mutex<bool>>,
     shortcut_key: Arc<Mutex<String>>,
+    auto_update_enabled: Arc<Mutex<bool>>,
 }
 
 // Sound playback function (non-blocking)
@@ -180,12 +181,73 @@ fn play_sound_in_app(sound_type: String, state: tauri::State<AppState>) -> Resul
     Ok(())
 }
 
+// Update-related commands
+#[tauri::command]
+async fn check_for_updates(app: tauri::AppHandle) -> Result<bool, String> {
+    use tauri_plugin_updater::UpdaterExt;
+    
+    match app.updater() {
+        Ok(updater) => {
+            match updater.check().await {
+                Ok(Some(_)) => Ok(true), // Update available
+                Ok(None) => Ok(false),   // No update available
+                Err(e) => Err(format!("Failed to check for updates: {}", e))
+            }
+        }
+        Err(e) => Err(format!("Failed to get updater: {}", e))
+    }
+}
+
+#[tauri::command]
+async fn install_update(app: tauri::AppHandle) -> Result<(), String> {
+    use tauri_plugin_updater::UpdaterExt;
+    
+    match app.updater() {
+        Ok(updater) => {
+            match updater.check().await {
+                Ok(Some(update)) => {
+                    // Simple callbacks for download progress
+                    update.download_and_install(
+                        |_chunk_len, _total_len| {
+                            // Progress callback - we can add logging here if needed
+                        },
+                        || {
+                            // Download finished callback
+                            println!("Download finished, installing update...");
+                        }
+                    ).await
+                    .map_err(|e| format!("Failed to install update: {}", e))?;
+                    Ok(())
+                }
+                Ok(None) => Err("No update available".to_string()),
+                Err(e) => Err(format!("Failed to check for updates: {}", e))
+            }
+        }
+        Err(e) => Err(format!("Failed to get updater: {}", e))
+    }
+}
+
+#[tauri::command]
+fn get_auto_update_enabled(state: tauri::State<AppState>) -> Result<bool, String> {
+    let auto_update_enabled = state.auto_update_enabled.lock().unwrap();
+    Ok(*auto_update_enabled)
+}
+
+#[tauri::command]
+fn set_auto_update_enabled(enabled: bool, state: tauri::State<AppState>) -> Result<(), String> {
+    let mut auto_update_enabled = state.auto_update_enabled.lock().unwrap();
+    *auto_update_enabled = enabled;
+    println!("Auto-update set to: {}", enabled);
+    Ok(())
+}
+
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     // Initialize app state with default values
     let app_state = AppState {
         sound_enabled: Arc::new(Mutex::new(true)), // Default: sound enabled
         shortcut_key: Arc::new(Mutex::new(".".to_string())), // Default: period key
+        auto_update_enabled: Arc::new(Mutex::new(true)), // Default: auto-update enabled
     };
     
     tauri::Builder::default()
@@ -198,6 +260,7 @@ pub fn run() {
             tauri_plugin_autostart::MacosLauncher::LaunchAgent,
             Some(vec![]),
         ))
+        .plugin(tauri_plugin_updater::Builder::new().build())
         .plugin(
             tauri_plugin_global_shortcut::Builder::new()
                 .with_handler(|app, shortcut, event| {
@@ -274,7 +337,11 @@ pub fn run() {
             get_sound_enabled,
             update_shortcut,
             get_shortcut_key,
-            play_sound_in_app
+            play_sound_in_app,
+            check_for_updates,
+            install_update,
+            get_auto_update_enabled,
+            set_auto_update_enabled
         ])
         .setup(|app| {
             // Set activation policy to Accessory on macOS to hide dock icon
