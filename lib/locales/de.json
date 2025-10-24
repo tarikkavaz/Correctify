@@ -50,7 +50,9 @@
     "soundLabel": "Tonbenachrichtigungen",
     "soundDescription": "Soundeffekte abspielen, wenn Benachrichtigungen erscheinen",
     "globalShortcutLabel": "Globale Tastenkombination",
-    "shortcutDescription": "Passen Sie die letzte Taste Ihrer Tastenkombination an (z. B. A-Z, 0-9 oder Sondertasten)"
+    "shortcutDescription": "Passen Sie die letzte Taste Ihrer Tastenkombination an (z. B. A-Z, 0-9 oder Sondertasten)",
+    "autoPasteLabel": "Automatisches Kopieren/Einfügen des korrigierten Textes",
+    "autoPasteDescription": "Korrigierten Text automatisch kopieren und einfügen (kein manuelles Cmd+C/Strg+C oder Cmd+V/Strg+V erforderlich)"
   },
   "helpModal": {
     "title": "Hilfe & Anleitung",

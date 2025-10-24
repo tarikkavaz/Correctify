@@ -5,6 +5,30 @@ All notable changes to Correctify will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.0.1] - 2025-10-24
+
+### Added
+
+- Auto Copy/Paste Feature: Optional setting that automatically copies selected text and pastes corrected text
+  - Eliminates manual copy/paste steps when using the global shortcut
+  - Simply select text, press the shortcut, and watch it auto-correct in place
+  - Enable/disable via checkbox in Settings modal
+  - Works with existing global shortcut functionality
+  - Setting persists across app restarts
+  - macOS requires Accessibility permissions for keyboard simulation
+- Cross-platform keyboard simulation using enigo v0.6 library
+  - Simulates Cmd+C/Cmd+V on macOS
+  - Simulates Ctrl+C/Ctrl+V on Windows/Linux
+  - Non-blocking implementation with proper error handling
+- Enhanced Help modal with separate instructions for auto copy/paste and manual modes
+- Localization support for auto copy/paste feature in all languages (English, German, French, Turkish)
+- Documentation for macOS Accessibility permissions requirement
+
+### Changed
+
+- Updated global shortcut workflow to support both auto and manual copy/paste modes
+- Improved user experience with seamless text correction process
+
 ## [1.0.0] - 2025-10-24
 
 Welcome to the first official release of Correctify! A simple, cross-platform grammar correction app powered by OpenAI.
@@ -136,4 +160,5 @@ Choose from 5 different writing styles to customize your corrections:
 - **Dynamic Shortcut Registration**: Real-time shortcut updates without restart
 - **Cross-Platform Compatibility**: Verified on macOS, Windows, and Linux
 
+[1.0.1]: https://github.com/tarikkavaz/Correctify/releases/tag/v1.0.1
 [1.0.0]: https://github.com/tarikkavaz/Correctify/releases/tag/v1.0.0
