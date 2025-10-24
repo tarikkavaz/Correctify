@@ -135,121 +135,126 @@ jobs:
           security import $CERTIFICATE_PATH -P "$MACOS_CERTIFICATE_PASSWORD" -A -t cert -f pkcs12 -k $KEYCHAIN_PATH
           security list-keychain -d user -s $KEYCHAIN_PATH
 
-      - name: Build and release (macOS)
+      - name: Build app (macOS)
         if: matrix.platform == 'macos-latest'
-        uses: tauri-apps/tauri-action@v0
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           MACOS_SIGNING_IDENTITY: ${{ secrets.MACOS_SIGNING_IDENTITY }}
           MACOS_KEYCHAIN_PASSWORD: ${{ secrets.MACOS_KEYCHAIN_PASSWORD }}
           APPLE_ID: ${{ secrets.APPLE_ID }}
           APPLE_PASSWORD: ${{ secrets.APPLE_PASSWORD }}
           APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
-        with:
-          tagName: ${{ needs.check-release.outputs.version }}
-          releaseName: "Correctify ${{ needs.check-release.outputs.version }}"
-          releaseBody: |
-            ## Changelog
-            
-            ${{ needs.check-release.outputs.changelog }}
+        run: |
+          KEYCHAIN_PATH=$RUNNER_TEMP/app-signing.keychain-db
+          security unlock-keychain -p "$MACOS_KEYCHAIN_PASSWORD" $KEYCHAIN_PATH
+          security set-key-partition-list -S apple-tool:,apple: -s -k "$MACOS_KEYCHAIN_PASSWORD" $KEYCHAIN_PATH
+          pnpm tauri build ${{ matrix.args }} --config "{\"bundle\":{\"macOS\":{\"signingIdentity\":\"$MACOS_SIGNING_IDENTITY\"}}}"
+          
+          # Notarize the DMG
+          cd src-tauri/target/${{ matrix.target }}/release/bundle/dmg
+          for dmg in *.dmg; do
+            echo "Notarizing $dmg..."
+            xcrun notarytool submit "$dmg" --apple-id "$APPLE_ID" --password "$APPLE_PASSWORD" --team-id "$APPLE_TEAM_ID" --wait
+            xcrun stapler staple "$dmg"
+          done
 
-            ## Downloads
-
-            Choose the installer for your operating system:
-
-            **macOS:**
-            - Apple Silicon (M1/M2/M3/M4): `Correctify_*_aarch64.dmg`
-            - Intel Macs: `Correctify_*_x64.dmg`
-
-            **Windows:**
-            - Installer: `Correctify_*_x64-setup.exe`
-            - MSI Installer: `Correctify_*_x64_en-US.msi`
-
-            **Linux:**
-            - Debian/Ubuntu: `correctify_*_amd64.deb`
-            - AppImage (Universal): `correctify_*_amd64.AppImage`
-            - RPM: `correctify_*_amd64.rpm`
-
-            Just download, run the installer, and you're ready to correct grammar!
-          releaseDraft: false
-          prerelease: false
-          args: ${{ matrix.args }}
-          tauriScript: pnpm tauri
-
-      - name: Build and release (Linux)
+      - name: Build app (Linux)
         if: matrix.platform == 'ubuntu-22.04'
-        uses: tauri-apps/tauri-action@v0
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          tagName: ${{ needs.check-release.outputs.version }}
-          releaseName: "Correctify ${{ needs.check-release.outputs.version }}"
-          releaseBody: |
-            ## Changelog
-            
-            ${{ needs.check-release.outputs.changelog }}
+        run: pnpm tauri build ${{ matrix.args }}
 
-            ## Downloads
-
-            Choose the installer for your operating system:
-
-            **macOS:**
-            - Apple Silicon (M1/M2/M3/M4): `Correctify_*_aarch64.dmg`
-            - Intel Macs: `Correctify_*_x64.dmg`
-
-            **Windows:**
-            - Installer: `Correctify_*_x64-setup.exe`
-            - MSI Installer: `Correctify_*_x64_en-US.msi`
-
-            **Linux:**
-            - Debian/Ubuntu: `correctify_*_amd64.deb`
-            - AppImage (Universal): `correctify_*_amd64.AppImage`
-            - RPM: `correctify_*_amd64.rpm`
-
-            Just download, run the installer, and you're ready to correct grammar!
-          releaseDraft: false
-          prerelease: false
-          args: ${{ matrix.args }}
-          tauriScript: pnpm tauri
-
-      - name: Build and release (Windows)
+      - name: Build app (Windows)
         if: matrix.platform == 'windows-latest'
-        uses: tauri-apps/tauri-action@v0
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: pnpm tauri build ${{ matrix.args }}
+
+      - name: Upload installers (macOS)
+        if: matrix.platform == 'macos-latest'
+        uses: actions/upload-artifact@v4
         with:
-          tagName: ${{ needs.check-release.outputs.version }}
-          releaseName: "Correctify ${{ needs.check-release.outputs.version }}"
-          releaseBody: |
-            ## Changelog
-            
-            ${{ needs.check-release.outputs.changelog }}
+          name: installers-${{ matrix.target }}
+          path: src-tauri/target/${{ matrix.target }}/release/bundle/dmg/*.dmg
+          retention-days: 1
 
-            ## Downloads
+      - name: Upload installers (Linux)
+        if: matrix.platform == 'ubuntu-22.04'
+        uses: actions/upload-artifact@v4
+        with:
+          name: installers-${{ matrix.target }}
+          path: |
+            src-tauri/target/${{ matrix.target }}/release/bundle/deb/*.deb
+            src-tauri/target/${{ matrix.target }}/release/bundle/rpm/*.rpm
+            src-tauri/target/${{ matrix.target }}/release/bundle/appimage/*.AppImage
+          retention-days: 1
 
-            Choose the installer for your operating system:
-
-            **macOS:**
-            - Apple Silicon (M1/M2/M3/M4): `Correctify_*_aarch64.dmg`
-            - Intel Macs: `Correctify_*_x64.dmg`
-
-            **Windows:**
-            - Installer: `Correctify_*_x64-setup.exe`
-            - MSI Installer: `Correctify_*_x64_en-US.msi`
-
-            **Linux:**
-            - Debian/Ubuntu: `correctify_*_amd64.deb`
-            - AppImage (Universal): `correctify_*_amd64.AppImage`
-            - RPM: `correctify_*_amd64.rpm`
-
-            Just download, run the installer, and you're ready to correct grammar!
-          releaseDraft: false
-          prerelease: false
-          args: ${{ matrix.args }}
-          tauriScript: pnpm tauri
+      - name: Upload installers (Windows)
+        if: matrix.platform == 'windows-latest'
+        uses: actions/upload-artifact@v4
+        with:
+          name: installers-${{ matrix.target }}
+          path: |
+            src-tauri/target/${{ matrix.target }}/release/bundle/msi/*.msi
+            src-tauri/target/${{ matrix.target }}/release/bundle/nsis/*.exe
+          retention-days: 1
 
       - name: Cleanup keychain (macOS)
         if: matrix.platform == 'macos-latest' && always()
         run: |
           KEYCHAIN_PATH=$RUNNER_TEMP/app-signing.keychain-db
           security delete-keychain $KEYCHAIN_PATH || true
+
+  create-release:
+    needs: [check-release, build-release]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: installers
+          pattern: installers-*
+          merge-multiple: true
+
+      - name: List downloaded files
+        run: |
+          echo "Downloaded installers:"
+          find installers -type f
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: ${{ needs.check-release.outputs.version }}
+          name: "Correctify ${{ needs.check-release.outputs.version }}"
+          body: |
+            ## Changelog
+            
+            ${{ needs.check-release.outputs.changelog }}
+
+            ## Downloads
+
+            Choose the installer for your operating system:
+
+            **macOS:**
+            - Apple Silicon (M1/M2/M3/M4): `Correctify_*_aarch64.dmg`
+            - Intel Macs: `Correctify_*_x64.dmg`
+
+            **Windows:**
+            - Installer: `Correctify_*_x64-setup.exe`
+            - MSI Installer: `Correctify_*_x64_en-US.msi`
+
+            **Linux:**
+            - Debian/Ubuntu: `correctify_*_amd64.deb`
+            - AppImage (Universal): `correctify_*_amd64.AppImage`
+            - RPM: `correctify_*_amd64.rpm`
+
+            Just download, run the installer, and you're ready to correct grammar!
+          draft: false
+          prerelease: false
+          files: |
+            installers/**/*.dmg
+            installers/**/*.exe
+            installers/**/*.msi
+            installers/**/*.deb
+            installers/**/*.rpm
+            installers/**/*.AppImage
+          fail_on_unmatched_files: false
