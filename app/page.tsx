@@ -21,6 +21,7 @@ export default function HomePage() {
   const [autostartEnabled, setAutostartEnabled] = useState(false);
   const [soundEnabled, setSoundEnabled] = useState(true); // Default: enabled
   const [shortcutKey, setShortcutKey] = useState('.'); // Default: period
+  const [autoPasteEnabled, setAutoPasteEnabled] = useState(false); // Default: disabled
   const [model, setModel] = useState<'gpt-5' | 'gpt-5-mini' | 'gpt-4o-mini'>('gpt-4o-mini');
   const [isModelDropdownOpen, setIsModelDropdownOpen] = useState(false);
   const [writingStyle, setWritingStyle] = useState<WritingStyle>('grammar');
@@ -69,6 +70,11 @@ export default function HomePage() {
       setShortcutKey(savedShortcutKey);
     }
 
+    const savedAutoPasteEnabled = localStorage.getItem('auto-paste-enabled');
+    if (savedAutoPasteEnabled !== null) {
+      setAutoPasteEnabled(savedAutoPasteEnabled === 'true');
+    }
+
     // Check if running in Tauri (client-side only)
     setShowGlobalShortcutInfo(isTauri());
 
@@ -84,10 +90,14 @@ export default function HomePage() {
         // Initialize Rust settings from localStorage
         const currentSoundEnabled = localStorage.getItem('sound-enabled') !== 'false'; // Default: true
         const currentShortcutKey = localStorage.getItem('shortcut-key') || '.';
+        const currentAutoPasteEnabled = localStorage.getItem('auto-paste-enabled') === 'true'; // Default: false
         
         try {
           await invoke('set_sound_enabled', { enabled: currentSoundEnabled });
           console.log('Sound enabled set to:', currentSoundEnabled);
+          
+          await invoke('set_auto_paste_enabled', { enabled: currentAutoPasteEnabled });
+          console.log('Auto-paste enabled set to:', currentAutoPasteEnabled);
           
           if (currentShortcutKey !== '.') {
             await invoke('update_shortcut', { newKey: currentShortcutKey });
@@ -168,11 +178,15 @@ export default function HomePage() {
             console.log('Correction result:', result.result.substring(0, 100));
             console.log('Correction duration:', correctionDuration, 'ms');
             
-            // Send corrected text back to Rust with model and duration
+            // Get auto-paste setting
+            const autoPasteEnabled = localStorage.getItem('auto-paste-enabled') === 'true';
+            
+            // Send corrected text back to Rust with model, duration, and auto-paste flag
             await invoke('handle_corrected_text', { 
               text: result.result,
               model: currentModel,
-              duration: correctionDuration
+              duration: correctionDuration,
+              autoPaste: autoPasteEnabled
             });
             console.log('=== Correction completed successfully ===');
           } catch (err) {
@@ -291,11 +305,12 @@ export default function HomePage() {
     }
   };
 
-  const handleSaveApiKey = async (newApiKey: string, newAutostartEnabled: boolean, newSoundEnabled: boolean, newShortcutKey: string) => {
+  const handleSaveApiKey = async (newApiKey: string, newAutostartEnabled: boolean, newSoundEnabled: boolean, newShortcutKey: string, newAutoPasteEnabled: boolean) => {
     setApiKey(newApiKey);
     setAutostartEnabled(newAutostartEnabled);
     setSoundEnabled(newSoundEnabled);
     setShortcutKey(newShortcutKey);
+    setAutoPasteEnabled(newAutoPasteEnabled);
     
     if (newApiKey) {
       localStorage.setItem('openai-api-key', newApiKey);
@@ -306,6 +321,7 @@ export default function HomePage() {
     localStorage.setItem('autostart-enabled', newAutostartEnabled.toString());
     localStorage.setItem('sound-enabled', newSoundEnabled.toString());
     localStorage.setItem('shortcut-key', newShortcutKey);
+    localStorage.setItem('auto-paste-enabled', newAutoPasteEnabled.toString());
 
     // Handle settings via Tauri
     if (isTauri()) {
@@ -315,6 +331,10 @@ export default function HomePage() {
         // Update sound setting in Rust
         await invoke('set_sound_enabled', { enabled: newSoundEnabled });
         console.log('Sound enabled updated to:', newSoundEnabled);
+        
+        // Update auto-paste setting in Rust
+        await invoke('set_auto_paste_enabled', { enabled: newAutoPasteEnabled });
+        console.log('Auto-paste enabled updated to:', newAutoPasteEnabled);
         
         // Update shortcut if changed
         if (newShortcutKey !== shortcutKey) {
@@ -464,6 +484,7 @@ export default function HomePage() {
         currentAutostartEnabled={autostartEnabled}
         currentSoundEnabled={soundEnabled}
         currentShortcutKey={shortcutKey}
+        currentAutoPasteEnabled={autoPasteEnabled}
       />
 
       <HelpModal
@@ -642,30 +663,54 @@ export default function HomePage() {
                 <Lightbulb />
                 {messages.home.quickCorrectionTitle}
               </h3>
-              <p className="text-sm text-info-text mb-2">
-                {messages.home.quickCorrectionDescription}
-              </p>
-              <ol className="text-sm text-info-text space-y-1 ml-4 list-decimal">
-                <li className="ml-3">
-                  {messages.home.quickCorrectionStep1}
-                  <kbd className="px-1.5 py-0.5 bg-foreground/10 rounded text-xs font-medium">Cmd+C</kbd>
-                  {' '}{messages.home.shortcutOr}{' '}
-                  <kbd className="px-1.5 py-0.5 bg-foreground/10 rounded text-xs font-medium">Ctrl+C</kbd>)
-                </li>
-                <li className="ml-3">
-                  {messages.home.quickCorrectionStep2}{' '}
-                  <kbd className="px-1.5 py-0.5 bg-foreground/10 rounded text-xs font-medium">Cmd+Shift+{shortcutKey}</kbd>
-                  {' '}{messages.home.shortcutOr}{' '}
-                  <kbd className="px-1.5 py-0.5 bg-foreground/10 rounded text-xs font-medium">Ctrl+Shift+{shortcutKey}</kbd>
-                </li>
-                <li className="ml-3">{messages.home.quickCorrectionStep3}</li>
-                <li className="ml-3">
-                  {messages.home.quickCorrectionStep4}
-                  <kbd className="px-1.5 py-0.5 bg-foreground/10 rounded text-xs font-medium">Cmd+V</kbd>
-                  {' '}{messages.home.shortcutOr}{' '}
-                  <kbd className="px-1.5 py-0.5 bg-foreground/10 rounded text-xs font-medium">Ctrl+V</kbd>)
-                </li>
-              </ol>
+              
+              {autoPasteEnabled ? (
+                <>
+                  <p className="text-sm text-info-text mb-2">
+                    Auto copy/paste is <strong>enabled</strong>. Simply select text and press the shortcut:
+                  </p>
+                  <ol className="text-sm text-info-text space-y-1 ml-4 list-decimal">
+                    <li className="ml-3">
+                      Select text in any app (just highlight it)
+                    </li>
+                    <li className="ml-3">
+                      Press{' '}
+                      <kbd className="px-1.5 py-0.5 bg-foreground/10 rounded text-xs font-medium">Cmd+Shift+{shortcutKey}</kbd>
+                      {' '}{messages.home.shortcutOr}{' '}
+                      <kbd className="px-1.5 py-0.5 bg-foreground/10 rounded text-xs font-medium">Ctrl+Shift+{shortcutKey}</kbd>
+                    </li>
+                    <li className="ml-3">Wait for the notification - corrected text pastes automatically!</li>
+                  </ol>
+                </>
+              ) : (
+                <>
+                  <p className="text-sm text-info-text mb-2">
+                    {messages.home.quickCorrectionDescription}
+                  </p>
+                  <ol className="text-sm text-info-text space-y-1 ml-4 list-decimal">
+                    <li className="ml-3">
+                      {messages.home.quickCorrectionStep1}
+                      <kbd className="px-1.5 py-0.5 bg-foreground/10 rounded text-xs font-medium">Cmd+C</kbd>
+                      {' '}{messages.home.shortcutOr}{' '}
+                      <kbd className="px-1.5 py-0.5 bg-foreground/10 rounded text-xs font-medium">Ctrl+C</kbd>)
+                    </li>
+                    <li className="ml-3">
+                      {messages.home.quickCorrectionStep2}{' '}
+                      <kbd className="px-1.5 py-0.5 bg-foreground/10 rounded text-xs font-medium">Cmd+Shift+{shortcutKey}</kbd>
+                      {' '}{messages.home.shortcutOr}{' '}
+                      <kbd className="px-1.5 py-0.5 bg-foreground/10 rounded text-xs font-medium">Ctrl+Shift+{shortcutKey}</kbd>
+                    </li>
+                    <li className="ml-3">{messages.home.quickCorrectionStep3}</li>
+                    <li className="ml-3">
+                      {messages.home.quickCorrectionStep4}
+                      <kbd className="px-1.5 py-0.5 bg-foreground/10 rounded text-xs font-medium">Cmd+V</kbd>
+                      {' '}{messages.home.shortcutOr}{' '}
+                      <kbd className="px-1.5 py-0.5 bg-foreground/10 rounded text-xs font-medium">Ctrl+V</kbd>)
+                    </li>
+                  </ol>
+                </>
+              )}
+              
               <p className="text-sm text-info-text mt-3 italic">
                 {messages.home.quickCorrectionCustomize}
               </p>

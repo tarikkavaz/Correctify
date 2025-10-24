@@ -1,6 +1,6 @@
 {
   "name": "correctify",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "private": true,
   "scripts": {
     "dev": "next dev",
@@ -11,7 +11,8 @@
     "test": "jest",
     "test:watch": "jest --watch",
     "tauri:dev": "tauri dev",
-    "tauri:build": "tauri build"
+    "tauri:build": "tauri build",
+    "tauri:build:signed": "./scripts/build-signed.sh"
   },
   "dependencies": {
     "@tailwindcss/typography": "^0.5.19",
@@ -40,6 +41,7 @@
     "@types/react": "^19.0.6",
     "@types/react-dom": "^19.0.3",
     "cross-env": "^10.1.0",
+    "dotenv-cli": "^10.0.0",
     "jest": "^29.7.0",
     "jest-environment-jsdom": "^29.7.0",
     "postcss": "^8.4.49",
