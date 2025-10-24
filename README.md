@@ -16,6 +16,12 @@ Correctify corrects grammar, spelling, and punctuation while preserving your wri
   * No dock icon on macOS (stays in menubar only)
   * Launch at startup option available in Settings
   * Lightweight and always accessible
+* **Auto Copy/Paste**: Optional feature for seamless text correction
+  * Automatically copies selected text and pastes corrected version
+  * No manual Cmd+C/Ctrl+C or Cmd+V/Ctrl+V needed
+  * Simply select text, press shortcut, and watch it correct in place
+  * Enable/disable in Settings (disabled by default)
+  * Works with the global shortcut feature
 * **Writing Style Selector**: Choose from 5 different writing styles
   * Grammar Only: Fixes grammar and typos only
   * Formal: Polished and professional tone
@@ -76,6 +82,7 @@ Correctify corrects grammar, spelling, and punctuation while preserving your wri
    * Optional: Enable "Launch at startup" to start Correctify automatically
    * Optional: Toggle "Sound notifications" to enable/disable audio feedback
    * Optional: Customize your keyboard shortcut (default: period key)
+   * Optional: Enable "Auto copy/paste corrected text" for seamless corrections
    * Click Save
 
 That's it! Your API key is stored locally on your device and persists across restarts.
@@ -97,16 +104,29 @@ That's it! Your API key is stored locally on your device and persists across res
 
 The app supports markdown formatting in both input and output—type `**bold**` to see **bold** text, `*italic*` for *italic*, etc.
 
-### Global Shortcut (Desktop App)
+### Global Shortcut
 
 Correct text from any application:
+
+**With Auto Copy/Paste (Recommended):**
+
+1. Select text in any app (just highlight it, no copying needed)
+2. Press your configured shortcut (default: **Cmd+Shift+.** on Mac or **Ctrl+Shift+.** on Windows/Linux)
+3. Wait for the notification - corrected text automatically pastes in place!
+
+> [!NOTE] 
+> **For using Auto Copy/Paste**: You'll need to grant Accessibility permissions. 
+> Go to System Settings > Privacy & Security > Accessibility and enable **Correctify**. This allows the app to simulate keyboard input for seamless correction. 
+> A pop-up will appear the first time you use Auto Copy/Paste - click "Open System Settings" to grant permission.
+
+**Without Auto Copy/Paste (Manual Mode):**
 
 1. Select and copy text in any app (**Cmd+C** / **Ctrl+C**)
 2. Press your configured shortcut (default: **Cmd+Shift+.** on Mac or **Ctrl+Shift+.** on Windows/Linux)
 3. Wait for the notification ("Processing text correction...")
 4. Paste the corrected text (**Cmd+V** / **Ctrl+V**)
 
-The global shortcut works even when Correctify is minimized or hidden! You can customize the shortcut in Settings.
+The global shortcut works even when Correctify is minimized or hidden! You can customize the shortcut and enable/disable auto copy/paste in Settings.
 
 **Note for macOS users:**
 > [!NOTE]

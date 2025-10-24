@@ -96,24 +96,42 @@ export default function HelpModal({ isOpen, onClose, shortcutKey }: HelpModalPro
                   <p className="mb-2">
                     {messages.helpModal.globalShortcutDescription}
                   </p>
-                  <ol className="list-decimal list-inside space-y-1 ml-2">
-                    <li>
-                      Select and copy text in any app (
-                      <kbd className="px-1.5 py-0.5 bg-foreground/10 rounded text-xs font-medium">Cmd+C</kbd> or{' '}
-                      <kbd className="px-1.5 py-0.5 bg-foreground/10 rounded text-xs font-medium">Ctrl+C</kbd>)
-                    </li>
-                    <li>
-                      Press{' '}
-                      <kbd className="px-1.5 py-0.5 bg-foreground/10 rounded text-xs font-medium">Cmd+Shift+{shortcutKey}</kbd> (Mac) or{' '}
-                      <kbd className="px-1.5 py-0.5 bg-foreground/10 rounded text-xs font-medium">Ctrl+Shift+{shortcutKey}</kbd> (Windows/Linux)
-                    </li>
-                    <li>Wait for the notification (you'll see "Processing...")</li>
-                    <li>
-                      Paste the corrected text (
-                      <kbd className="px-1.5 py-0.5 bg-foreground/10 rounded text-xs font-medium">Cmd+V</kbd> or{' '}
-                      <kbd className="px-1.5 py-0.5 bg-foreground/10 rounded text-xs font-medium">Ctrl+V</kbd>)
-                    </li>
-                  </ol>
+                  
+                  <div className="mb-3">
+                    <p className="text-xs font-semibold text-foreground mb-1">With Auto Copy/Paste (Recommended):</p>
+                    <ol className="list-decimal list-inside space-y-1 ml-2 text-sm">
+                      <li>Select text in any app (just highlight, no copying needed)</li>
+                      <li>
+                        Press{' '}
+                        <kbd className="px-1.5 py-0.5 bg-foreground/10 rounded text-xs font-medium">Cmd+Shift+{shortcutKey}</kbd> (Mac) or{' '}
+                        <kbd className="px-1.5 py-0.5 bg-foreground/10 rounded text-xs font-medium">Ctrl+Shift+{shortcutKey}</kbd> (Windows/Linux)
+                      </li>
+                      <li>Wait for the notification - corrected text pastes automatically!</li>
+                    </ol>
+                  </div>
+
+                  <div className="mb-3">
+                    <p className="text-xs font-semibold text-foreground mb-1">Without Auto Copy/Paste (Manual Mode):</p>
+                    <ol className="list-decimal list-inside space-y-1 ml-2 text-sm">
+                      <li>
+                        Select and copy text in any app (
+                        <kbd className="px-1.5 py-0.5 bg-foreground/10 rounded text-xs font-medium">Cmd+C</kbd> or{' '}
+                        <kbd className="px-1.5 py-0.5 bg-foreground/10 rounded text-xs font-medium">Ctrl+C</kbd>)
+                      </li>
+                      <li>
+                        Press{' '}
+                        <kbd className="px-1.5 py-0.5 bg-foreground/10 rounded text-xs font-medium">Cmd+Shift+{shortcutKey}</kbd> (Mac) or{' '}
+                        <kbd className="px-1.5 py-0.5 bg-foreground/10 rounded text-xs font-medium">Ctrl+Shift+{shortcutKey}</kbd> (Windows/Linux)
+                      </li>
+                      <li>Wait for the notification (you'll see "Processing...")</li>
+                      <li>
+                        Paste the corrected text (
+                        <kbd className="px-1.5 py-0.5 bg-foreground/10 rounded text-xs font-medium">Cmd+V</kbd> or{' '}
+                        <kbd className="px-1.5 py-0.5 bg-foreground/10 rounded text-xs font-medium">Ctrl+V</kbd>)
+                      </li>
+                    </ol>
+                  </div>
+
                   <div className="p-3 bg-info-bg border border-info-border rounded-lg mt-3 flex gap-2">
                     <Lightbulb className="w-4 h-4 text-info-text flex-shrink-0 mt-0.5" />
                     <p className="text-xs text-info-text">
@@ -124,6 +142,12 @@ export default function HelpModal({ isOpen, onClose, shortcutKey }: HelpModalPro
                     <Keyboard className="w-4 h-4 text-success-text flex-shrink-0 mt-0.5" />
                     <p className="text-xs text-success-text">
                       <strong>{messages.helpModal.globalShortcutCustomization}</strong> {messages.helpModal.globalShortcutCustomizationText}
+                    </p>
+                  </div>
+                  <div className="p-3 bg-warning-bg border border-warning-border rounded-lg mt-3 flex gap-2">
+                    <AlertCircle className="w-4 h-4 text-warning-text flex-shrink-0 mt-0.5" />
+                    <p className="text-xs text-warning-text">
+                      <strong>macOS Accessibility Permissions:</strong> If using Auto Copy/Paste, you must grant Accessibility permissions to Correctify. Go to System Settings &gt; Privacy &amp; Security &gt; Accessibility and enable Correctify. This allows the app to simulate keyboard input for seamless text correction.
                     </p>
                   </div>
                 </div>

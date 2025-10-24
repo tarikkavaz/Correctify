@@ -50,7 +50,9 @@
     "soundLabel": "Notifications sonores",
     "soundDescription": "Jouer des effets sonores lorsque les notifications apparaissent",
     "globalShortcutLabel": "Raccourci global",
-    "shortcutDescription": "Personnalisez la dernière touche de votre raccourci (par exemple, A-Z, 0-9 ou touches spéciales)"
+    "shortcutDescription": "Personnalisez la dernière touche de votre raccourci (par exemple, A-Z, 0-9 ou touches spéciales)",
+    "autoPasteLabel": "Copier/coller automatique du texte corrigé",
+    "autoPasteDescription": "Copier et coller automatiquement le texte corrigé (pas besoin de Cmd+C/Ctrl+C ou Cmd+V/Ctrl+V manuel)"
   },
   "helpModal": {
     "title": "Aide & Guide",

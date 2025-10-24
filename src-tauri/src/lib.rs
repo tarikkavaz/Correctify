@@ -6,11 +6,13 @@ use std::thread;
 use std::time::Duration;
 use std::sync::{Arc, Mutex};
 use std::io::Cursor;
+use enigo::{Enigo, Key, Keyboard, Settings};
 
 // Application state for settings
 struct AppState {
     sound_enabled: Arc<Mutex<bool>>,
     shortcut_key: Arc<Mutex<String>>,
+    auto_paste_enabled: Arc<Mutex<bool>>,
 }
 
 // Sound playback function (non-blocking)
@@ -58,24 +60,22 @@ async fn handle_corrected_text(
     text: String,
     model: Option<String>,
     duration: Option<f64>,
+    auto_paste: Option<bool>,
 ) -> Result<(), String> {
     use tauri_plugin_clipboard_manager::ClipboardExt;
     use tauri_plugin_notification::NotificationExt;
-
-    println!("Writing corrected text to clipboard (length: {} chars)", text.len());
 
     // Write corrected text to clipboard
     app.clipboard().write_text(text.clone())
         .map_err(|e| format!("Failed to write to clipboard: {}", e))?;
 
-    println!("Corrected text written to clipboard successfully");
-
     // Add a small delay to ensure the processing notification is visible
     thread::sleep(Duration::from_millis(500));
     
-    // Get sound enabled state
+    // Get settings state
     let state = app.state::<AppState>();
     let sound_enabled = *state.sound_enabled.lock().unwrap();
+    let should_auto_paste = auto_paste.unwrap_or(false);
 
     // Build notification body with optional model and duration
     let mut body = String::from("Text corrected and copied to clipboard!");
@@ -87,22 +87,61 @@ async fn handle_corrected_text(
     }
 
     // Show success notification and play sound
-    let result = app.notification()
+    let _ = app.notification()
         .builder()
-        .title("✅ Correctify")
+        .title("Correctify")
         .body(&body)
         .show();
-
-    match result {
-        Ok(id) => println!("Success notification shown with id: {:?}", id),
-        Err(e) => {
-            eprintln!("Failed to show notification: {}", e);
-            eprintln!("Error details: {:?}", e);
-        }
-    }
     
     // Play completed sound
     play_sound("completed", sound_enabled);
+
+    // If auto-paste is enabled, directly type the corrected text
+    if should_auto_paste {
+        // Clone the text for the thread
+        let text_to_paste = text.clone();
+        
+        // Spawn a separate thread to avoid blocking
+        thread::spawn(move || {
+            // Wait longer to ensure notification is visible and user sees feedback
+            thread::sleep(Duration::from_millis(800));
+            
+            match Enigo::new(&Settings::default()) {
+                Ok(mut enigo) => {
+                    // Directly type the corrected text instead of simulating Cmd+V
+                    // This is more reliable and doesn't depend on clipboard state
+                    match enigo.text(&text_to_paste) {
+                        Ok(_) => {
+                            println!("Auto-paste completed");
+                        }
+                        Err(_) => {
+                            // Fallback: try Cmd+V/Ctrl+V
+                            #[cfg(target_os = "macos")]
+                            {
+                                let _ = enigo.key(Key::Meta, enigo::Direction::Press);
+                                thread::sleep(Duration::from_millis(50));
+                                let _ = enigo.key(Key::Unicode('v'), enigo::Direction::Click);
+                                thread::sleep(Duration::from_millis(50));
+                                let _ = enigo.key(Key::Meta, enigo::Direction::Release);
+                            }
+                            
+                            #[cfg(not(target_os = "macos"))]
+                            {
+                                let _ = enigo.key(Key::Control, enigo::Direction::Press);
+                                thread::sleep(Duration::from_millis(50));
+                                let _ = enigo.key(Key::Unicode('v'), enigo::Direction::Click);
+                                thread::sleep(Duration::from_millis(50));
+                                let _ = enigo.key(Key::Control, enigo::Direction::Release);
+                            }
+                        }
+                    }
+                }
+                Err(e) => {
+                    eprintln!("Failed to create Enigo instance: {:?}", e);
+                }
+            }
+        });
+    }
 
     Ok(())
 }
@@ -112,7 +151,6 @@ async fn handle_corrected_text(
 fn set_sound_enabled(enabled: bool, state: tauri::State<AppState>) -> Result<(), String> {
     let mut sound_enabled = state.sound_enabled.lock().unwrap();
     *sound_enabled = enabled;
-    println!("Sound notifications set to: {}", enabled);
     Ok(())
 }
 
@@ -180,12 +218,28 @@ fn play_sound_in_app(sound_type: String, state: tauri::State<AppState>) -> Resul
     Ok(())
 }
 
+// Tauri command to update auto-paste setting
+#[tauri::command]
+fn set_auto_paste_enabled(enabled: bool, state: tauri::State<AppState>) -> Result<(), String> {
+    let mut auto_paste_enabled = state.auto_paste_enabled.lock().unwrap();
+    *auto_paste_enabled = enabled;
+    Ok(())
+}
+
+// Tauri command to get auto-paste setting
+#[tauri::command]
+fn get_auto_paste_enabled(state: tauri::State<AppState>) -> Result<bool, String> {
+    let auto_paste_enabled = state.auto_paste_enabled.lock().unwrap();
+    Ok(*auto_paste_enabled)
+}
+
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     // Initialize app state with default values
     let app_state = AppState {
         sound_enabled: Arc::new(Mutex::new(true)), // Default: sound enabled
         shortcut_key: Arc::new(Mutex::new(".".to_string())), // Default: period key
+        auto_paste_enabled: Arc::new(Mutex::new(false)), // Default: auto-paste disabled
     };
     
     tauri::Builder::default()
@@ -200,24 +254,76 @@ pub fn run() {
         ))
         .plugin(
             tauri_plugin_global_shortcut::Builder::new()
-                .with_handler(|app, shortcut, event| {
+                .with_handler(|app, _shortcut, event| {
                     use tauri_plugin_global_shortcut::ShortcutState;
                     use tauri_plugin_clipboard_manager::ClipboardExt;
                     use tauri_plugin_notification::NotificationExt;
 
                     if event.state == ShortcutState::Pressed {
-                        println!("🔔 Global shortcut triggered: {:?}", shortcut);
-                        
-                        // Get sound enabled state
+                        // Get settings state
                         let state = app.state::<AppState>();
                         let sound_enabled = *state.sound_enabled.lock().unwrap();
+                        let auto_paste_enabled = *state.auto_paste_enabled.lock().unwrap();
 
-                        // Read from clipboard directly (user should have copied text with Cmd+C first)
+                        // If auto-paste is enabled, simulate Cmd+C/Ctrl+C to copy selected text
+                        if auto_paste_enabled {
+                            
+                            #[cfg(target_os = "macos")]
+                            {
+                                // Check if accessibility permissions are granted
+                                use std::process::Command;
+                                let output = Command::new("osascript")
+                                    .arg("-e")
+                                    .arg("tell application \"System Events\" to get name of first process")
+                                    .output();
+                                
+                                let has_permission = match output {
+                                    Ok(result) => result.status.success(),
+                                    Err(_) => false,
+                                };
+                                
+                                if !has_permission {
+                                    // Show notification to user
+                                    let _ = app.notification()
+                                        .builder()
+                                        .title("Correctify - Permission Required")
+                                        .body("Auto copy/paste requires Accessibility permission. Please enable it in System Settings > Privacy & Security > Accessibility, then restart the app.")
+                                        .show();
+                                    
+                                    return; // Don't try to use enigo without permission
+                                }
+                            }
+                            
+                            // Simulate copy shortcut
+                            match Enigo::new(&Settings::default()) {
+                                Ok(mut enigo) => {
+                                    #[cfg(target_os = "macos")]
+                                    {
+                                        if enigo.key(Key::Meta, enigo::Direction::Press).is_err() {
+                                            return;
+                                        }
+                                        let _ = enigo.key(Key::Unicode('c'), enigo::Direction::Click);
+                                        let _ = enigo.key(Key::Meta, enigo::Direction::Release);
+                                    }
+                                    
+                                    #[cfg(not(target_os = "macos"))]
+                                    {
+                                        let _ = enigo.key(Key::Control, enigo::Direction::Press);
+                                        let _ = enigo.key(Key::Unicode('c'), enigo::Direction::Click);
+                                        let _ = enigo.key(Key::Control, enigo::Direction::Release);
+                                    }
+                                    
+                                    // Wait briefly for clipboard to populate
+                                    thread::sleep(Duration::from_millis(100));
+                                }
+                                Err(_) => return,
+                            }
+                        }
+
+                        // Read from clipboard
                         match app.clipboard().read_text() {
                             Ok(text) => {
                                 if text.is_empty() {
-                                    println!("❌ Clipboard is empty - no text to correct");
-                                    
                                     #[cfg(target_os = "macos")]
                                     let copy_instruction = "Please copy text first (Cmd+C), then use Cmd+Shift+.";
                                     
@@ -226,7 +332,7 @@ pub fn run() {
                                     
                                     let _ = app.notification()
                                         .builder()
-                                        .title("⚠️ Correctify")
+                                        .title("Correctify")
                                         .body(copy_instruction)
                                         .show();
                                     
@@ -235,27 +341,15 @@ pub fn run() {
                                     return;
                                 }
                                 
-                                println!("📋 Processing clipboard text ({} chars)", text.len());
-                                println!("   Preview: {}", 
-                                    if text.len() > 100 { &text[..100] } else { &text });
-                                
                                 // Emit event to frontend with text to correct
-                                match app.emit("correct-clipboard-text", text.clone()) {
-                                    Ok(_) => println!("✅ Event emitted to frontend"),
-                                    Err(e) => eprintln!("❌ Failed to emit event: {}", e),
-                                }
+                                let _ = app.emit("correct-clipboard-text", text.clone());
                                 
                                 // Show notification that we're processing
-                                let notification_result = app.notification()
+                                let _ = app.notification()
                                     .builder()
-                                    .title("⏳ Correctify")
+                                    .title("Correctify")
                                     .body("Processing text correction...")
                                     .show();
-                                
-                                match notification_result {
-                                    Ok(id) => println!("✅ Processing notification shown (id: {:?})", id),
-                                    Err(e) => eprintln!("❌ Failed to show notification: {}", e),
-                                }
                                 
                                 // Play processing sound
                                 play_sound("processing", sound_enabled);
@@ -274,7 +368,9 @@ pub fn run() {
             get_sound_enabled,
             update_shortcut,
             get_shortcut_key,
-            play_sound_in_app
+            play_sound_in_app,
+            set_auto_paste_enabled,
+            get_auto_paste_enabled
         ])
         .setup(|app| {
             // Set activation policy to Accessory on macOS to hide dock icon

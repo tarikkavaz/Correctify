@@ -50,7 +50,9 @@
     "soundLabel": "Ses bildirimleri",
     "soundDescription": "Bildirimler göründüğünde ses efektleri çal",
     "globalShortcutLabel": "Genel Kısayol",
-    "shortcutDescription": "Kısayolunuzun son tuşunu özelleştirin (örneğin, A-Z, 0-9 veya özel tuşlar)"
+    "shortcutDescription": "Kısayolunuzun son tuşunu özelleştirin (örneğin, A-Z, 0-9 veya özel tuşlar)",
+    "autoPasteLabel": "Düzeltilmiş metni otomatik kopyala/yapıştır",
+    "autoPasteDescription": "Düzeltilmiş metni otomatik olarak kopyala ve yapıştır (manuel Cmd+C/Ctrl+C veya Cmd+V/Ctrl+V gerekli değil)"
   },
   "helpModal": {
     "title": "Yardım & Kılavuz",
