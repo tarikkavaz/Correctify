@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Correctify - AI-Powered Grammar Correction App</title>
+    <meta name="description" content="A simple, cross-platform grammar correction app powered by OpenAI. Bring your own API key, pay only for what you use, and keep your data private.">
+    
+    <!-- Favicon -->
+    <link rel="icon" type="image/png" href="logo.png">
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Tailwind Config -->
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        primary: {
+                            50: '#f0f9ff',
+                            100: '#e0f2fe',
+                            200: '#bae6fd',
+                            300: '#7dd3fc',
+                            400: '#38bdf8',
+                            500: '#0ea5e9',
+                            600: '#0284c7',
+                            700: '#0369a1',
+                            800: '#075985',
+                            900: '#0c4a6e',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    
+    <style>
+        @media (prefers-color-scheme: dark) {
+            html:not(.light) {
+                color-scheme: dark;
+            }
+        }
+    </style>
+</head>
+<body class="bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 transition-colors">
+    
+    <!-- Hero Section -->
+    <section class="min-h-screen flex items-center justify-center px-4 py-20">
+        <div class="max-w-6xl w-full">
+            <div class="text-center">
+                <!-- Logo -->
+                <div class="flex justify-center mb-8">
+                    <img src="logo.png" alt="Correctify Logo" class="w-32 h-32 md:w-40 md:h-40">
+                </div>
+                
+                <!-- Heading -->
+                <h1 class="text-5xl md:text-7xl font-bold mb-6 bg-gradient-to-r from-primary-600 to-primary-400 bg-clip-text text-transparent">
+                    Correctify
+                </h1>
+                
+                <!-- Tagline -->
+                <p class="text-xl md:text-2xl text-gray-600 dark:text-gray-300 mb-12 max-w-3xl mx-auto">
+                    A simple, cross-platform grammar correction app powered by OpenAI. Bring your own API key, pay only for what you use, and keep your data private.
+                </p>
+                
+                <!-- CTA Buttons -->
+                <div class="flex flex-col sm:flex-row gap-4 justify-center items-center mb-16">
+                    <a href="#download" class="px-8 py-4 bg-primary-600 hover:bg-primary-700 text-white rounded-lg font-semibold transition-colors shadow-lg hover:shadow-xl">
+                        Download Now
+                    </a>
+                    <a href="https://github.com/tarikkavaz/Correctify" target="_blank" rel="noopener noreferrer" class="px-8 py-4 border-2 border-primary-600 text-primary-600 dark:text-primary-400 dark:border-primary-400 hover:bg-primary-50 dark:hover:bg-gray-800 rounded-lg font-semibold transition-colors">
+                        View on GitHub
+                    </a>
+                </div>
+                
+                <!-- Screenshot -->
+                <div class="rounded-2xl overflow-hidden shadow-2xl border border-gray-200 dark:border-gray-700">
+                    <img src="screenshot.png" alt="Correctify App Screenshot" class="w-full">
+                </div>
+            </div>
+        </div>
+    </section>
+    
+    <!-- What It Does Section -->
+    <section class="py-20 px-4 bg-gray-50 dark:bg-gray-800">
+        <div class="max-w-6xl mx-auto">
+            <h2 class="text-4xl md:text-5xl font-bold text-center mb-12">What It Does</h2>
+            <p class="text-lg text-gray-600 dark:text-gray-300 text-center max-w-3xl mx-auto mb-16">
+                Correctify corrects grammar, spelling, and punctuation while preserving your writing style and formatting. It's a minimal, distraction-free menubar app that works on macOS, Windows, and Linux.
+            </p>
+        </div>
+    </section>
+    
+    <!-- Features Section -->
+    <section class="py-20 px-4">
+        <div class="max-w-6xl mx-auto">
+            <h2 class="text-4xl md:text-5xl font-bold text-center mb-16">Features</h2>
+            
+            <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+                <!-- Feature 1 -->
+                <div class="p-6 rounded-xl bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 hover:shadow-lg transition-shadow">
+                    <div class="w-12 h-12 bg-primary-100 dark:bg-primary-900 rounded-lg flex items-center justify-center mb-4">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6 text-primary-600 dark:text-primary-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                    </div>
+                    <h3 class="text-xl font-semibold mb-3">Menubar App</h3>
+                    <p class="text-gray-600 dark:text-gray-300">Lives in your system tray/menubar for instant access. Single click to show/hide. No dock icon on macOS. Launch at startup option available.</p>
+                </div>
+                
+                <!-- Feature 2 -->
+                <div class="p-6 rounded-xl bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 hover:shadow-lg transition-shadow">
+                    <div class="w-12 h-12 bg-primary-100 dark:bg-primary-900 rounded-lg flex items-center justify-center mb-4">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6 text-primary-600 dark:text-primary-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                        </svg>
+                    </div>
+                    <h3 class="text-xl font-semibold mb-3">Writing Style Selector</h3>
+                    <p class="text-gray-600 dark:text-gray-300">Choose from 5 different writing styles: Grammar Only, Formal, Informal, Collaborative, or Concise. Your preference persists across sessions.</p>
+                </div>
+                
+                <!-- Feature 3 -->
+                <div class="p-6 rounded-xl bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 hover:shadow-lg transition-shadow">
+                    <div class="w-12 h-12 bg-primary-100 dark:bg-primary-900 rounded-lg flex items-center justify-center mb-4">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6 text-primary-600 dark:text-primary-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                        </svg>
+                    </div>
+                    <h3 class="text-xl font-semibold mb-3">Privacy First</h3>
+                    <p class="text-gray-600 dark:text-gray-300">Your API key stays local and is never logged. No text storage, no database, no analytics or tracking. Your data remains yours.</p>
+                </div>
+                
+                <!-- Feature 4 -->
+                <div class="p-6 rounded-xl bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 hover:shadow-lg transition-shadow">
+                    <div class="w-12 h-12 bg-primary-100 dark:bg-primary-900 rounded-lg flex items-center justify-center mb-4">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6 text-primary-600 dark:text-primary-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
+                        </svg>
+                    </div>
+                    <h3 class="text-xl font-semibold mb-3">Global Shortcut</h3>
+                    <p class="text-gray-600 dark:text-gray-300">Correct text from any app using Cmd+Shift+. (macOS) or Ctrl+Shift+. (Windows/Linux). Fully customizable to your preference.</p>
+                </div>
+                
+                <!-- Feature 5 -->
+                <div class="p-6 rounded-xl bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 hover:shadow-lg transition-shadow">
+                    <div class="w-12 h-12 bg-primary-100 dark:bg-primary-900 rounded-lg flex items-center justify-center mb-4">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6 text-primary-600 dark:text-primary-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
+                        </svg>
+                    </div>
+                    <h3 class="text-xl font-semibold mb-3">Powered by OpenAI</h3>
+                    <p class="text-gray-600 dark:text-gray-300">High-quality corrections using GPT-4o Mini, GPT-5 Mini, or GPT-5. Choose the model that fits your needs. Pay-per-use pricing with no subscriptions.</p>
+                </div>
+                
+                <!-- Feature 6 -->
+                <div class="p-6 rounded-xl bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 hover:shadow-lg transition-shadow">
+                    <div class="w-12 h-12 bg-primary-100 dark:bg-primary-900 rounded-lg flex items-center justify-center mb-4">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6 text-primary-600 dark:text-primary-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.828 14.828a4 4 0 01-5.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                    </div>
+                    <h3 class="text-xl font-semibold mb-3">Sound Notifications</h3>
+                    <p class="text-gray-600 dark:text-gray-300">Optional audio feedback for all notifications with distinct sounds for different notification types. Enable/disable in Settings.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+    
+    <!-- Download Section -->
+    <section id="download" class="py-20 px-4 bg-gray-50 dark:bg-gray-800">
+        <div class="max-w-6xl mx-auto">
+            <h2 class="text-4xl md:text-5xl font-bold text-center mb-6">Download</h2>
+            <p class="text-lg text-gray-600 dark:text-gray-300 text-center max-w-2xl mx-auto mb-16">
+                Choose your platform and start correcting your text with AI-powered precision.
+            </p>
+            
+            <div class="grid md:grid-cols-3 gap-8 max-w-4xl mx-auto">
+                <!-- macOS -->
+                <a href="https://github.com/tarikkavaz/Correctify/releases/latest/download/Correctify_universal.dmg" class="group p-8 rounded-xl bg-white dark:bg-gray-900 border-2 border-gray-200 dark:border-gray-700 hover:border-primary-500 dark:hover:border-primary-500 transition-all hover:shadow-xl text-center">
+                    <div class="w-16 h-16 mx-auto mb-4 flex items-center justify-center">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="w-16 h-16 text-gray-700 dark:text-gray-300 group-hover:text-primary-600 dark:group-hover:text-primary-400 transition-colors" viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M17.05 20.28c-.98.95-2.05.8-3.08.35-1.09-.46-2.09-.48-3.24 0-1.44.62-2.2.44-3.06-.35C2.79 15.25 3.51 7.59 9.05 7.31c1.35.07 2.29.74 3.08.8 1.18-.24 2.31-.93 3.57-.84 1.51.12 2.65.72 3.4 1.8-3.12 1.87-2.38 5.98.48 7.13-.57 1.5-1.31 2.99-2.54 4.09l.01-.01zM12.03 7.25c-.15-2.23 1.66-4.07 3.74-4.25.29 2.58-2.34 4.5-3.74 4.25z"/>
+                        </svg>
+                    </div>
+                    <h3 class="text-xl font-semibold mb-2">macOS</h3>
+                    <p class="text-sm text-gray-500 dark:text-gray-400">Universal (Apple Silicon & Intel)</p>
+                </a>
+                
+                <!-- Windows -->
+                <a href="https://github.com/tarikkavaz/Correctify/releases/latest/download/Correctify_x64_en-US.msi" class="group p-8 rounded-xl bg-white dark:bg-gray-900 border-2 border-gray-200 dark:border-gray-700 hover:border-primary-500 dark:hover:border-primary-500 transition-all hover:shadow-xl text-center">
+                    <div class="w-16 h-16 mx-auto mb-4 flex items-center justify-center">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="w-16 h-16 text-gray-700 dark:text-gray-300 group-hover:text-primary-600 dark:group-hover:text-primary-400 transition-colors" viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M3 5.479L10.955 4.366v7.637H3V5.479zm0 13.042l7.955 1.112v-7.637H3v6.525zM11.955 3.271L21 2v9.003h-9.045V3.271zm0 17.457V12.725H21V22l-9.045-1.272z"/>
+                        </svg>
+                    </div>
+                    <h3 class="text-xl font-semibold mb-2">Windows</h3>
+                    <p class="text-sm text-gray-500 dark:text-gray-400">64-bit (MSI Installer)</p>
+                </a>
+                
+                <!-- Linux -->
+                <a href="https://github.com/tarikkavaz/Correctify/releases/latest/download/correctify_amd64.AppImage" class="group p-8 rounded-xl bg-white dark:bg-gray-900 border-2 border-gray-200 dark:border-gray-700 hover:border-primary-500 dark:hover:border-primary-500 transition-all hover:shadow-xl text-center">
+                    <div class="w-16 h-16 mx-auto mb-4 flex items-center justify-center">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="w-16 h-16 text-gray-700 dark:text-gray-300 group-hover:text-primary-600 dark:group-hover:text-primary-400 transition-colors" viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M20.581 19.049c-.55-.446-.336-1.431-.907-1.917.553-3.365-.997-6.331-2.845-8.232-1.551-1.595-1.051-3.147-1.051-4.49 0-2.146-.881-4.41-3.55-4.41-2.853 0-3.635 2.38-3.663 3.738-.068 3.262.659 4.11-1.25 6.484-2.246 2.793-2.577 5.579-2.07 7.057-.237.276-.557.582-1.155.835-1.652.72-.441 1.925-.898 2.78-.13.243-.192.497-.192.74 0 .75.596 1.399 1.679 1.302 1.461-.13 2.809.905 3.681.905.77 0 1.402-.438 1.696-1.041 1.377-.339 3.077-.296 4.453.059.247.691.917 1.141 1.662 1.141 1.631 0 1.945-1.849 3.816-2.475.674-.225 1.013-.879 1.013-1.488 0-.39-.139-.762-.419-.988z"/>
+                        </svg>
+                    </div>
+                    <h3 class="text-xl font-semibold mb-2">Linux</h3>
+                    <p class="text-sm text-gray-500 dark:text-gray-400">AppImage (64-bit)</p>
+                </a>
+            </div>
+            
+            <div class="text-center mt-12">
+                <p class="text-gray-600 dark:text-gray-400 mb-4">
+                    Looking for other formats or previous versions?
+                </p>
+                <a href="https://github.com/tarikkavaz/Correctify/releases" target="_blank" rel="noopener noreferrer" class="text-primary-600 dark:text-primary-400 hover:underline font-semibold">
+                    View all releases on GitHub →
+                </a>
+            </div>
+        </div>
+    </section>
+    
+    <!-- How to Use Section -->
+    <section class="py-20 px-4">
+        <div class="max-w-4xl mx-auto">
+            <h2 class="text-4xl md:text-5xl font-bold text-center mb-16">Getting Started</h2>
+            
+            <div class="space-y-8">
+                <!-- Step 1 -->
+                <div class="flex gap-6">
+                    <div class="flex-shrink-0 w-12 h-12 rounded-full bg-primary-600 text-white flex items-center justify-center font-bold text-xl">1</div>
+                    <div>
+                        <h3 class="text-2xl font-semibold mb-3">Get an OpenAI API Key</h3>
+                        <p class="text-gray-600 dark:text-gray-300 mb-2">Visit the <a href="https://platform.openai.com/api-keys" target="_blank" rel="noopener noreferrer" class="text-primary-600 dark:text-primary-400 hover:underline">API keys page</a> on OpenAI, sign in or create an account, and generate a new secret key.</p>
+                    </div>
+                </div>
+                
+                <!-- Step 2 -->
+                <div class="flex gap-6">
+                    <div class="flex-shrink-0 w-12 h-12 rounded-full bg-primary-600 text-white flex items-center justify-center font-bold text-xl">2</div>
+                    <div>
+                        <h3 class="text-2xl font-semibold mb-3">Configure Correctify</h3>
+                        <p class="text-gray-600 dark:text-gray-300">Open the app from your system tray/menubar, click Settings, and paste your API key. Optionally enable launch at startup and customize your keyboard shortcut.</p>
+                    </div>
+                </div>
+                
+                <!-- Step 3 -->
+                <div class="flex gap-6">
+                    <div class="flex-shrink-0 w-12 h-12 rounded-full bg-primary-600 text-white flex items-center justify-center font-bold text-xl">3</div>
+                    <div>
+                        <h3 class="text-2xl font-semibold mb-3">Start Correcting</h3>
+                        <p class="text-gray-600 dark:text-gray-300">Type or paste text in the app, or use the global shortcut (Cmd/Ctrl+Shift+.) from any application to correct text instantly.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+    
+    <!-- Requirements Section -->
+    <section class="py-20 px-4 bg-gray-50 dark:bg-gray-800">
+        <div class="max-w-4xl mx-auto">
+            <h2 class="text-3xl md:text-4xl font-bold text-center mb-12">Requirements</h2>
+            <div class="grid md:grid-cols-2 gap-8">
+                <div class="p-6 rounded-xl bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700">
+                    <h3 class="text-xl font-semibold mb-3">OpenAI API Key</h3>
+                    <p class="text-gray-600 dark:text-gray-300">Get one at <a href="https://platform.openai.com/api-keys" target="_blank" rel="noopener noreferrer" class="text-primary-600 dark:text-primary-400 hover:underline">platform.openai.com/api-keys</a></p>
+                </div>
+                <div class="p-6 rounded-xl bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700">
+                    <h3 class="text-xl font-semibold mb-3">Internet Connection</h3>
+                    <p class="text-gray-600 dark:text-gray-300">Required to reach OpenAI's API for text corrections</p>
+                </div>
+            </div>
+        </div>
+    </section>
+    
+    <!-- Footer -->
+    <footer class="py-12 px-4 border-t border-gray-200 dark:border-gray-700">
+        <div class="max-w-6xl mx-auto">
+            <div class="flex flex-col md:flex-row justify-between items-center gap-6">
+                <div class="flex items-center gap-3">
+                    <img src="logo.png" alt="Correctify Logo" class="w-8 h-8">
+                    <span class="font-semibold text-lg">Correctify</span>
+                </div>
+                
+                <div class="flex gap-6 text-sm">
+                    <a href="https://github.com/tarikkavaz/Correctify" target="_blank" rel="noopener noreferrer" class="text-gray-600 dark:text-gray-400 hover:text-primary-600 dark:hover:text-primary-400 transition-colors">GitHub</a>
+                    <a href="https://github.com/tarikkavaz/Correctify/issues" target="_blank" rel="noopener noreferrer" class="text-gray-600 dark:text-gray-400 hover:text-primary-600 dark:hover:text-primary-400 transition-colors">Issues</a>
+                    <a href="https://github.com/tarikkavaz/Correctify/releases" target="_blank" rel="noopener noreferrer" class="text-gray-600 dark:text-gray-400 hover:text-primary-600 dark:hover:text-primary-400 transition-colors">Releases</a>
+                </div>
+                
+                <div class="text-sm text-gray-600 dark:text-gray-400">
+                    MIT License
+                </div>
+            </div>
+            
+            <div class="mt-8 text-center text-sm text-gray-500 dark:text-gray-500">
+                <p>Built with ❤️ using Tauri, Next.js, and OpenAI</p>
+            </div>
+        </div>
+    </footer>
+    
+    <!-- Dark Mode Toggle Script -->
+    <script>
+        // Initialize dark mode based on system preference
+        if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+            document.documentElement.classList.add('dark');
+        }
+        
+        // Listen for system theme changes
+        window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', e => {
+            if (e.matches) {
+                document.documentElement.classList.add('dark');
+            } else {
+                document.documentElement.classList.remove('dark');
+            }
+        });
+    </script>
+</body>
+</html>
