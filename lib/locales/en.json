@@ -50,7 +50,9 @@
     "soundLabel": "Sound notifications",
     "soundDescription": "Play sound effects when notifications appear",
     "globalShortcutLabel": "Global Shortcut",
-    "shortcutDescription": "Customize the last key of your shortcut (e.g., A-Z, 0-9, or special keys)"
+    "shortcutDescription": "Customize the last key of your shortcut (e.g., A-Z, 0-9, or special keys)",
+    "autoPasteLabel": "Auto copy/paste corrected text",
+    "autoPasteDescription": "Automatically copy and paste corrected text (no manual Cmd+C/Ctrl+C or Cmd+V/Ctrl+V needed)"
   },
   "helpModal": {
     "title": "Help & Guide",

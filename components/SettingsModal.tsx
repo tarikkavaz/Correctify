@@ -9,11 +9,12 @@ import { isTauri } from '@/lib/utils';
 interface SettingsModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onSave: (apiKey: string, autostartEnabled: boolean, soundEnabled: boolean, shortcutKey: string) => void;
+  onSave: (apiKey: string, autostartEnabled: boolean, soundEnabled: boolean, shortcutKey: string, autoPasteEnabled: boolean) => void;
   currentApiKey: string;
   currentAutostartEnabled: boolean;
   currentSoundEnabled: boolean;
   currentShortcutKey: string;
+  currentAutoPasteEnabled: boolean;
 }
 
 export default function SettingsModal({
@@ -24,11 +25,13 @@ export default function SettingsModal({
   currentAutostartEnabled,
   currentSoundEnabled,
   currentShortcutKey,
+  currentAutoPasteEnabled,
 }: SettingsModalProps) {
   const [apiKey, setApiKey] = useState(currentApiKey);
   const [autostartEnabled, setAutostartEnabled] = useState(currentAutostartEnabled);
   const [soundEnabled, setSoundEnabled] = useState(currentSoundEnabled);
   const [shortcutKey, setShortcutKey] = useState(currentShortcutKey);
+  const [autoPasteEnabled, setAutoPasteEnabled] = useState(currentAutoPasteEnabled);
   const [isTauriApp, setIsTauriApp] = useState(false);
   const { messages } = useLocale();
 
@@ -41,11 +44,12 @@ export default function SettingsModal({
     setAutostartEnabled(currentAutostartEnabled);
     setSoundEnabled(currentSoundEnabled);
     setShortcutKey(currentShortcutKey);
-  }, [currentApiKey, currentAutostartEnabled, currentSoundEnabled, currentShortcutKey, isOpen]);
+    setAutoPasteEnabled(currentAutoPasteEnabled);
+  }, [currentApiKey, currentAutostartEnabled, currentSoundEnabled, currentShortcutKey, currentAutoPasteEnabled, isOpen]);
 
   const handleSubmit = (e: FormEvent) => {
     e.preventDefault();
-    onSave(apiKey, autostartEnabled, soundEnabled, shortcutKey);
+    onSave(apiKey, autostartEnabled, soundEnabled, shortcutKey, autoPasteEnabled);
     onClose();
   };
 
@@ -191,6 +195,29 @@ export default function SettingsModal({
               <p className="text-xs text-foreground/60">
                 {messages.apiModal.shortcutDescription}
               </p>
+            </div>
+          )}
+
+          {/* Auto Copy/Paste (Desktop Only) */}
+          {isTauriApp && (
+            <div className="space-y-2 pt-2 border-t border-border">
+              <div className="flex items-start gap-3">
+                <input
+                  id="autoPaste"
+                  type="checkbox"
+                  checked={autoPasteEnabled}
+                  onChange={(e) => setAutoPasteEnabled(e.target.checked)}
+                  className="mt-1 w-4 h-4 text-primary bg-background border-border rounded focus:ring-2 focus:ring-primary"
+                />
+                <div className="flex-1">
+                  <label htmlFor="autoPaste" className="block text-sm font-medium text-foreground cursor-pointer">
+                    {messages.apiModal.autoPasteLabel}
+                  </label>
+                  <p className="text-xs text-foreground/60 mt-1">
+                    {messages.apiModal.autoPasteDescription}
+                  </p>
+                </div>
+              </div>
             </div>
           )}
 
