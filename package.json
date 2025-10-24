@@ -1,0 +1,49 @@
+{
+  "name": "correctify",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "build:tauri": "cross-env TAURI_BUILD=1 next build",
+    "start": "next start",
+    "lint": "next lint",
+    "test": "jest",
+    "test:watch": "jest --watch",
+    "tauri:dev": "tauri dev",
+    "tauri:build": "tauri build"
+  },
+  "dependencies": {
+    "@tailwindcss/typography": "^0.5.19",
+    "@tauri-apps/api": "^2.8.0",
+    "@tauri-apps/plugin-autostart": "^2.5.0",
+    "@tauri-apps/plugin-clipboard-manager": "^2.3.0",
+    "@tauri-apps/plugin-global-shortcut": "^2.3.0",
+    "@tauri-apps/plugin-notification": "^2.3.1",
+    "@tauri-apps/plugin-os": "^2.3.1",
+    "@tauri-apps/plugin-shell": "^2.3.1",
+    "lucide-react": "^0.468.0",
+    "next": "^15.1.8",
+    "openai": "^6.1.0",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
+    "react-markdown": "^10.1.0",
+    "remark-gfm": "^4.0.1"
+  },
+  "devDependencies": {
+    "@tailwindcss/postcss": "^4.0.0",
+    "@tauri-apps/cli": "^2.5.1",
+    "@testing-library/jest-dom": "^6.6.3",
+    "@testing-library/react": "^16.1.0",
+    "@types/jest": "^29.5.14",
+    "@types/node": "^22.10.5",
+    "@types/react": "^19.0.6",
+    "@types/react-dom": "^19.0.3",
+    "cross-env": "^10.1.0",
+    "jest": "^29.7.0",
+    "jest-environment-jsdom": "^29.7.0",
+    "postcss": "^8.4.49",
+    "tailwindcss": "^4.0.0",
+    "typescript": "^5.7.2"
+  }
+}

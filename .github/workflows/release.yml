@@ -1,0 +1,255 @@
+name: Release
+
+on:
+  push:
+    branches:
+      - master
+
+jobs:
+  check-release:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    outputs:
+      is_release: ${{ steps.extract.outputs.version != '' }}
+      version: ${{ steps.extract.outputs.version }}
+      changelog: ${{ steps.changelog.outputs.content }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Extract version from commit message
+        id: extract
+        run: |
+          msg=$(git log -1 --pretty=%B)
+          echo "Commit message: $msg"
+
+          if [[ $msg =~ release:\ (v[0-9]+\.[0-9]+\.[0-9]+) ]]; then
+            echo "version=${BASH_REMATCH[1]}" >> $GITHUB_OUTPUT
+            echo "✅ Found version: ${BASH_REMATCH[1]}"
+          elif [[ $msg =~ release: ]]; then
+            echo "❌ Invalid release commit format. Use: release: vX.Y.Z"
+            exit 1
+          else
+            echo "ℹ️ No release commit. Skipping."
+          fi
+
+      - name: Extract changelog from CHANGELOG.md
+        id: changelog
+        if: steps.extract.outputs.version != ''
+        run: |
+          VERSION="${{ steps.extract.outputs.version }}"
+          
+          # Extract the section for this version from CHANGELOG.md
+          # This gets everything between [VERSION] and the next version header
+          CHANGELOG=$(awk "/## \[${VERSION#v}\]/{flag=1; next} /## \[[0-9]/{flag=0} flag" CHANGELOG.md)
+          
+          if [ -z "$CHANGELOG" ]; then
+            echo "⚠️ No changelog found for $VERSION, using default message"
+            CHANGELOG="See [CHANGELOG.md](https://github.com/tarikkavaz/Correctify/blob/master/CHANGELOG.md) for details."
+          fi
+          
+          # Save to output using heredoc to handle multiline content
+          echo "content<<EOF" >> $GITHUB_OUTPUT
+          echo "$CHANGELOG" >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
+
+      - name: Create and push tag
+        if: steps.extract.outputs.version != ''
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git tag ${{ steps.extract.outputs.version }}
+          git push origin ${{ steps.extract.outputs.version }}
+
+  build-release:
+    needs: check-release
+    if: needs.check-release.outputs.is_release == 'true'
+    permissions:
+      contents: write
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - platform: 'macos-latest'
+            args: '--target aarch64-apple-darwin'
+            target: 'aarch64-apple-darwin'
+          - platform: 'macos-latest'
+            args: '--target x86_64-apple-darwin'
+            target: 'x86_64-apple-darwin'
+          - platform: 'ubuntu-22.04'
+            args: ''
+            target: 'x86_64-unknown-linux-gnu'
+          - platform: 'windows-latest'
+            args: ''
+            target: 'x86_64-pc-windows-msvc'
+
+    runs-on: ${{ matrix.platform }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 8
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'pnpm'
+
+      - name: Install Rust stable
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: ${{ matrix.platform == 'macos-latest' && 'aarch64-apple-darwin,x86_64-apple-darwin' || '' }}
+
+      - name: Install dependencies (Ubuntu)
+        if: matrix.platform == 'ubuntu-22.04'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libwebkit2gtk-4.1-dev libappindicator3-dev librsvg2-dev patchelf libasound2-dev
+
+      - name: Install frontend dependencies
+        run: pnpm install
+
+      - name: Setup macOS certificate
+        if: matrix.platform == 'macos-latest'
+        env:
+          MACOS_CERTIFICATE: ${{ secrets.MACOS_CERTIFICATE }}
+          MACOS_CERTIFICATE_PASSWORD: ${{ secrets.MACOS_CERTIFICATE_PASSWORD }}
+          MACOS_KEYCHAIN_PASSWORD: ${{ secrets.MACOS_KEYCHAIN_PASSWORD }}
+        run: |
+          # create variables
+          CERTIFICATE_PATH=$RUNNER_TEMP/build_certificate.p12
+          KEYCHAIN_PATH=$RUNNER_TEMP/app-signing.keychain-db
+
+          # import certificate from secrets
+          echo -n "$MACOS_CERTIFICATE" | base64 --decode --output $CERTIFICATE_PATH
+
+          # create temporary keychain
+          security create-keychain -p "$MACOS_KEYCHAIN_PASSWORD" $KEYCHAIN_PATH
+          security set-keychain-settings -lut 21600 $KEYCHAIN_PATH
+          security unlock-keychain -p "$MACOS_KEYCHAIN_PASSWORD" $KEYCHAIN_PATH
+
+          # import certificate to keychain
+          security import $CERTIFICATE_PATH -P "$MACOS_CERTIFICATE_PASSWORD" -A -t cert -f pkcs12 -k $KEYCHAIN_PATH
+          security list-keychain -d user -s $KEYCHAIN_PATH
+
+      - name: Build and release (macOS)
+        if: matrix.platform == 'macos-latest'
+        uses: tauri-apps/tauri-action@v0
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          MACOS_SIGNING_IDENTITY: ${{ secrets.MACOS_SIGNING_IDENTITY }}
+          MACOS_KEYCHAIN_PASSWORD: ${{ secrets.MACOS_KEYCHAIN_PASSWORD }}
+          APPLE_ID: ${{ secrets.APPLE_ID }}
+          APPLE_PASSWORD: ${{ secrets.APPLE_PASSWORD }}
+          APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+        with:
+          tagName: ${{ needs.check-release.outputs.version }}
+          releaseName: "Correctify ${{ needs.check-release.outputs.version }}"
+          releaseBody: |
+            ## Changelog
+            
+            ${{ needs.check-release.outputs.changelog }}
+
+            ## Downloads
+
+            Choose the installer for your operating system:
+
+            **macOS:**
+            - Apple Silicon (M1/M2/M3/M4): `Correctify_*_aarch64.dmg`
+            - Intel Macs: `Correctify_*_x64.dmg`
+
+            **Windows:**
+            - Installer: `Correctify_*_x64-setup.exe`
+            - MSI Installer: `Correctify_*_x64_en-US.msi`
+
+            **Linux:**
+            - Debian/Ubuntu: `correctify_*_amd64.deb`
+            - AppImage (Universal): `correctify_*_amd64.AppImage`
+            - RPM: `correctify_*_amd64.rpm`
+
+            Just download, run the installer, and you're ready to correct grammar!
+          releaseDraft: false
+          prerelease: false
+          args: ${{ matrix.args }}
+          tauriScript: pnpm tauri
+
+      - name: Build and release (Linux)
+        if: matrix.platform == 'ubuntu-22.04'
+        uses: tauri-apps/tauri-action@v0
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tagName: ${{ needs.check-release.outputs.version }}
+          releaseName: "Correctify ${{ needs.check-release.outputs.version }}"
+          releaseBody: |
+            ## Changelog
+            
+            ${{ needs.check-release.outputs.changelog }}
+
+            ## Downloads
+
+            Choose the installer for your operating system:
+
+            **macOS:**
+            - Apple Silicon (M1/M2/M3/M4): `Correctify_*_aarch64.dmg`
+            - Intel Macs: `Correctify_*_x64.dmg`
+
+            **Windows:**
+            - Installer: `Correctify_*_x64-setup.exe`
+            - MSI Installer: `Correctify_*_x64_en-US.msi`
+
+            **Linux:**
+            - Debian/Ubuntu: `correctify_*_amd64.deb`
+            - AppImage (Universal): `correctify_*_amd64.AppImage`
+            - RPM: `correctify_*_amd64.rpm`
+
+            Just download, run the installer, and you're ready to correct grammar!
+          releaseDraft: false
+          prerelease: false
+          args: ${{ matrix.args }}
+          tauriScript: pnpm tauri
+
+      - name: Build and release (Windows)
+        if: matrix.platform == 'windows-latest'
+        uses: tauri-apps/tauri-action@v0
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tagName: ${{ needs.check-release.outputs.version }}
+          releaseName: "Correctify ${{ needs.check-release.outputs.version }}"
+          releaseBody: |
+            ## Changelog
+            
+            ${{ needs.check-release.outputs.changelog }}
+
+            ## Downloads
+
+            Choose the installer for your operating system:
+
+            **macOS:**
+            - Apple Silicon (M1/M2/M3/M4): `Correctify_*_aarch64.dmg`
+            - Intel Macs: `Correctify_*_x64.dmg`
+
+            **Windows:**
+            - Installer: `Correctify_*_x64-setup.exe`
+            - MSI Installer: `Correctify_*_x64_en-US.msi`
+
+            **Linux:**
+            - Debian/Ubuntu: `correctify_*_amd64.deb`
+            - AppImage (Universal): `correctify_*_amd64.AppImage`
+            - RPM: `correctify_*_amd64.rpm`
+
+            Just download, run the installer, and you're ready to correct grammar!
+          releaseDraft: false
+          prerelease: false
+          args: ${{ matrix.args }}
+          tauriScript: pnpm tauri
+
+      - name: Cleanup keychain (macOS)
+        if: matrix.platform == 'macos-latest' && always()
+        run: |
+          KEYCHAIN_PATH=$RUNNER_TEMP/app-signing.keychain-db
+          security delete-keychain $KEYCHAIN_PATH || true

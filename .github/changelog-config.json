@@ -1,0 +1,20 @@
+{
+  "categories": [
+    {
+      "title": "Features",
+      "labels": ["feat"],
+      "regexp": ".*feat.*"
+    },
+    {
+      "title": "Fixes",
+      "labels": ["fix"],
+      "regexp": ".*fix.*"
+    },
+    {
+      "title": "Chores",
+      "labels": ["chore"],
+      "regexp": ".*chore.*"
+    }
+  ],
+  "template": "## Changes\n\n#{{CHANGELOG}}"
+}
