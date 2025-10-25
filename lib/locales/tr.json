@@ -101,8 +101,8 @@
     "subtitle": "AI destekli dilbilgisi düzeltmesi",
     "version": "Sürüm",
     "description": "Yazınızı geliştirmek için AI kullanan ve verilerinizi güvende tutan gizlilik odaklı bir dilbilgisi düzeltme aracı.",
-    "viewOnGitHub": "GitHub'da görüntüle",
+    "visitHomepage": "Ana Sayfayı Ziyaret Et",
     "copyright": "© 2025 Correctify",
-    "builtWith": "Next.js ve Tauri ile oluşturuldu"
+    "builtWith": "Tauri, Next.js ve OpenAI ile ❤️ ile oluşturuldu"
   }
 }

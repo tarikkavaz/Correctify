@@ -101,8 +101,8 @@
     "subtitle": "KI-gestützte Grammatikkorrektur",
     "version": "Version",
     "description": "Ein datenschutzorientiertes Grammatikkorrektur-Tool, das KI verwendet, um Ihr Schreiben zu verbessern und gleichzeitig Ihre Daten zu schützen.",
-    "viewOnGitHub": "Auf GitHub ansehen",
+    "visitHomepage": "Startseite besuchen",
     "copyright": "© 2025 Correctify",
-    "builtWith": "Erstellt mit Next.js und Tauri"
+    "builtWith": "Erstellt mit ❤️ mit Tauri, Next.js und OpenAI"
   }
 }

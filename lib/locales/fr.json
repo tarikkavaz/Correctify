@@ -101,8 +101,8 @@
     "subtitle": "Correction grammaticale alimentée par l'IA",
     "version": "Version",
     "description": "Un outil de correction grammaticale axé sur la confidentialité qui utilise l'IA pour améliorer votre écriture tout en protégeant vos données.",
-    "viewOnGitHub": "Voir sur GitHub",
+    "visitHomepage": "Visiter la page d'accueil",
     "copyright": "© 2025 Correctify",
-    "builtWith": "Créé avec Next.js et Tauri"
+    "builtWith": "Créé avec ❤️ en utilisant Tauri, Next.js et OpenAI"
   }
 }
