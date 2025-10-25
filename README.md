@@ -144,7 +144,7 @@ For manual signing, refer to:
 
 ## License
 
-MIT License - see [LICENSE](LICENSE) file for details.
+MIT License
 
 ## Support
 
