@@ -4,162 +4,150 @@ A simple, cross-platform grammar correction app powered by OpenAI. Bring your ow
 
 ![Correctify Screenshot](public/screenshot.png)
 
-## What It Does
+## Overview
 
 Correctify corrects grammar, spelling, and punctuation while preserving your writing style and formatting. It's a minimal, distraction-free menubar app that works on macOS, Windows, and Linux.
 
-**Features:**
+**Key Features:**
+- Menubar/tray app with global shortcuts
+- Auto copy/paste functionality
+- Writing style selector
+- Privacy-first design
+- Cross-platform support
 
-* **Menubar App**: Lives in your system tray/menubar for instant access
+For detailed user documentation, visit the [landing page](docs/index.html).
 
-  * Single click on tray icon to show/hide the app
-  * No dock icon on macOS (stays in menubar only)
-  * Launch at startup option available in Settings
-  * Lightweight and always accessible
-* **Auto Copy/Paste**: Optional feature for seamless text correction
-  * Automatically copies selected text and pastes corrected version
-  * No manual Cmd+C/Ctrl+C or Cmd+V/Ctrl+V needed
-  * Simply select text, press shortcut, and watch it correct in place
-  * Enable/disable in Settings (disabled by default)
-  * Works with the global shortcut feature
-* **Writing Style Selector**: Choose from 5 different writing styles
-  * Grammar Only: Fixes grammar and typos only
-  * Formal: Polished and professional tone
-  * Informal: Natural and conversational tone
-  * Collaborative: Friendly, inclusive team tone
-  * Concise: Clear and to the point
-  * Style preference persists across sessions
-* **Customizable Shortcut**: Change the global shortcut to your preference
-  * Default: `Cmd+Shift+.` (macOS) or `Ctrl+Shift+.` (Windows/Linux)
-  * Customize the last key (e.g., A-Z, 0-9, special keys)
-  * Updates instantly without restarting the app
-* **Sound Notifications**: Optional audio feedback for all notifications
-  * Distinct sounds for different notification types
-  * Enable/disable in Settings (enabled by default)
-  * Works across all platforms
-* **Global Shortcut**: Correct text from any app using your configured shortcut
-* High-quality corrections using OpenAI models (GPT-4o Mini default, GPT-5 Mini, GPT-5)
-* Model selector to choose between different models based on speed, cost, and quality
-* Pay-per-use pricing (no subscriptions)
-* Your API key stays local and is never logged
-* Preserves formatting (bold, italic, lists, line breaks)
-* Keyboard shortcuts for faster workflow
-* System notifications for background corrections
-* Dark mode support with system theme detection
-* Copy corrected text with one click
+## Development Setup
 
-**What It Doesn't Do:**
+### Prerequisites
 
-* No text storage or database
-* No analytics or tracking
-* No subscriptions or accounts
-* No complicated setup
+- **Node.js** (v18 or later)
+- **pnpm** package manager
+- **Rust** (latest stable version)
+- **Tauri CLI** (installed via `cargo install tauri-cli`)
 
-## Download
+### Installation
 
-1. Go to the [Releases](../../releases) page
-2. Download the installer for your platform:
+1. Clone the repository:
+```bash
+git clone https://github.com/tarikkavaz/Correctify.git
+cd Correctify
+```
 
-   * **macOS**: Download `.dmg` file (Apple Silicon or Intel)
-   * **Windows**: Download `.msi` or `.exe` file
-   * **Linux**: Download `.AppImage`, `.deb`, or `.rpm` file
-3. Install and run the app
+2. Install dependencies:
+```bash
+pnpm install
+```
 
-### First-Time Setup
+### Development
 
-1. Get an OpenAI API key:
+Start the development server:
 
-   * Visit the [API keys](https://platform.openai.com/api-keys) page on OpenAI
-   * Sign in or create an account (requires credit card)
-   * Click "Create new secret key"
-   * Copy the key (starts with `sk-...`)
+```bash
+# Web development server
+pnpm dev
 
-2. Add your API key to Correctify:
+# Tauri development (recommended)
+pnpm tauri:dev
+```
 
-   * Click the tray/menubar icon to open Correctify
-   * Click the Settings icon (⚙️) in the top-right corner
-   * Paste your API key
-   * Optional: Enable "Launch at startup" to start Correctify automatically
-   * Optional: Toggle "Sound notifications" to enable/disable audio feedback
-   * Optional: Customize your keyboard shortcut (default: period key)
-   * Optional: Enable "Auto copy/paste corrected text" for seamless corrections
-   * Click Save
+The Tauri development command will:
+- Start the Next.js development server
+- Launch the Tauri app with hot reload
+- Enable debugging and development tools
 
-That's it! Your API key is stored locally on your device and persists across restarts.
+### Building
 
-## How to Use
+Build the application for production:
 
-### Opening the App
+```bash
+# Web build only
+pnpm build
 
-* **First time**: The app will appear in your system tray/menubar (look for the Correctify icon)
-* **Click the tray icon** to instantly show/hide the main window
-* The window starts hidden - click the icon to reveal it
+# Tauri build (cross-platform)
+pnpm tauri:build
+```
 
-### In-App Correction
+The Tauri build will create platform-specific installers in `src-tauri/target/release/bundle/`.
 
-1. Type or paste text into the input area
-2. Click "Correct" or press **Cmd+Enter** (Mac) / **Ctrl+Enter** (Windows/Linux)
-3. See the corrected text appear below
-4. Click the Copy button to copy the result
+### Project Structure
 
-The app supports markdown formatting in both input and output—type `**bold**` to see **bold** text, `*italic*` for *italic*, etc.
+```
+Correctify/
+├── app/                    # Next.js app directory
+│   ├── api/               # API routes
+│   ├── globals.css        # Global styles
+│   └── layout.tsx         # Root layout
+├── components/            # React components
+├── lib/                   # Utilities and types
+├── public/               # Static assets
+├── src-tauri/           # Tauri backend (Rust)
+│   ├── src/             # Rust source code
+│   ├── Cargo.toml       # Rust dependencies
+│   └── tauri.conf.json  # Tauri configuration
+├── docs/                # Documentation
+└── scripts/             # Build scripts
+```
 
-### Global Shortcut
+## macOS Code Signing & Notarization
 
-Correct text from any application:
+To distribute signed and notarized macOS apps, you'll need Apple Developer credentials.
 
-**With Auto Copy/Paste (Recommended):**
+### Setup
 
-1. Select text in any app (just highlight it, no copying needed)
-2. Press your configured shortcut (default: **Cmd+Shift+.** on Mac or **Ctrl+Shift+.** on Windows/Linux)
-3. Wait for the notification - corrected text automatically pastes in place!
+1. Copy the environment template:
+```bash
+cp .env.example .env
+```
 
-> [!NOTE] 
-> **For using Auto Copy/Paste**: You'll need to grant Accessibility permissions. 
-> Go to System Settings > Privacy & Security > Accessibility and enable **Correctify**. This allows the app to simulate keyboard input for seamless correction. 
-> A pop-up will appear the first time you use Auto Copy/Paste - click "Open System Settings" to grant permission.
+2. Fill in your Apple Developer credentials in `.env`:
+```env
+APPLE_ID=your-apple-id@example.com
+APPLE_PASSWORD=xxxx-xxxx-xxxx-xxxx
+APPLE_TEAM_ID=XXXXXXXXXX
+```
 
-**Without Auto Copy/Paste (Manual Mode):**
+**Getting your credentials:**
+- **Apple ID**: Your Apple Developer account email
+- **Apple Password**: Generate an app-specific password at [appleid.apple.com/account/manage](https://appleid.apple.com/account/manage)
+- **Team ID**: Find in your Apple Developer account settings
 
-1. Select and copy text in any app (**Cmd+C** / **Ctrl+C**)
-2. Press your configured shortcut (default: **Cmd+Shift+.** on Mac or **Ctrl+Shift+.** on Windows/Linux)
-3. Wait for the notification ("Processing text correction...")
-4. Paste the corrected text (**Cmd+V** / **Ctrl+V**)
+### Building Signed Apps
 
-The global shortcut works even when Correctify is minimized or hidden! You can customize the shortcut and enable/disable auto copy/paste in Settings.
+Use the provided script for automated signing and notarization:
 
-**Note for macOS users:**
-> [!NOTE]
-> Correctify is code signed and notarized by Apple, so it should open without any security warnings. If you do encounter any issues, try right-clicking the app and selecting "Open" from the context menu.
+```bash
+chmod +x scripts/build-signed.sh
+./scripts/build-signed.sh
+```
 
-* The first time you use the app, macOS may ask for notification permissions. Make sure to allow them to see completion notifications.
-* Correctify runs as a menubar-only app (no dock icon). Single-click the menubar icon to show/hide the window.
-* To quit the app, use **Cmd+Q** when the window is focused.
+This script will:
+1. Build the Tauri app
+2. Code sign the application
+3. Create a DMG installer
+4. Notarize with Apple
+5. Staple the notarization ticket
 
-## Keyboard Shortcuts
+### Manual Process
 
-| Action                | macOS             | Windows/Linux     |
-| --------------------- | ----------------- | ----------------- |
-| Submit for correction | `Cmd+Enter`       | `Ctrl+Enter`      |
-| Global correction     | `Cmd+Shift+.`     | `Ctrl+Shift+.`    |
-| Copy result           | Click Copy button | Click Copy button |
+For manual signing, refer to:
+- [Apple's official notarization guide](https://developer.apple.com/documentation/security/notarizing_macos_software_before_distribution)
+- [Tauri's code signing documentation](https://tauri.app/v1/guides/distribution/sign-macos)
 
-## Privacy
+## Contributing
 
-* Your text is sent to OpenAI's servers for correction
-* Your API key is stored locally on your device (never sent to any servers)
-* The app doesn't log, store, or track anything
-* No analytics, no telemetry, no database
-
-## Requirements
-
-* An OpenAI API key (get one at [OpenAI API](https://platform.openai.com/api-keys))
-* Internet connection (to reach OpenAI's API)
-
-## Support
-
-Having issues? Check the [Issues](../../issues) page or open a new issue.
+1. Fork the repository
+2. Create a feature branch: `git checkout -b feature-name`
+3. Make your changes
+4. Test thoroughly
+5. Submit a pull request
 
 ## License
 
-MIT
+MIT License - see [LICENSE](LICENSE) file for details.
+
+## Support
+
+- **User Documentation**: [docs/index.html](docs/index.html)
+- **Issues**: [GitHub Issues](https://github.com/tarikkavaz/Correctify/issues)
+- **Releases**: [GitHub Releases](https://github.com/tarikkavaz/Correctify/releases)
