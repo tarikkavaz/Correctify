@@ -129,7 +129,7 @@ export default function HomePage() {
             
             await sendNotification({
               title: '🚀 Correctify Ready',
-              body: `Global shortcut ${shortcutKey}+Shift+. is active!`
+              body: `Global shortcut ${shortcutKey}+Shift+] is active!`
             });
             console.log('✅ Test notification sent successfully');
           } catch (err) {

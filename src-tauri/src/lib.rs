@@ -238,7 +238,7 @@ pub fn run() {
     // Initialize app state with default values
     let app_state = AppState {
         sound_enabled: Arc::new(Mutex::new(true)), // Default: sound enabled
-        shortcut_key: Arc::new(Mutex::new(".".to_string())), // Default: period key
+        shortcut_key: Arc::new(Mutex::new("]".to_string())), // Default: closing bracket key
         auto_paste_enabled: Arc::new(Mutex::new(false)), // Default: auto-paste disabled
     };
     
@@ -325,10 +325,10 @@ pub fn run() {
                             Ok(text) => {
                                 if text.is_empty() {
                                     #[cfg(target_os = "macos")]
-                                    let copy_instruction = "Please copy text first (Cmd+C), then use Cmd+Shift+.";
+                                    let copy_instruction = "Please copy text first (Cmd+C), then use Cmd+Shift+]";
                                     
                                     #[cfg(not(target_os = "macos"))]
-                                    let copy_instruction = "Please copy text first (Ctrl+C), then use Ctrl+Shift+.";
+                                    let copy_instruction = "Please copy text first (Ctrl+C), then use Ctrl+Shift+]";
                                     
                                     let _ = app.notification()
                                         .builder()
@@ -408,10 +408,10 @@ pub fn run() {
 
             // Register the global shortcut
             use tauri_plugin_global_shortcut::{GlobalShortcutExt, Shortcut};
-            let shortcut = "CmdOrCtrl+Shift+.".parse::<Shortcut>().unwrap();
+            let shortcut = "CmdOrCtrl+Shift+]".parse::<Shortcut>().unwrap();
             app.global_shortcut().register(shortcut)
                 .expect("Failed to register global shortcut");
-            println!("Global shortcut registered: CmdOrCtrl+Shift+.");
+            println!("Global shortcut registered: CmdOrCtrl+Shift+]");
 
             // Get window for all platforms
             let window = app.get_webview_window("main").unwrap();
