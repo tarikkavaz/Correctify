@@ -101,8 +101,8 @@
     "subtitle": "AI-powered grammar correction",
     "version": "Version",
     "description": "A privacy-focused grammar correction tool that uses AI to improve your writing while keeping your data secure.",
-    "viewOnGitHub": "View on GitHub",
+    "visitHomepage": "Visit Homepage",
     "copyright": "© 2025 Correctify",
-    "builtWith": "Built with Next.js and Tauri"
+    "builtWith": "Built with ❤️ using Tauri, Next.js, and OpenAI"
   }
 }
