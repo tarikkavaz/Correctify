@@ -69,7 +69,7 @@ Choose from 5 different writing styles to customize your corrections:
 ### Global Shortcut
 
 - **Correct from Anywhere**: Use global shortcut to correct text from any application
-  - Default: `Cmd+Shift+.` (macOS) or `Ctrl+Shift+.` (Windows/Linux)
+  - Default: `Cmd+Shift+]` (macOS) or `Ctrl+Shift+]` (Windows/Linux)
   - Automatically reads text from clipboard
   - Processes correction in the background
   - Places corrected text back in clipboard
@@ -135,7 +135,7 @@ Choose from 5 different writing styles to customize your corrections:
 ### Keyboard Shortcuts
 
 - **In-App Correction**: `Cmd+Enter` (macOS) / `Ctrl+Enter` (Windows/Linux) to submit
-- **Global Correction**: Customizable shortcut (default: `Cmd+Shift+.` / `Ctrl+Shift+.`)
+- **Global Correction**: Customizable shortcut (default: `Cmd+Shift+]` / `Ctrl+Shift+]`)
 
 ### Privacy & Security
 

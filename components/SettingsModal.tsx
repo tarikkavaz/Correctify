@@ -188,7 +188,7 @@ export default function SettingsModal({
                   value={shortcutKey}
                   onChange={(e) => setShortcutKey(e.target.value.slice(-1).toUpperCase())}
                   maxLength={1}
-                  placeholder="."
+                  placeholder="]"
                   className="w-16 text-center px-3 py-2 bg-background border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary text-foreground transition-colors uppercase"
                 />
               </div>
