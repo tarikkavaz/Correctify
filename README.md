@@ -15,7 +15,7 @@ Correctify corrects grammar, spelling, and punctuation while preserving your wri
 - Privacy-first design
 - Cross-platform support
 
-For detailed user documentation, visit the [landing page](docs/index.html).
+For detailed user documentation, visit the [landing page](https://tarikkavaz.github.io/Correctify/).
 
 ## Development Setup
 
