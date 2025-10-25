@@ -132,7 +132,7 @@ This script will:
 
 For manual signing, refer to:
 - [Apple's official notarization guide](https://developer.apple.com/documentation/security/notarizing_macos_software_before_distribution)
-- [Tauri's code signing documentation](https://tauri.app/v1/guides/distribution/sign-macos)
+- [Tauri's code signing documentation](https://tauri.app/distribute/sign/macos/)
 
 ## Contributing
 
