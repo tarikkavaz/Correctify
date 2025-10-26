@@ -82,7 +82,14 @@
       "frameworks": [],
       "providerShortName": null,
       "signingIdentity": "Developer ID Application: Tarik Kavaz (UHLJ8Z3YQA)",
-      "minimumSystemVersion": "10.13"
+      "minimumSystemVersion": "10.13",
+      "dmg": {
+        "background": "./images/dmg-background.png",
+        "windowSize": {
+          "width": 680,
+          "height": 470
+        }
+      }
     }
   }
 }
