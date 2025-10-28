@@ -2,6 +2,8 @@
 /node_modules
 /.pnp
 .pnp.js
+.pnpm-store
+
 
 # Testing
 /coverage
@@ -40,3 +42,5 @@ next-env.d.ts
 
 # Tools
 /_tools
+.cursor
+.vscode

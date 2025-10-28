@@ -12,6 +12,7 @@ import { OpenAICorrector } from '@/lib/openai';
 import { isTauri } from '@/lib/utils';
 import { useTheme } from '@/lib/useTheme';
 import { useLocale } from '@/lib/useLocale';
+import { getKey, setKey, deleteKey, migrateFromLocalStorage } from '@/lib/secure-keys';
 
 export default function HomePage() {
   const { messages } = useLocale();
@@ -40,47 +41,54 @@ export default function HomePage() {
   const styleDropdownRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    const savedKey = localStorage.getItem('openai-api-key');
-    if (savedKey) {
-      setApiKey(savedKey);
-    }
-    
-    const savedModel = localStorage.getItem('openai-model') as 'gpt-5' | 'gpt-5-mini' | 'gpt-4o-mini' | null;
-    if (savedModel && (savedModel === 'gpt-5' || savedModel === 'gpt-5-mini' || savedModel === 'gpt-4o-mini')) {
-      setModel(savedModel);
-    }
+    const initializeApp = async () => {
+      // Migrate from localStorage to secure storage (one-time, Tauri only)
+      if (isTauri()) {
+        await migrateFromLocalStorage();
+      }
+      
+      // Load API key from secure storage (or localStorage in web mode)
+      const savedKey = await getKey('openai-api-key');
+      if (savedKey) {
+        setApiKey(savedKey);
+      }
+      
+      // Load other settings from localStorage (non-sensitive data)
+      const savedModel = localStorage.getItem('openai-model') as 'gpt-5' | 'gpt-5-mini' | 'gpt-4o-mini' | null;
+      if (savedModel && (savedModel === 'gpt-5' || savedModel === 'gpt-5-mini' || savedModel === 'gpt-4o-mini')) {
+        setModel(savedModel);
+      }
 
-    const savedStyle = localStorage.getItem('writing-style') as WritingStyle | null;
-    if (savedStyle && ['grammar', 'formal', 'informal', 'collaborative', 'concise'].includes(savedStyle)) {
-      setWritingStyle(savedStyle);
-    }
+      const savedStyle = localStorage.getItem('writing-style') as WritingStyle | null;
+      if (savedStyle && ['grammar', 'formal', 'informal', 'collaborative', 'concise'].includes(savedStyle)) {
+        setWritingStyle(savedStyle);
+      }
 
-    const savedAutostart = localStorage.getItem('autostart-enabled');
-    if (savedAutostart === 'true') {
-      setAutostartEnabled(true);
-    }
+      const savedAutostart = localStorage.getItem('autostart-enabled');
+      if (savedAutostart === 'true') {
+        setAutostartEnabled(true);
+      }
 
-    const savedSoundEnabled = localStorage.getItem('sound-enabled');
-    if (savedSoundEnabled !== null) {
-      setSoundEnabled(savedSoundEnabled === 'true');
-    }
+      const savedSoundEnabled = localStorage.getItem('sound-enabled');
+      if (savedSoundEnabled !== null) {
+        setSoundEnabled(savedSoundEnabled === 'true');
+      }
 
-    const savedShortcutKey = localStorage.getItem('shortcut-key');
-    if (savedShortcutKey) {
-      setShortcutKey(savedShortcutKey);
-    }
+      const savedShortcutKey = localStorage.getItem('shortcut-key');
+      if (savedShortcutKey) {
+        setShortcutKey(savedShortcutKey);
+      }
 
-    const savedAutoPasteEnabled = localStorage.getItem('auto-paste-enabled');
-    if (savedAutoPasteEnabled !== null) {
-      setAutoPasteEnabled(savedAutoPasteEnabled === 'true');
-    }
+      const savedAutoPasteEnabled = localStorage.getItem('auto-paste-enabled');
+      if (savedAutoPasteEnabled !== null) {
+        setAutoPasteEnabled(savedAutoPasteEnabled === 'true');
+      }
 
-    // Check if running in Tauri (client-side only)
-    setShowGlobalShortcutInfo(isTauri());
+      // Check if running in Tauri (client-side only)
+      setShowGlobalShortcutInfo(isTauri());
 
-    // Listen for global shortcut event from Rust backend
-    if (isTauri()) {
-      const setupListener = async () => {
+      // Listen for global shortcut event from Rust backend
+      if (isTauri()) {
         const { listen } = await import('@tauri-apps/api/event');
         const { invoke } = await import('@tauri-apps/api/core');
         const { isPermissionGranted, requestPermission } = await import('@tauri-apps/plugin-notification');
@@ -147,7 +155,7 @@ export default function HomePage() {
           console.log('Text preview:', textToCorrect.substring(0, 100));
 
           // Check if API key is available
-          const currentApiKey = localStorage.getItem('openai-api-key');
+          const currentApiKey = await getKey('openai-api-key');
           if (!currentApiKey) {
             console.error('❌ No API key available - please configure in settings');
             // Send error notification
@@ -206,12 +214,12 @@ export default function HomePage() {
         });
 
         return unlisten;
-      };
+      }
+    };
 
-      setupListener().catch(err => {
-        console.error('Failed to setup event listener:', err);
-      });
-    }
+    initializeApp().catch(err => {
+      console.error('Failed to initialize app:', err);
+    });
   }, []);
 
   useEffect(() => {
@@ -312,10 +320,18 @@ export default function HomePage() {
     setShortcutKey(newShortcutKey);
     setAutoPasteEnabled(newAutoPasteEnabled);
     
-    if (newApiKey) {
-      localStorage.setItem('openai-api-key', newApiKey);
-    } else {
-      localStorage.removeItem('openai-api-key');
+    // Save API key to secure storage (or localStorage in web mode)
+    try {
+      if (newApiKey) {
+        await setKey('openai-api-key', newApiKey);
+      } else {
+        await deleteKey('openai-api-key');
+      }
+    } catch (error) {
+      console.error('Failed to save API key:', error);
+      // Fall back to showing an error to the user
+      alert('Failed to save API key securely. Please try again.');
+      return;
     }
 
     localStorage.setItem('autostart-enabled', newAutostartEnabled.toString());
