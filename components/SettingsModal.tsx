@@ -5,6 +5,7 @@ import { X, Settings } from 'lucide-react';
 import { open } from '@tauri-apps/plugin-shell';
 import { useLocale } from '@/lib/useLocale';
 import { isTauri } from '@/lib/utils';
+import { deleteKey } from '@/lib/secure-keys';
 
 interface SettingsModalProps {
   isOpen: boolean;
@@ -55,6 +56,21 @@ export default function SettingsModal({
 
   const handleClear = () => {
     setApiKey('');
+  };
+
+  const handleRemoveStoredKey = async () => {
+    if (!isTauri()) return;
+    
+    if (confirm('Are you sure you want to remove the stored API key? You will need to re-enter it.')) {
+      try {
+        await deleteKey('openai-api-key');
+        setApiKey('');
+        alert('API key removed successfully from secure storage.');
+      } catch (error) {
+        console.error('Failed to remove API key:', error);
+        alert('Failed to remove API key. Please try again.');
+      }
+    }
   };
 
   const handleOpenAPIKey = async () => {
@@ -124,6 +140,15 @@ export default function SettingsModal({
             >
               {messages.apiModal.getKeyInstructions} {messages.apiModal.openAiPlatform} →
             </button>
+            {isTauriApp && apiKey && (
+              <button
+                type="button"
+                onClick={handleRemoveStoredKey}
+                className="mt-2 inline-flex items-center text-xs text-red-600 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300 hover:underline cursor-pointer"
+              >
+                Remove stored API key from secure storage
+              </button>
+            )}
           </div>
 
           {/* Autostart Option (Desktop Only) */}
