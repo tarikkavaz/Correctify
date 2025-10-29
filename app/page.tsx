@@ -7,6 +7,8 @@ import remarkGfm from 'remark-gfm';
 import { CorrectionResponse, WritingStyle, Provider } from '@/lib/types';
 import SettingsModal from '@/components/SettingsModal';
 import HelpModal from '@/components/HelpModal';
+import AboutModal from '@/components/AboutModal';
+import UsageModal from '@/components/UsageModal';
 import DraggableHeader from '@/components/DraggableHeader';
 import { UnifiedCorrector, getProviderForModel } from '@/lib/llm';
 import { isTauri } from '@/lib/utils';
@@ -14,6 +16,7 @@ import { useTheme } from '@/lib/useTheme';
 import { useLocale } from '@/lib/useLocale';
 import { getKey, setKey, deleteKey, migrateFromLocalStorage } from '@/lib/secure-keys';
 import { MODELS, getAvailableModels, getModelById, ModelInfo } from '@/lib/models';
+import { trackUsage, estimateTokens } from '@/lib/usage-tracker';
 
 export default function HomePage() {
   const { messages } = useLocale();
@@ -38,8 +41,12 @@ export default function HomePage() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
   const [meta, setMeta] = useState<CorrectionResponse['meta'] | null>(null);
+  const [showFallbackOption, setShowFallbackOption] = useState(false);
+  const [fallbackModelId, setFallbackModelId] = useState<string | null>(null);
   const [isSettingsModalOpen, setIsSettingsModalOpen] = useState(false);
   const [isHelpModalOpen, setIsHelpModalOpen] = useState(false);
+  const [isUsageModalOpen, setIsUsageModalOpen] = useState(false);
+  const [isAboutModalOpen, setIsAboutModalOpen] = useState(false);
   const [isCopied, setIsCopied] = useState(false);
   const [showGlobalShortcutInfo, setShowGlobalShortcutInfo] = useState(false);
   const [isInfoFadingOut, setIsInfoFadingOut] = useState(false);
@@ -303,33 +310,8 @@ export default function HomePage() {
     { value: 'concise', label: 'Concise', description: 'Clear and to the point' },
   ] as const;
 
-  const handleOpenAbout = async () => {
-    if (isTauri()) {
-      try {
-        const { WebviewWindow, getAllWebviewWindows } = await import('@tauri-apps/api/webviewWindow');
-        
-        // Check if about window already exists
-        const windows = await getAllWebviewWindows();
-        const aboutWindow = windows.find(w => w.label === 'about');
-        
-        if (aboutWindow) {
-          await aboutWindow.show();
-          await aboutWindow.setFocus();
-        } else {
-          // Create new about window
-          new WebviewWindow('about', {
-            url: '/about',
-            title: 'About Correctify',
-            width: 400,
-            height: 550,
-            resizable: false,
-            center: true,
-          });
-        }
-      } catch (err) {
-        console.error('Failed to open about window:', err);
-      }
-    }
+  const handleOpenAbout = () => {
+    setIsAboutModalOpen(true);
   };
 
   const handleReload = () => {
@@ -504,6 +486,16 @@ export default function HomePage() {
           provider: provider,
         });
         
+        // Track usage
+        trackUsage({
+          timestamp: Date.now(),
+          provider,
+          model,
+          tokens: estimateTokens(inputText) + estimateTokens(result.result),
+          duration,
+          success: true,
+        });
+        
         // Play completed sound
         try {
           await invoke('play_sound_in_app', { soundType: 'completed' });
@@ -532,16 +524,68 @@ export default function HomePage() {
 
         if (!data.ok) {
           setError(data.error || 'An error occurred');
+          
+          // Track failed usage
+          trackUsage({
+            timestamp: Date.now(),
+            provider,
+            model,
+            tokens: estimateTokens(inputText),
+            duration: Date.now() - startTime,
+            success: false,
+            error: data.error || 'An error occurred',
+          });
         } else {
           setOutputText(data.result || '');
           setMeta(data.meta || null);
+          
+          // Track successful usage
+          trackUsage({
+            timestamp: Date.now(),
+            provider,
+            model,
+            tokens: estimateTokens(inputText) + estimateTokens(data.result || ''),
+            duration: data.meta?.duration || (Date.now() - startTime),
+            success: true,
+          });
         }
       }
     } catch (err) {
       const errorMsg = err instanceof Error ? err.message : 'Failed to connect to the server';
       setError(errorMsg);
+      
+      // Track failed usage
+      trackUsage({
+        timestamp: Date.now(),
+        provider,
+        model,
+        tokens: estimateTokens(inputText),
+        duration: Date.now() - startTime,
+        success: false,
+        error: errorMsg,
+      });
+      
+      // Check if a free fallback model is available
+      const freeModels = availableModels.filter(m => m.category === 'free');
+      if (freeModels.length > 0 && model !== freeModels[0].id) {
+        setFallbackModelId(freeModels[0].id);
+        setShowFallbackOption(true);
+      }
     } finally {
       setIsLoading(false);
+    }
+  };
+  
+  const handleRetryWithFallback = () => {
+    if (fallbackModelId) {
+      setModel(fallbackModelId);
+      localStorage.setItem('selected-model', fallbackModelId);
+      setShowFallbackOption(false);
+      setFallbackModelId(null);
+      // Trigger correction with the fallback model
+      setTimeout(() => {
+        handleSubmit();
+      }, 100);
     }
   };
 
@@ -557,6 +601,7 @@ export default function HomePage() {
       <DraggableHeader
         onSettingsClick={() => setIsSettingsModalOpen(true)}
         onHelpClick={() => setIsHelpModalOpen(true)}
+        onUsageClick={() => setIsUsageModalOpen(true)}
         onAboutClick={handleOpenAbout}
         onReloadClick={handleReload}
         theme={theme}
@@ -578,6 +623,16 @@ export default function HomePage() {
         isOpen={isHelpModalOpen}
         onClose={() => setIsHelpModalOpen(false)}
         shortcutKey={shortcutKey}
+      />
+
+      <AboutModal
+        isOpen={isAboutModalOpen}
+        onClose={() => setIsAboutModalOpen(false)}
+      />
+
+      <UsageModal
+        isOpen={isUsageModalOpen}
+        onClose={() => setIsUsageModalOpen(false)}
       />
 
       <main className="h-screen flex justify-center p-6 bg-background pt-24 transition-colors overflow-auto">
@@ -863,6 +918,28 @@ export default function HomePage() {
           {error && (
             <div className="mt-6 p-4 bg-error-bg border border-error-border rounded-lg">
               <p className="text-sm text-error-text">{error}</p>
+              
+              {showFallbackOption && fallbackModelId && (
+                <div className="mt-3 pt-3 border-t border-error-border">
+                  <p className="text-sm text-error-text mb-2">
+                    Would you like to retry with <strong>{getModelById(fallbackModelId)?.name}</strong> (free model)?
+                  </p>
+                  <div className="flex gap-2">
+                    <button
+                      onClick={handleRetryWithFallback}
+                      className="px-4 py-2 text-sm font-medium bg-primary text-button-text rounded-lg hover:bg-primary-hover transition-colors"
+                    >
+                      Retry with Free Model
+                    </button>
+                    <button
+                      onClick={() => setShowFallbackOption(false)}
+                      className="px-4 py-2 text-sm font-medium text-foreground hover:bg-foreground/5 rounded-lg transition-colors"
+                    >
+                      Dismiss
+                    </button>
+                  </div>
+                </div>
+              )}
             </div>
           )}
 

@@ -1,6 +1,6 @@
 # Correctify
 
-A simple, cross-platform grammar correction app powered by OpenAI. Bring your own API key, pay only for what you use, and keep your data private.
+A simple, cross-platform grammar correction app powered by multiple AI providers. Bring your own API key, choose from 10 models (including free options), and keep your data private with secure local storage.
 
 ![Correctify Screenshot](public/screenshot.png)
 
@@ -8,14 +8,52 @@ A simple, cross-platform grammar correction app powered by OpenAI. Bring your ow
 
 Correctify corrects grammar, spelling, and punctuation while preserving your writing style and formatting. It's a minimal, distraction-free menubar app that works on macOS, Windows, and Linux.
 
-**Key Features:**
-- Menubar/tray app with global shortcuts
-- Auto copy/paste functionality
-- Writing style selector
-- Privacy-first design
-- Cross-platform support
+**Key Features (v1.1.0):**
+- 🔐 **Secure API Key Storage** - OS-level encrypted storage, no keys in browser
+- 🤖 **Multiple LLM Providers** - OpenAI, Anthropic, Mistral, and OpenRouter
+- 🆓 **Free Models Available** - 4 free models via OpenRouter (no credit card needed)
+- 📊 **Usage Tracking** - Monitor token usage, costs, and performance locally
+- 🎯 **Intelligent Fallback** - Auto-retry with free models on failure
+- ⌨️ **Global Shortcuts** - Correct text from anywhere with Cmd+Shift+]
+- 📋 **Auto Copy/Paste** - Seamless text correction in any app
+- ✍️ **5 Writing Styles** - Grammar, Formal, Informal, Collaborative, Concise
+- 🎨 **Modern UI** - Clean interface with dark mode support
+- 🔒 **Privacy-First** - All data stays on your device
+- 🌍 **Cross-Platform** - macOS, Windows, and Linux support
 
 For detailed user documentation, visit the [landing page](https://tarikkavaz.github.io/Correctify/).
+
+## Supported Models
+
+### Paid Models (API Key Required)
+- **OpenAI**: GPT-4o, GPT-4o Mini
+- **Anthropic**: Claude 3.5 Sonnet, Claude 3.5 Haiku
+- **Mistral**: Mistral Large, Mistral Small
+
+### Free Models (OpenRouter API Key Required)
+- **Meta Llama**: Llama 3.2 3B
+- **Google Gemma**: Gemma 2 9B
+- **Microsoft Phi**: Phi-3 Mini
+- **Mistral**: Mistral 7B
+
+💡 **Note**: OpenRouter free models require a free account and API key (no credit card needed).
+
+## API Key Configuration & Security
+
+Correctify v1.1.0 introduces **secure API key storage**:
+
+- ✅ **File-Based Encryption** - Keys stored in OS-protected app data directory
+- ✅ **Automatic Migration** - Seamlessly migrates from localStorage to secure storage
+- ✅ **Per-Provider Keys** - Configure keys for each provider independently
+- ✅ **Local Storage Only** - Keys never leave your device or sent to any server
+- ✅ **Base64 Encoding** - Additional obfuscation layer for stored keys
+
+**Storage Location:**
+- **macOS**: `~/Library/Application Support/com.correctify/.keys/`
+- **Windows**: `%APPDATA%\com.correctify\.keys\`
+- **Linux**: `~/.config/com.correctify/.keys/`
+
+All API requests are made directly from your device to the LLM provider. No intermediary servers, no data collection.
 
 ## Development Setup
 

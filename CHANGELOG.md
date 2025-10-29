@@ -5,6 +5,67 @@ All notable changes to Correctify will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.1.0] - 2025-10-29
+
+### Added
+
+- **Secure API Key Storage**: File-based encrypted storage for API keys (OS-level protection)
+  - Automatic migration from localStorage to secure storage
+  - Support for multiple provider keys (OpenAI, Anthropic, Mistral, OpenRouter)
+  - Keys stored in app data directory with base64 encoding
+  - Individual key management per provider
+- **Multi-LLM Provider Support**: Expanded beyond OpenAI to support 4 major providers
+  - OpenAI (GPT-4o, GPT-4o Mini)
+  - Anthropic (Claude 3.5 Sonnet, Claude 3.5 Haiku)
+  - Mistral (Mistral Large, Mistral Small)
+  - OpenRouter (4 free models: Llama 3.2 3B, Gemma 2 9B, Phi-3 Mini, Mistral 7B)
+  - Total of 10 models (6 paid, 4 free)
+- **Vercel AI SDK Integration**: Unified LLM interface for all providers
+  - Consistent correction behavior across all models
+  - Centralized prompt management system
+  - Writing style consistency across providers
+- **Usage Tracking & Statistics**:
+  - Client-side usage tracking (tokens, latency, cost estimates)
+  - New Usage Stats modal with detailed analytics
+  - Period selector (7/30/90 days)
+  - Provider-level breakdown
+  - Success rate and performance metrics
+  - Cost estimation based on actual token usage
+- **Intelligent Fallback System**: Automatic retry with free models on API failure
+  - One-click fallback to OpenRouter free models
+  - Graceful error recovery
+  - User-friendly error messages with retry options
+- **Enhanced UI/UX**:
+  - Converted About page to modal (consistent with Settings/Help)
+  - Tabbed Settings interface (API Keys / App Settings)
+  - Grouped model dropdown (Paid Models / Free Models)
+  - Cleaner header with dropdown menu for secondary actions
+  - Provider badges in model selection
+  - Dynamic model availability based on configured keys
+
+### Changed
+
+- Settings modal reorganized with tabs for better organization
+- Header icons consolidated into dropdown menu
+- Model selection now shows provider information
+- API route updated to support all LLM providers
+- Browser/dev mode now uses API route for CORS handling
+- Production builds call LLMs directly from Tauri context
+- About modal no longer opens in separate window
+
+### Fixed
+
+- CORS issues with Anthropic and other providers in dev mode
+- Model availability now properly reflects configured API keys
+- Error handling improved with provider-specific messages
+
+### Security
+
+- API keys now stored with OS-level encryption (file-based)
+- No keys stored in localStorage or browser context
+- All usage statistics remain local (never shared)
+- Secure migration from old localStorage keys
+
 ## [1.0.1] - 2025-10-24
 
 ### Added
@@ -160,5 +221,6 @@ Choose from 5 different writing styles to customize your corrections:
 - **Dynamic Shortcut Registration**: Real-time shortcut updates without restart
 - **Cross-Platform Compatibility**: Verified on macOS, Windows, and Linux
 
+[1.1.0]: https://github.com/tarikkavaz/Correctify/releases/tag/v1.1.0
 [1.0.1]: https://github.com/tarikkavaz/Correctify/releases/tag/v1.0.1
 [1.0.0]: https://github.com/tarikkavaz/Correctify/releases/tag/v1.0.0
