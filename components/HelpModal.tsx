@@ -72,8 +72,8 @@ export default function HelpModal({ isOpen, onClose, shortcutKey }: HelpModalPro
                     <a href="https://openrouter.ai/keys" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline text-xs">
                       (Get FREE API Key →)
                     </a>
-                    <div className="text-xs text-green-600 dark:text-green-400 mt-1">
-                      ✨ Free models available - No credit card required!
+                    <div className="text-xs text-foreground/70 mt-1">
+                      Free models available - No credit card required!
                     </div>
                   </li>
                 </ul>
@@ -82,7 +82,7 @@ export default function HelpModal({ isOpen, onClose, shortcutKey }: HelpModalPro
               <div className="p-3 bg-success-bg border border-success-border rounded-lg mt-3 flex gap-2">
                 <Lightbulb className="w-4 h-4 text-success-text flex-shrink-0 mt-0.5" />
                 <div className="text-xs text-success-text">
-                  <strong>🆓 Want to try for free?</strong>
+                  <strong>Want to try for free?</strong>
                   <p className="mt-1">Create a free OpenRouter account and get instant access to 4 free models without adding a credit card. Perfect for testing Correctify!</p>
                 </div>
               </div>
@@ -90,7 +90,7 @@ export default function HelpModal({ isOpen, onClose, shortcutKey }: HelpModalPro
               <div className="p-3 bg-info-bg border border-info-border rounded-lg mt-3 flex gap-2">
                 <KeyRound className="w-4 h-4 text-info-text flex-shrink-0 mt-0.5" />
                 <div className="text-xs text-info-text">
-                  <strong>🔐 Secure Storage (v1.1.0):</strong>
+                  <strong>Secure Storage (v1.1.0):</strong>
                   <p className="mt-1">API keys are now stored with OS-level encryption in your device's secure app data directory. Keys are never sent to any server except directly to your chosen LLM provider.</p>
                   <p className="mt-1 font-mono text-[10px] opacity-70">
                     Storage: ~/.Library/Application Support/com.correctify/.keys/ (macOS)
@@ -201,7 +201,7 @@ export default function HelpModal({ isOpen, onClose, shortcutKey }: HelpModalPro
               <p>Correctify now supports 14 models across 4 providers. Models are grouped by category:</p>
               
               <div>
-                <h4 className="font-semibold text-foreground mb-2">💰 Paid Models (API key + usage costs):</h4>
+                <h4 className="font-semibold text-foreground mb-2">Paid Models (API key + usage costs):</h4>
                 <ul className="space-y-1.5 ml-2">
                   <li><strong>GPT-5</strong> - Most advanced reasoning</li>
                   <li><strong>GPT-5 Mini</strong> - Balanced performance</li>
@@ -217,7 +217,7 @@ export default function HelpModal({ isOpen, onClose, shortcutKey }: HelpModalPro
               </div>
 
               <div>
-                <h4 className="font-semibold text-foreground mb-2">🆓 Free Models (OpenRouter key required, no usage costs):</h4>
+                <h4 className="font-semibold text-foreground mb-2">Free Models (OpenRouter key required, no usage costs):</h4>
                 <ul className="space-y-1.5 ml-2">
                   <li><strong>Llama 3.2 3B</strong> - Fast, lightweight</li>
                   <li><strong>Gemma 2 9B</strong> - Google's open model</li>
@@ -229,7 +229,7 @@ export default function HelpModal({ isOpen, onClose, shortcutKey }: HelpModalPro
               <div className="p-3 bg-info-bg border border-info-border rounded-lg flex gap-2">
                 <Lightbulb className="w-4 h-4 text-info-text flex-shrink-0 mt-0.5" />
                 <div className="text-xs text-info-text">
-                  <strong>🎯 Smart Fallback:</strong>
+                  <strong>Smart Fallback:</strong>
                   <p className="mt-1">If a paid model fails (e.g., insufficient credits), Correctify will offer to retry with a free OpenRouter model automatically.</p>
                 </div>
               </div>
@@ -279,16 +279,16 @@ export default function HelpModal({ isOpen, onClose, shortcutKey }: HelpModalPro
             <div className="space-y-2 text-sm text-foreground/80">
               <p>Track your LLM usage with built-in analytics. Click the <strong>Usage Stats</strong> button in the header menu to view:</p>
               <ul className="space-y-1.5 ml-2">
-                <li>📊 Total requests and success rate</li>
-                <li>⏱️ Average response time per model</li>
-                <li>💰 Estimated cost breakdown by provider</li>
-                <li>📈 Token usage statistics</li>
-                <li>🗓️ Filterable by time period (7/30/90 days, or all time)</li>
+                <li>Total requests and success rate</li>
+                <li>Average response time per model</li>
+                <li>Estimated cost breakdown by provider</li>
+                <li>Token usage statistics</li>
+                <li>Filterable by time period (7/30/90 days, or all time)</li>
               </ul>
               <div className="p-3 bg-info-bg border border-info-border rounded-lg flex gap-2">
                 <Lightbulb className="w-4 h-4 text-info-text flex-shrink-0 mt-0.5" />
                 <div className="text-xs text-info-text">
-                  <strong>🔒 Privacy:</strong> All usage data is stored locally on your device and never shared with any server.
+                  <strong>Privacy:</strong> All usage data is stored locally on your device and never shared with any server.
                 </div>
               </div>
             </div>
