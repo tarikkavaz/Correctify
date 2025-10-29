@@ -77,7 +77,7 @@ export default function SettingsModal({
               value={apiKey}
               onChange={(e) => setApiKey(e.target.value)}
               placeholder={messages.apiModal.apiKeyPlaceholder}
-              className="w-full px-4 py-3 bg-background border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary text-foreground transition-colors"
+              className="w-full px-4 py-3 bg-background border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary text-foreground transition-colors placeholder:text-muted-foreground"
               autoFocus
             />
             <div className="flex items-start gap-2 text-xs text-foreground/60">

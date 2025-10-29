@@ -49,20 +49,20 @@ export default function AboutModal({ isOpen, onClose }: AboutModalProps) {
         {/* Body */}
         <div className="p-6 space-y-6">
           {/* Subtitle */}
-          <p className="text-center text-text-muted">
+          <p className="text-center text-sm text-foreground/80">
             {messages.about.subtitle}
           </p>
 
           {/* Version Info */}
           <div className="text-center space-y-1">
-            <p className="text-sm text-text-muted">
+            <p className="text-sm text-foreground/80">
               {messages.about.version} <span className="font-semibold text-foreground">{version}</span>
             </p>
           </div>
 
           {/* Description */}
           <div className="pt-4 border-t border-border">
-            <p className="text-sm text-text-muted leading-relaxed text-center">
+            <p className="text-sm text-foreground/80 leading-relaxed text-center">
               {messages.about.description}
             </p>
           </div>
@@ -70,7 +70,7 @@ export default function AboutModal({ isOpen, onClose }: AboutModalProps) {
           {/* Features */}
           <div className="space-y-3">
             <h3 className="text-sm font-semibold text-foreground">Features</h3>
-            <ul className="space-y-2 text-sm text-text-muted">
+            <ul className="space-y-2 text-sm text-foreground/80">
               <li className="flex items-start gap-2">
                 <span className="text-primary">•</span>
                 <span>Secure API key storage (OS-level encryption)</span>
@@ -107,7 +107,7 @@ export default function AboutModal({ isOpen, onClose }: AboutModalProps) {
 
           {/* Footer */}
           <div className="pt-4 border-t border-border text-center">
-            <p className="text-xs text-text-muted">{messages.about.copyright}</p>
+            <p className="text-xs text-foreground/80">{messages.about.copyright}</p>
           </div>
         </div>
       </div>
