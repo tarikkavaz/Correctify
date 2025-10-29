@@ -3,116 +3,159 @@
 
 @custom-variant dark (&:where(.dark, .dark *));
 
-/* Light mode colors - Stone & Lime theme */
 :root {
-  --color-background: oklch(0.985 0.001 106.423); /* stone-50 */
-  --color-foreground: oklch(0.216 0.006 56.043); /* stone-900 */
-  --color-border: oklch(0.97 0.001 106.424); /* stone-100 - more subtle */
-  --color-primary: oklch(0.648 0.205 129.8); /* lime-600 */
-  --color-primary-hover: oklch(0.528 0.162 130.393); /* lime-700 */
-  --color-primary-link: oklch(0.648 0.205 129.8); /* lime-600 */
+  /* Base colors from custom.css */
+  --background: oklch(1.0000 0 0);
+  --foreground: oklch(0.1884 0.0128 248.5103);
+  --card: oklch(0.9784 0.0011 197.1387);
+  --card-foreground: oklch(0.1884 0.0128 248.5103);
+  --popover: oklch(1.0000 0 0);
+  --popover-foreground: oklch(0.1884 0.0128 248.5103);
+  --primary: oklch(0.5789 0.1899 140.8644);
+  --primary-foreground: oklch(1.0000 0 0);
+  --secondary: oklch(0.1884 0.0128 248.5103);
+  --secondary-foreground: oklch(1.0000 0 0);
+  --muted: oklch(0.9222 0.0013 286.3737);
+  --muted-foreground: oklch(0.1884 0.0128 248.5103);
+  --accent: oklch(0.9392 0.0166 250.8453);
+  --accent-foreground: oklch(0.5789 0.1899 140.8644);
+  --destructive: oklch(0.6188 0.2376 25.7658);
+  --destructive-foreground: oklch(1.0000 0 0);
+  --border: oklch(0.9317 0.0118 231.6594);
+  --input: oklch(0.9809 0.0025 228.7836);
+  --ring: oklch(0.5789 0.1899 140.8644);
+  
+  /* Map to app color variables */
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-border: var(--border);
+  --color-primary: var(--primary);
+  --color-primary-hover: oklch(0.4789 0.1599 140.8644); /* darker primary for hover */
+  --color-primary-link: var(--primary);
   
   /* Text colors */
-  --color-text-base: oklch(0.216 0.006 56.043); /* stone-900 */
-  --color-text-muted: oklch(0.553 0.013 58.071); /* stone-500 */
-  --color-text-on-primary: #fff; /* white text on primary buttons/tooltips */
-  --color-text-link: oklch(0.547 0.186 255.282); /* blue-600 */
-  --color-button-text: #fff; /* white text on lime-600 button */
+  --color-text-base: var(--foreground);
+  --color-text-muted: var(--muted-foreground);
+  --color-text-on-primary: var(--primary-foreground);
+  --color-text-link: var(--primary);
+  --color-button-text: var(--primary-foreground);
   
   /* Prose/Content */
-  --color-prose-text: oklch(0.216 0.006 56.043); /* stone-900 */
-  --color-code-bg: oklch(0.923 0.003 48.717); /* stone-200 */
-  --color-code-text: oklch(0.374 0.01 67.558); /* stone-700 */
-  --color-code-pre-bg: oklch(0.923 0.003 48.717); /* stone-200 */
-  --color-code-pre-text: oklch(0.268 0.007 34.298); /* stone-800 */
-  --color-selection: oklch(0.841 0.215 130.229 / 0.3); /* lime-400 at 30% opacity */
-  --color-placeholder: oklch(0.553 0.013 58.071); /* stone-500 */
+  --color-prose-text: var(--foreground);
+  --color-code-bg: var(--muted);
+  --color-code-text: var(--muted-foreground);
+  --color-code-pre-bg: var(--muted);
+  --color-code-pre-text: var(--foreground);
+  --color-selection: oklch(0.5789 0.1899 140.8644 / 0.3);
+  --color-placeholder: var(--muted-foreground);
   
   /* UI Elements */
   --color-modal-backdrop: rgba(0, 0, 0, 0.5);
-  --color-card-bg: #fff;
-  --color-tooltip-bg: oklch(0.268 0.007 34.298); /* stone-800 */
-  --color-divider: oklch(0.923 0.003 48.717); /* stone-200 */
+  --color-card-bg: var(--card);
+  --color-tooltip-bg: var(--muted-foreground);
+  --color-divider: var(--border);
   
   /* Alert/Status colors - Info/Blue */
-  --color-info-bg: oklch(0.955 0.024 254.604); /* blue-50 */
-  --color-info-border: oklch(0.885 0.071 254.946); /* blue-200 */
-  --color-info-text: oklch(0.367 0.131 265.633); /* blue-800 */
-  --color-info-icon: oklch(0.367 0.131 265.633); /* blue-800 */
+  --color-info-bg: oklch(0.955 0.024 254.604);
+  --color-info-border: oklch(0.885 0.071 254.946);
+  --color-info-text: oklch(0.367 0.131 265.633);
+  --color-info-icon: oklch(0.367 0.131 265.633);
   
   /* Alert/Status colors - Warning/Yellow */
-  --color-warning-bg: oklch(0.981 0.024 97.433); /* yellow-50 */
-  --color-warning-border: oklch(0.932 0.111 99.572); /* yellow-200 */
-  --color-warning-text: oklch(0.455 0.107 73.324); /* yellow-800 */
-  --color-warning-icon: oklch(0.455 0.107 73.324); /* yellow-800 */
+  --color-warning-bg: oklch(0.981 0.024 97.433);
+  --color-warning-border: oklch(0.932 0.111 99.572);
+  --color-warning-text: oklch(0.455 0.107 73.324);
+  --color-warning-icon: oklch(0.455 0.107 73.324);
   
   /* Alert/Status colors - Success/Purple (for tips) */
-  --color-success-bg: oklch(0.976 0.025 308.299); /* purple-50 */
-  --color-success-border: oklch(0.913 0.065 307.174); /* purple-200 */
-  --color-success-text: oklch(0.413 0.148 308.526); /* purple-800 */
-  --color-success-icon: oklch(0.413 0.148 308.526); /* purple-800 */
+  --color-success-bg: oklch(0.976 0.025 308.299);
+  --color-success-border: oklch(0.913 0.065 307.174);
+  --color-success-text: oklch(0.413 0.148 308.526);
+  --color-success-icon: oklch(0.413 0.148 308.526);
   
   /* Alert/Status colors - Error/Red */
-  --color-error-bg: oklch(0.971 0.022 17.396); /* red-50 */
-  --color-error-border: oklch(0.898 0.095 18.334); /* red-200 */
-  --color-error-text: oklch(0.478 0.194 27.325); /* red-800 */
-  --color-error-icon: oklch(0.547 0.246 27.325); /* red-600 */
+  --color-error-bg: oklch(0.971 0.022 17.396);
+  --color-error-border: oklch(0.898 0.095 18.334);
+  --color-error-text: oklch(0.478 0.194 27.325);
+  --color-error-icon: var(--destructive);
 }
 
-/* Dark mode colors - Stone & Lime theme */
+/* Dark mode - Custom theme */
 .dark {
-  --color-background: oklch(0.147 0.004 49.25); /* stone-950 */
-  --color-foreground: oklch(0.97 0.001 106.424); /* stone-100 */
-  --color-border: oklch(0.216 0.006 56.043); /* stone-900 - more subtle */
-  --color-primary: oklch(0.768 0.233 129.529); /* lime-500 */
-  --color-primary-hover: oklch(0.841 0.215 130.229); /* lime-400 */
-  --color-primary-link: oklch(0.768 0.233 129.529); /* lime-500 */
+  /* Base colors from custom.css dark */
+  --background: oklch(0 0 0);
+  --foreground: oklch(0.9328 0.0025 228.7857);
+  --card: oklch(0.2097 0.0080 274.5332);
+  --card-foreground: oklch(0.8853 0 0);
+  --popover: oklch(0 0 0);
+  --popover-foreground: oklch(0.9328 0.0025 228.7857);
+  --primary: oklch(0.5789 0.1899 140.8644);
+  --primary-foreground: oklch(1.0000 0 0);
+  --secondary: oklch(0.9622 0.0035 219.5331);
+  --secondary-foreground: oklch(0.1884 0.0128 248.5103);
+  --muted: oklch(0.2090 0 0);
+  --muted-foreground: oklch(0.5637 0.0078 247.9662);
+  --accent: oklch(0.1928 0.0331 242.5459);
+  --accent-foreground: oklch(0.5789 0.1899 140.8644);
+  --destructive: oklch(0.6188 0.2376 25.7658);
+  --destructive-foreground: oklch(1.0000 0 0);
+  --border: oklch(0.2674 0.0047 248.0045);
+  --input: oklch(0.3020 0.0288 244.8244);
+  --ring: oklch(0.5789 0.1899 140.8644);
+  
+  /* Map to app color variables */
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-border: var(--border);
+  --color-primary: var(--primary);
+  --color-primary-hover: oklch(0.6789 0.2099 140.8644); /* lighter primary for hover */
+  --color-primary-link: var(--primary);
   
   /* Text colors */
-  --color-text-base: oklch(0.97 0.001 106.424); /* stone-100 */
-  --color-text-muted: oklch(0.709 0.01 56.259); /* stone-400 */
-  --color-text-on-primary: #fff; /* white text on primary buttons/tooltips */
-  --color-text-link: oklch(0.7 0.161 254.604); /* blue-400 */
-  --color-button-text: oklch(0.147 0.004 49.25); /* stone-950 - dark text on bright lime button */
+  --color-text-base: var(--foreground);
+  --color-text-muted: var(--muted-foreground);
+  --color-text-on-primary: var(--primary-foreground);
+  --color-text-link: var(--primary);
+  --color-button-text: var(--primary-foreground);
   
   /* Prose/Content */
-  --color-prose-text: oklch(0.97 0.001 106.424); /* stone-100 */
-  --color-code-bg: oklch(0.268 0.007 34.298); /* stone-800 */
-  --color-code-text: oklch(0.895 0.154 131.064); /* lime-300 */
-  --color-code-pre-bg: oklch(0.268 0.007 34.298); /* stone-800 */
-  --color-code-pre-text: oklch(0.939 0.09 131.585); /* lime-200 */
-  --color-selection: oklch(0.648 0.205 129.8 / 0.3); /* lime-600 at 30% opacity */
-  --color-placeholder: oklch(0.553 0.013 58.071); /* stone-500 */
+  --color-prose-text: var(--foreground);
+  --color-code-bg: var(--muted);
+  --color-code-text: var(--foreground);
+  --color-code-pre-bg: var(--muted);
+  --color-code-pre-text: var(--foreground);
+  --color-selection: oklch(0.5789 0.1899 140.8644 / 0.3);
+  --color-placeholder: var(--muted-foreground);
   
   /* UI Elements */
   --color-modal-backdrop: rgba(0, 0, 0, 0.5);
-  --color-card-bg: oklch(0.268 0.007 34.298); /* stone-800 */
-  --color-tooltip-bg: oklch(0.268 0.007 34.298); /* stone-800 */
-  --color-divider: oklch(0.374 0.01 67.558); /* stone-700 */
+  --color-card-bg: var(--card);
+  --color-tooltip-bg: var(--muted);
+  --color-divider: var(--border);
   
   /* Alert/Status colors - Info/Blue (dark) */
-  --color-info-bg: oklch(0.267 0.068 265.75 / 0.2); /* blue-900/20 */
-  --color-info-border: oklch(0.367 0.131 265.633); /* blue-800 */
-  --color-info-text: oklch(0.858 0.076 253.524); /* blue-300 */
-  --color-info-icon: oklch(0.858 0.076 253.524); /* blue-300 */
+  --color-info-bg: oklch(0.267 0.068 265.75 / 0.2);
+  --color-info-border: oklch(0.367 0.131 265.633);
+  --color-info-text: oklch(0.858 0.076 253.524);
+  --color-info-icon: oklch(0.858 0.076 253.524);
   
   /* Alert/Status colors - Warning/Yellow (dark) */
-  --color-warning-bg: oklch(0.488 0.13 82.837 / 0.2); /* yellow-900/20 */
-  --color-warning-border: oklch(0.455 0.107 73.324); /* yellow-800 */
-  --color-warning-text: oklch(0.933 0.108 99.014); /* yellow-300 */
-  --color-warning-icon: oklch(0.933 0.108 99.014); /* yellow-300 */
+  --color-warning-bg: oklch(0.488 0.13 82.837 / 0.2);
+  --color-warning-border: oklch(0.455 0.107 73.324);
+  --color-warning-text: oklch(0.933 0.108 99.014);
+  --color-warning-icon: oklch(0.933 0.108 99.014);
   
   /* Alert/Status colors - Success/Purple (dark) */
-  --color-success-bg: oklch(0.333 0.115 308.221 / 0.2); /* purple-900/20 */
-  --color-success-border: oklch(0.413 0.148 308.526); /* purple-800 */
-  --color-success-text: oklch(0.868 0.116 307.331); /* purple-300 */
-  --color-success-icon: oklch(0.868 0.116 307.331); /* purple-300 */
+  --color-success-bg: oklch(0.333 0.115 308.221 / 0.2);
+  --color-success-border: oklch(0.413 0.148 308.526);
+  --color-success-text: oklch(0.868 0.116 307.331);
+  --color-success-icon: oklch(0.868 0.116 307.331);
   
   /* Alert/Status colors - Error/Red (dark) */
-  --color-error-bg: oklch(0.393 0.163 28.004 / 0.2); /* red-900/20 */
-  --color-error-border: oklch(0.478 0.194 27.325); /* red-800 */
-  --color-error-text: oklch(0.849 0.136 24.151); /* red-300 */
-  --color-error-icon: oklch(0.849 0.136 24.151); /* red-300 */
+  --color-error-bg: oklch(0.393 0.163 28.004 / 0.2);
+  --color-error-border: oklch(0.478 0.194 27.325);
+  --color-error-text: oklch(0.849 0.136 24.151);
+  --color-error-icon: var(--destructive);
 }
 
 /* Tailwind theme integration */

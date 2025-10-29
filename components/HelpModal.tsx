@@ -126,7 +126,7 @@ export default function HelpModal({ isOpen, onClose, shortcutKey }: HelpModalPro
 
               {isTauri() && (
                 <div>
-                  <h4 className="font-medium text-foreground dark:text-white mb-2">
+                  <h4 className="font-medium text-foreground mb-2">
                     {messages.helpModal.globalShortcut}
                   </h4>
                   <p className="mb-2">

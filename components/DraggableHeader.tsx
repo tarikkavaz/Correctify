@@ -127,7 +127,7 @@ export default function DraggableHeader({
           </button>
           
           {isMenuOpen && (
-            <div className="absolute top-full right-0 mt-2 w-48 bg-white dark:bg-stone-800 border border-border rounded-lg shadow-lg z-50">
+            <div className="absolute top-full right-0 mt-2 w-48 bg-card-bg border border-border rounded-lg shadow-lg z-50">
               <button
                 onClick={() => { onAboutClick(); setIsMenuOpen(false); }}
                 className="w-full flex items-center gap-3 px-4 py-3 text-sm text-foreground hover:bg-foreground/5 transition-colors first:rounded-t-lg"
@@ -156,7 +156,7 @@ export default function DraggableHeader({
               
               <button
                 onClick={() => { onQuitClick(); setIsMenuOpen(false); }}
-                className="w-full flex items-center gap-3 px-4 py-3 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/20 transition-colors last:rounded-b-lg"
+                className="w-full flex items-center gap-3 px-4 py-3 text-sm text-error-text hover:bg-error-bg transition-colors last:rounded-b-lg"
               >
                 <X className="w-4 h-4" />
                 <span>{messages.header.quit}</span>

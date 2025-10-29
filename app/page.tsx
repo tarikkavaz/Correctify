@@ -680,7 +680,7 @@ export default function HomePage() {
                       </button>
                       
                       {isStyleDropdownOpen && (
-                        <div className="absolute top-full right-0 mt-1 w-64 bg-white dark:bg-stone-800 border border-border rounded-lg shadow-lg z-10">
+                        <div className="absolute top-full right-0 mt-1 w-64 bg-card-bg border border-border rounded-lg shadow-lg z-10">
                           {styleOptions.map((option) => (
                             <button
                               key={option.value}
@@ -722,7 +722,7 @@ export default function HomePage() {
                       </button>
                       
                       {isModelDropdownOpen && (
-                        <div className="absolute top-full right-0 mt-1 w-max min-w-[150px] max-w-[300px] bg-white dark:bg-stone-800 border border-border rounded-lg shadow-lg z-10 max-h-[400px] overflow-y-auto">
+                        <div className="absolute top-full right-0 mt-1 w-max min-w-[150px] max-w-[300px] bg-card-bg border border-border rounded-lg shadow-lg z-10 max-h-[400px] overflow-y-auto">
                           {paidModels.length > 0 && (
                             <>
                               <div className="px-3 py-2 text-[10px] font-semibold text-foreground/40 uppercase tracking-wider border-b border-border">
@@ -803,7 +803,7 @@ export default function HomePage() {
                 onChange={(e) => setInputText(e.target.value)}
                 onKeyDown={handleKeyDown}
                 placeholder={messages.home.inputPlaceholder}
-                className="w-full h-96 px-4 py-3 bg-white dark:bg-stone-900 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary resize-none text-foreground transition-colors"
+                className="w-full h-96 px-4 py-3 bg-card border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary resize-none text-foreground transition-colors"
                 disabled={isLoading}
               />
             </div>
@@ -988,7 +988,7 @@ export default function HomePage() {
                     )}
                   </button>
                 </div>
-                <div className="p-4 pb-8 bg-white dark:bg-stone-900 border border-border rounded-lg min-h-[12rem] transition-colors">
+                <div className="p-4 pb-8 bg-card border border-border rounded-lg min-h-[12rem] transition-colors">
                   <div className="prose max-w-none">
                     <ReactMarkdown remarkPlugins={[remarkGfm]}>
                       {outputText}
