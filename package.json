@@ -15,6 +15,9 @@
     "tauri:build:signed": "./scripts/build-signed.sh"
   },
   "dependencies": {
+    "@ai-sdk/anthropic": "^2.0.38",
+    "@ai-sdk/mistral": "^2.0.20",
+    "@ai-sdk/openai": "^2.0.56",
     "@tailwindcss/typography": "^0.5.19",
     "@tauri-apps/api": "^2.8.0",
     "@tauri-apps/plugin-autostart": "^2.5.0",
@@ -23,6 +26,7 @@
     "@tauri-apps/plugin-notification": "^2.3.1",
     "@tauri-apps/plugin-os": "^2.3.1",
     "@tauri-apps/plugin-shell": "^2.3.1",
+    "ai": "^5.0.81",
     "lucide-react": "^0.468.0",
     "next": "^15.1.8",
     "openai": "^6.1.0",

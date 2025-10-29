@@ -49,7 +49,9 @@
             "autostart:default",
             "autostart:allow-enable",
             "autostart:allow-disable",
-            "autostart:allow-is-enabled"
+            "autostart:allow-is-enabled",
+            "core:app:allow-name",
+            "core:app:allow-version"
           ]
         },
         {

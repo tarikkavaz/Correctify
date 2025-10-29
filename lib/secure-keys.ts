@@ -22,12 +22,13 @@ export async function getKey(key: string): Promise<string | null> {
   }
 
   try {
-    const value = await invoke<string>('plugin:secure-storage|get', {
-      key: `${KEY_PREFIX}${key}`,
+    const fullKey = `${KEY_PREFIX}${key}`;
+    const value = await invoke<string>('secure_storage_get', {
+      key: fullKey,
     });
     return value || null;
   } catch (error) {
-    console.error(`Failed to get key "${key}" from secure storage:`, error);
+    // Key might not exist yet, which is not an error
     return null;
   }
 }
@@ -43,12 +44,13 @@ export async function setKey(key: string, value: string): Promise<void> {
   }
 
   try {
-    await invoke('plugin:secure-storage|set', {
-      key: `${KEY_PREFIX}${key}`,
+    const fullKey = `${KEY_PREFIX}${key}`;
+    await invoke('secure_storage_set', {
+      key: fullKey,
       value,
     });
   } catch (error) {
-    console.error(`Failed to set key "${key}" in secure storage:`, error);
+    console.error(`Failed to save ${key} to secure storage:`, error);
     throw new Error(`Failed to save ${key} to secure storage`);
   }
 }
@@ -64,7 +66,7 @@ export async function deleteKey(key: string): Promise<void> {
   }
 
   try {
-    await invoke('plugin:secure-storage|remove', {
+    await invoke('secure_storage_remove', {
       key: `${KEY_PREFIX}${key}`,
     });
   } catch (error) {
@@ -95,11 +97,8 @@ export async function migrateFromLocalStorage(): Promise<void> {
   
   // Check if migration has already been completed
   if (localStorage.getItem(MIGRATION_FLAG) === 'true') {
-    console.log('Migration already completed, skipping...');
     return;
   }
-
-  console.log('Starting migration from localStorage to secure storage...');
 
   const keysToMigrate = [
     'openai-api-key',
@@ -108,17 +107,12 @@ export async function migrateFromLocalStorage(): Promise<void> {
     'mistral-api-key',
   ];
 
-  let migratedCount = 0;
-
   for (const key of keysToMigrate) {
     try {
       const value = localStorage.getItem(key);
       if (value && value.trim().length > 0) {
-        console.log(`Migrating ${key}...`);
         await setKey(key, value);
         localStorage.removeItem(key);
-        migratedCount++;
-        console.log(`Successfully migrated ${key}`);
       }
     } catch (error) {
       console.error(`Failed to migrate ${key}:`, error);
@@ -128,5 +122,4 @@ export async function migrateFromLocalStorage(): Promise<void> {
 
   // Mark migration as complete
   localStorage.setItem(MIGRATION_FLAG, 'true');
-  console.log(`Migration complete. Migrated ${migratedCount} key(s).`);
 }

@@ -4,26 +4,34 @@ import { useState, useEffect, useRef, FormEvent, KeyboardEvent } from 'react';
 import { Command, CornerDownLeft, Copy, Check, ChevronDown, Lightbulb } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
-import { CorrectionResponse, WritingStyle } from '@/lib/types';
+import { CorrectionResponse, WritingStyle, Provider } from '@/lib/types';
 import SettingsModal from '@/components/SettingsModal';
 import HelpModal from '@/components/HelpModal';
 import DraggableHeader from '@/components/DraggableHeader';
-import { OpenAICorrector } from '@/lib/openai';
+import { UnifiedCorrector, getProviderForModel } from '@/lib/llm';
 import { isTauri } from '@/lib/utils';
 import { useTheme } from '@/lib/useTheme';
 import { useLocale } from '@/lib/useLocale';
 import { getKey, setKey, deleteKey, migrateFromLocalStorage } from '@/lib/secure-keys';
+import { MODELS, getAvailableModels, getModelById, ModelInfo } from '@/lib/models';
 
 export default function HomePage() {
   const { messages } = useLocale();
   const [inputText, setInputText] = useState('');
   const [outputText, setOutputText] = useState('');
   const [apiKey, setApiKey] = useState('');
+  const [apiKeys, setApiKeys] = useState<Record<Provider, string>>({
+    openai: '',
+    anthropic: '',
+    mistral: '',
+    openrouter: '',
+  });
   const [autostartEnabled, setAutostartEnabled] = useState(false);
   const [soundEnabled, setSoundEnabled] = useState(true); // Default: enabled
   const [shortcutKey, setShortcutKey] = useState('.'); // Default: period
   const [autoPasteEnabled, setAutoPasteEnabled] = useState(false); // Default: disabled
-  const [model, setModel] = useState<'gpt-5' | 'gpt-5-mini' | 'gpt-4o-mini'>('gpt-4o-mini');
+  const [model, setModel] = useState<string>('gpt-4o-mini');
+  const [availableModels, setAvailableModels] = useState<ModelInfo[]>([]);
   const [isModelDropdownOpen, setIsModelDropdownOpen] = useState(false);
   const [writingStyle, setWritingStyle] = useState<WritingStyle>('grammar');
   const [isStyleDropdownOpen, setIsStyleDropdownOpen] = useState(false);
@@ -47,16 +55,34 @@ export default function HomePage() {
         await migrateFromLocalStorage();
       }
       
-      // Load API key from secure storage (or localStorage in web mode)
-      const savedKey = await getKey('openai-api-key');
-      if (savedKey) {
-        setApiKey(savedKey);
-      }
+      // Load all API keys from secure storage
+      const loadedKeys: Record<Provider, string> = {
+        openai: (await getKey('openai-api-key')) || '',
+        anthropic: (await getKey('anthropic-api-key')) || '',
+        mistral: (await getKey('mistral-api-key')) || '',
+        openrouter: (await getKey('openrouter-api-key')) || '',
+      };
       
-      // Load other settings from localStorage (non-sensitive data)
-      const savedModel = localStorage.getItem('openai-model') as 'gpt-5' | 'gpt-5-mini' | 'gpt-4o-mini' | null;
-      if (savedModel && (savedModel === 'gpt-5' || savedModel === 'gpt-5-mini' || savedModel === 'gpt-4o-mini')) {
+      setApiKeys(loadedKeys);
+      // Keep apiKey state for backward compatibility
+      setApiKey(loadedKeys.openai);
+      
+      // Compute available models based on API keys
+      const hasKeys: Record<Provider, boolean> = {
+        openai: !!loadedKeys.openai,
+        anthropic: !!loadedKeys.anthropic,
+        mistral: !!loadedKeys.mistral,
+        openrouter: !!loadedKeys.openrouter,
+      };
+      const available = getAvailableModels(hasKeys);
+      setAvailableModels(available);
+      
+      // Load saved model or default to first available
+      const savedModel = localStorage.getItem('selected-model');
+      if (savedModel && available.some(m => m.id === savedModel)) {
         setModel(savedModel);
+      } else if (available.length > 0) {
+        setModel(available[0].id);
       }
 
       const savedStyle = localStorage.getItem('writing-style') as WritingStyle | null;
@@ -155,15 +181,21 @@ export default function HomePage() {
           console.log('Text preview:', textToCorrect.substring(0, 100));
 
           // Check if API key is available
-          const currentApiKey = await getKey('openai-api-key');
+          // Get current model and its provider
+          const currentModel = localStorage.getItem('selected-model') || 'gpt-4o-mini';
+          const provider = getProviderForModel(currentModel);
+          
+          // Check if API key for this provider is configured
+          const currentApiKey = await getKey(`${provider}-api-key`);
           if (!currentApiKey) {
             console.error('❌ No API key available - please configure in settings');
             // Send error notification
             try {
               const { sendNotification } = await import('@tauri-apps/plugin-notification');
+              const providerName = provider.charAt(0).toUpperCase() + provider.slice(1);
               await sendNotification({
                 title: '❌ Correctify Error',
-                body: 'Please configure your OpenAI API key in settings first!'
+                body: `Please configure your ${providerName} API key in settings first!`
               });
               console.log('✅ Error notification sent for missing API key');
             } catch (err) {
@@ -177,9 +209,8 @@ export default function HomePage() {
             const correctionStartTime = Date.now();
             
             // Perform correction
-            const currentModel = localStorage.getItem('openai-model') as 'gpt-5' | 'gpt-5-mini' | 'gpt-4o-mini' || 'gpt-4o-mini';
             const currentStyle = localStorage.getItem('writing-style') as WritingStyle || 'grammar';
-            const corrector = new OpenAICorrector(currentApiKey, currentModel);
+            const corrector = new UnifiedCorrector(provider, currentApiKey, currentModel);
             const result = await corrector.correct({ text: textToCorrect, writingStyle: currentStyle });
 
             const correctionDuration = Date.now() - correctionStartTime;
@@ -248,9 +279,9 @@ export default function HomePage() {
     }
   };
 
-  const handleModelChange = (newModel: 'gpt-5' | 'gpt-5-mini' | 'gpt-4o-mini') => {
-    setModel(newModel);
-    localStorage.setItem('openai-model', newModel);
+  const handleModelChange = (newModelId: string) => {
+    setModel(newModelId);
+    localStorage.setItem('selected-model', newModelId);
     setIsModelDropdownOpen(false);
   };
 
@@ -260,11 +291,9 @@ export default function HomePage() {
     setIsStyleDropdownOpen(false);
   };
 
-  const modelOptions = [
-    { value: 'gpt-4o-mini', label: 'GPT-4o Mini' },
-    { value: 'gpt-5-mini', label: 'GPT-5 Mini' },
-    { value: 'gpt-5', label: 'GPT-5' },
-  ] as const;
+  // Group available models by category
+  const paidModels = availableModels.filter(m => m.category === 'paid');
+  const freeModels = availableModels.filter(m => m.category === 'free');
 
   const styleOptions = [
     { value: 'grammar', label: 'Grammar Only', description: 'Fixes grammar and typos only' },
@@ -313,24 +342,57 @@ export default function HomePage() {
     }
   };
 
-  const handleSaveApiKey = async (newApiKey: string, newAutostartEnabled: boolean, newSoundEnabled: boolean, newShortcutKey: string, newAutoPasteEnabled: boolean) => {
-    setApiKey(newApiKey);
+  const handleSaveApiKey = async (
+    newApiKeys: Record<Provider, string>,
+    newAutostartEnabled: boolean,
+    newSoundEnabled: boolean,
+    newShortcutKey: string,
+    newAutoPasteEnabled: boolean
+  ) => {
+    // Update state
+    setApiKeys(newApiKeys);
+    setApiKey(newApiKeys.openai); // For backward compatibility
     setAutostartEnabled(newAutostartEnabled);
     setSoundEnabled(newSoundEnabled);
     setShortcutKey(newShortcutKey);
     setAutoPasteEnabled(newAutoPasteEnabled);
-    
-    // Save API key to secure storage (or localStorage in web mode)
+
+    // Save all API keys to secure storage
     try {
-      if (newApiKey) {
-        await setKey('openai-api-key', newApiKey);
-      } else {
-        await deleteKey('openai-api-key');
+      for (const provider of Object.keys(newApiKeys) as Provider[]) {
+        const keyValue = newApiKeys[provider];
+        const keyName = `${provider}-api-key`;
+        
+        if (keyValue && keyValue.trim().length > 0) {
+          await setKey(keyName, keyValue);
+        } else {
+          // Remove key if empty
+          try {
+            await deleteKey(keyName);
+          } catch (err) {
+            // Ignore if key doesn't exist
+          }
+        }
+      }
+      
+      // Recompute available models
+      const hasKeys: Record<Provider, boolean> = {
+        openai: !!newApiKeys.openai,
+        anthropic: !!newApiKeys.anthropic,
+        mistral: !!newApiKeys.mistral,
+        openrouter: !!newApiKeys.openrouter,
+      };
+      const available = getAvailableModels(hasKeys);
+      setAvailableModels(available);
+      
+      // Reset model if current model is no longer available
+      if (!available.some(m => m.id === model) && available.length > 0) {
+        setModel(available[0].id);
+        localStorage.setItem('selected-model', available[0].id);
       }
     } catch (error) {
-      console.error('Failed to save API key:', error);
-      // Fall back to showing an error to the user
-      alert('Failed to save API key securely. Please try again.');
+      console.error('Failed to save API keys:', error);
+      alert('Failed to save API keys securely. Please try again.');
       return;
     }
 
@@ -385,8 +447,13 @@ export default function HomePage() {
       return;
     }
 
-    if (!apiKey.trim()) {
-      setError('Please add your OpenAI API key');
+    // Get provider and API key for selected model
+    const provider = getProviderForModel(model);
+    const modelApiKey = apiKeys[provider];
+    
+    if (!modelApiKey || !modelApiKey.trim()) {
+      const providerName = provider.charAt(0).toUpperCase() + provider.slice(1);
+      setError(`Please add your ${providerName} API key in Settings`);
       setIsSettingsModalOpen(true);
       return;
     }
@@ -407,8 +474,12 @@ export default function HomePage() {
     const startTime = Date.now();
 
     try {
-      // In Tauri, call OpenAI directly since static export doesn't support API routes
-      if (isTauri()) {
+      // Check if we're in production build or dev mode
+      const isProduction = process.env.NODE_ENV === 'production';
+      
+      // In Tauri production, call LLM directly since static export doesn't support API routes
+      // In dev mode, always use API route to avoid CORS issues
+      if (isTauri() && isProduction) {
         const { invoke } = await import('@tauri-apps/api/core');
         
         // Play processing sound
@@ -418,7 +489,7 @@ export default function HomePage() {
           console.error('Failed to play processing sound:', err);
         }
         
-        const corrector = new OpenAICorrector(apiKey, model);
+        const corrector = new UnifiedCorrector(provider, modelApiKey, model);
         const result = await corrector.correct({
           text: inputText,
           writingStyle: writingStyle,
@@ -430,7 +501,7 @@ export default function HomePage() {
         setMeta({
           duration,
           model: model,
-          provider: 'openai',
+          provider: provider,
         });
         
         // Play completed sound
@@ -443,7 +514,7 @@ export default function HomePage() {
         // In browser, use API route to keep API key more secure
         const headers: Record<string, string> = {
           'Content-Type': 'application/json',
-          'X-OPENAI-KEY': apiKey,
+          [`x-${provider}-key`]: modelApiKey,
         };
 
         const response = await fetch('/api/correct', {
@@ -451,7 +522,7 @@ export default function HomePage() {
           headers,
           body: JSON.stringify({
             text: inputText,
-            provider: 'openai',
+            provider: provider,
             model: model,
             writingStyle: writingStyle,
           }),
@@ -496,7 +567,7 @@ export default function HomePage() {
         isOpen={isSettingsModalOpen}
         onClose={() => setIsSettingsModalOpen(false)}
         onSave={handleSaveApiKey}
-        currentApiKey={apiKey}
+        currentApiKeys={apiKeys}
         currentAutostartEnabled={autostartEnabled}
         currentSoundEnabled={soundEnabled}
         currentShortcutKey={shortcutKey}
@@ -568,29 +639,82 @@ export default function HomePage() {
                       <button
                         type="button"
                         onClick={() => setIsModelDropdownOpen(!isModelDropdownOpen)}
-                        className="flex items-center gap-2 px-3 py-1.5 text-xs font-medium text-foreground/70 bg-foreground/5 hover:bg-foreground/10 hover:text-foreground border-0 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed transition-colors min-w-[120px]"
+                        className="flex items-center gap-2 px-3 py-1.5 text-xs font-medium text-foreground/70 bg-foreground/5 hover:bg-foreground/10 hover:text-foreground border-0 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed transition-colors min-w-[160px]"
                         disabled={isLoading}
                       >
-                        <span className="flex-1 text-left">{modelOptions.find(option => option.value === model)?.label}</span>
+                        <span className="flex-1 text-left">{getModelById(model)?.name || 'Select Model'}</span>
                         <ChevronDown className={`w-3 h-3 transition-transform flex-shrink-0 ${isModelDropdownOpen ? 'rotate-180' : ''}`} />
                       </button>
                       
                       {isModelDropdownOpen && (
-                        <div className="absolute top-full left-0 mt-1 w-full min-w-[120px] bg-white dark:bg-stone-800 border border-border rounded-lg shadow-lg z-10">
-                          {modelOptions.map((option) => (
-                            <button
-                              key={option.value}
-                              type="button"
-                              onClick={() => handleModelChange(option.value)}
-                              className={`w-full text-left px-3 py-2 text-xs font-medium transition-colors first:rounded-t-lg last:rounded-b-lg ${
-                                model === option.value
-                                  ? 'bg-primary text-button-text'
-                                  : 'text-foreground hover:bg-foreground/5'
-                              }`}
-                            >
-                              {option.label}
-                            </button>
-                          ))}
+                        <div className="absolute top-full right-0 mt-1 w-max min-w-[150px] max-w-[300px] bg-white dark:bg-stone-800 border border-border rounded-lg shadow-lg z-10 max-h-[400px] overflow-y-auto">
+                          {paidModels.length > 0 && (
+                            <>
+                              <div className="px-3 py-2 text-[10px] font-semibold text-foreground/40 uppercase tracking-wider border-b border-border">
+                                Paid Models
+                              </div>
+                              {paidModels.map((modelInfo) => (
+                                <button
+                                  key={modelInfo.id}
+                                  type="button"
+                                  onClick={() => handleModelChange(modelInfo.id)}
+                                  className={`w-full text-left px-3 py-2 text-xs font-medium transition-colors ${
+                                    model === modelInfo.id
+                                      ? 'bg-primary text-button-text'
+                                      : 'text-foreground hover:bg-foreground/5'
+                                  }`}
+                                >
+                                  <div className="flex items-start justify-between gap-3">
+                                    <span className="flex-1 min-w-0">{modelInfo.name}</span>
+                                    <span className={`text-[10px] uppercase flex-shrink-0 ${
+                                      model === modelInfo.id ? 'text-button-text/60' : 'text-foreground/40'
+                                    }`}>{modelInfo.provider}</span>
+                                  </div>
+                                  {modelInfo.description && (
+                                    <div className={`text-[10px] mt-0.5 ${
+                                      model === modelInfo.id ? 'text-button-text/70' : 'text-foreground/50'
+                                    }`}>{modelInfo.description}</div>
+                                  )}
+                                </button>
+                              ))}
+                            </>
+                          )}
+                          {freeModels.length > 0 && (
+                            <>
+                              <div className="px-3 py-2 text-[10px] font-semibold text-foreground/40 uppercase tracking-wider border-t border-border">
+                                Free Models
+                              </div>
+                              {freeModels.map((modelInfo) => (
+                                <button
+                                  key={modelInfo.id}
+                                  type="button"
+                                  onClick={() => handleModelChange(modelInfo.id)}
+                                  className={`w-full text-left px-3 py-2 text-xs font-medium transition-colors last:rounded-b-lg ${
+                                    model === modelInfo.id
+                                      ? 'bg-primary text-button-text'
+                                      : 'text-foreground hover:bg-foreground/5'
+                                  }`}
+                                >
+                                  <div className="flex items-start justify-between gap-3">
+                                    <span className="flex-1 min-w-0">{modelInfo.name}</span>
+                                    <span className={`text-[10px] uppercase flex-shrink-0 ${
+                                      model === modelInfo.id ? 'text-button-text/60' : 'text-foreground/40'
+                                    }`}>{modelInfo.provider}</span>
+                                  </div>
+                                  {modelInfo.description && (
+                                    <div className={`text-[10px] mt-0.5 ${
+                                      model === modelInfo.id ? 'text-button-text/70' : 'text-foreground/50'
+                                    }`}>{modelInfo.description}</div>
+                                  )}
+                                </button>
+                              ))}
+                            </>
+                          )}
+                          {availableModels.length === 0 && (
+                            <div className="px-3 py-4 text-xs text-foreground/50 text-center">
+                              No models available. Please add an API key in Settings.
+                            </div>
+                          )}
                         </div>
                       )}
                     </div>
@@ -635,7 +759,7 @@ export default function HomePage() {
             </div>
           </form>
 
-          {!apiKey && (
+          {availableModels.length === 0 && (
             <div className="mt-6 p-4 bg-error-bg border border-error-border rounded-lg">
               <div className="flex items-start gap-3">
                 <div className="flex-shrink-0">
@@ -647,7 +771,7 @@ export default function HomePage() {
                   <h3 className="text-sm font-semibold text-error-text mb-1">
                     {messages.home.noApiKeyTitle}
                   </h3>
-                  <p className="text-sm text-error-text">
+                  <p className="text-sm text-error-text mb-2">
                     {messages.home.noApiKeyMessage}{' '}
                     <button
                       onClick={() => setIsSettingsModalOpen(true)}
@@ -663,6 +787,9 @@ export default function HomePage() {
                       {messages.home.noApiKeyHelpGuide}
                     </button>
                     {' '}{messages.home.noApiKeyForInstructions}
+                  </p>
+                  <p className="text-xs text-error-text/80 italic">
+                    💡 Tip: OpenRouter offers free models, but you still need to create a free account and get an API key (no credit card required).
                   </p>
                 </div>
               </div>
