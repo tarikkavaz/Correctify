@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useRef, useEffect } from 'react';
-import { Settings, Sun, Moon, Monitor, HelpCircle, Info, RefreshCcw, BarChart3, MoreVertical } from 'lucide-react';
+import { Settings, Sun, Moon, Monitor, HelpCircle, Info, RefreshCcw, BarChart3, MoreVertical, X } from 'lucide-react';
 import { Theme } from '@/lib/useTheme';
 import { useLocale } from '@/lib/useLocale';
 
@@ -11,6 +11,7 @@ interface DraggableHeaderProps {
   onUsageClick: () => void;
   onAboutClick: () => void;
   onReloadClick: () => void;
+  onQuitClick: () => void;
   theme: Theme;
   onThemeToggle: () => void;
 }
@@ -21,6 +22,7 @@ export default function DraggableHeader({
   onUsageClick,
   onAboutClick,
   onReloadClick,
+  onQuitClick,
   theme,
   onThemeToggle,
 }: DraggableHeaderProps) {
@@ -144,10 +146,20 @@ export default function DraggableHeader({
               
               <button
                 onClick={() => { onUsageClick(); setIsMenuOpen(false); }}
-                className="w-full flex items-center gap-3 px-4 py-3 text-sm text-foreground hover:bg-foreground/5 transition-colors last:rounded-b-lg"
+                className="w-full flex items-center gap-3 px-4 py-3 text-sm text-foreground hover:bg-foreground/5 transition-colors"
               >
                 <BarChart3 className="w-4 h-4" />
                 <span>Usage Stats</span>
+              </button>
+              
+              <div className="border-t border-border" />
+              
+              <button
+                onClick={() => { onQuitClick(); setIsMenuOpen(false); }}
+                className="w-full flex items-center gap-3 px-4 py-3 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/20 transition-colors last:rounded-b-lg"
+              >
+                <X className="w-4 h-4" />
+                <span>{messages.header.quit}</span>
               </button>
             </div>
           )}

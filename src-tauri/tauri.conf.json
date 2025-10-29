@@ -57,7 +57,9 @@
             "updater:allow-download",
             "updater:allow-install",
             "updater:allow-download-and-install",
+            "process:default",
             "process:allow-restart",
+            "process:allow-exit",
             "dialog:default",
             "dialog:allow-ask",
             "dialog:allow-message"

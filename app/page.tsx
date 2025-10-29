@@ -332,6 +332,17 @@ export default function HomePage() {
     }
   };
 
+  const handleQuit = async () => {
+    if (isTauri()) {
+      try {
+        const { exit } = await import('@tauri-apps/plugin-process');
+        await exit(0);
+      } catch (err) {
+        console.error('Failed to quit app:', err);
+      }
+    }
+  };
+
   const handleSaveApiKey = async (
     newApiKeys: Record<Provider, string>,
     newAutostartEnabled: boolean,
@@ -612,6 +623,7 @@ export default function HomePage() {
         onUsageClick={() => setIsUsageModalOpen(true)}
         onAboutClick={handleOpenAbout}
         onReloadClick={handleReload}
+        onQuitClick={handleQuit}
         theme={theme}
         onThemeToggle={toggleTheme}
       />
