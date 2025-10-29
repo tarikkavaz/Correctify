@@ -15,7 +15,7 @@ export interface Corrector {
   correct(input: CorrectionInput): Promise<CorrectionResult>;
 }
 
-export type Provider = 'openai';
+export type Provider = 'openai' | 'anthropic' | 'mistral' | 'openrouter';
 
 export interface CorrectionRequest {
   text: string;

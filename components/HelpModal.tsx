@@ -43,25 +43,61 @@ export default function HelpModal({ isOpen, onClose, shortcutKey }: HelpModalPro
             </h3>
             <div className="space-y-3 text-sm text-foreground/80">
               <p>
-                {messages.helpModal.apiKeyDescription}
+                Correctify v1.1.0 supports <strong>4 LLM providers</strong> with 10 total models (6 paid, 4 free). You can add API keys for any or all providers.
               </p>
-              <ol className="list-decimal list-inside space-y-2 ml-2">
-                <li>
-                  {messages.helpModal.apiKeyStep1}{' '}
-                  <a
-                    href="https://platform.openai.com/api-keys"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-primary hover:underline"
-                  >
-                    {messages.helpModal.apiKeyStep1Link}
-                  </a>
-                </li>
-                <li>{messages.helpModal.apiKeyStep2}</li>
-                <li>{messages.helpModal.apiKeyStep3}</li>
-                <li>{messages.helpModal.apiKeyStep4}</li>
-                <li>{messages.helpModal.apiKeyStep5}</li>
-              </ol>
+              
+              <div className="space-y-2">
+                <h4 className="font-semibold text-foreground">Supported Providers:</h4>
+                <ul className="space-y-2 ml-2">
+                  <li>
+                    <strong>OpenAI</strong> - GPT-4o, GPT-4o Mini{' '}
+                    <a href="https://platform.openai.com/api-keys" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline text-xs">
+                      (Get API Key →)
+                    </a>
+                  </li>
+                  <li>
+                    <strong>Anthropic</strong> - Claude 3.5 Sonnet, Claude 3.5 Haiku{' '}
+                    <a href="https://console.anthropic.com/settings/keys" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline text-xs">
+                      (Get API Key →)
+                    </a>
+                  </li>
+                  <li>
+                    <strong>Mistral</strong> - Mistral Large, Mistral Small{' '}
+                    <a href="https://console.mistral.ai/api-keys/" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline text-xs">
+                      (Get API Key →)
+                    </a>
+                  </li>
+                  <li>
+                    <strong>OpenRouter</strong> - 4 FREE models (Llama 3.2 3B, Gemma 2 9B, Phi-3 Mini, Mistral 7B){' '}
+                    <a href="https://openrouter.ai/keys" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline text-xs">
+                      (Get FREE API Key →)
+                    </a>
+                    <div className="text-xs text-green-600 dark:text-green-400 mt-1">
+                      ✨ Free models available - No credit card required!
+                    </div>
+                  </li>
+                </ul>
+              </div>
+
+              <div className="p-3 bg-success-bg border border-success-border rounded-lg mt-3 flex gap-2">
+                <Lightbulb className="w-4 h-4 text-success-text flex-shrink-0 mt-0.5" />
+                <div className="text-xs text-success-text">
+                  <strong>🆓 Want to try for free?</strong>
+                  <p className="mt-1">Create a free OpenRouter account and get instant access to 4 free models without adding a credit card. Perfect for testing Correctify!</p>
+                </div>
+              </div>
+
+              <div className="p-3 bg-info-bg border border-info-border rounded-lg mt-3 flex gap-2">
+                <KeyRound className="w-4 h-4 text-info-text flex-shrink-0 mt-0.5" />
+                <div className="text-xs text-info-text">
+                  <strong>🔐 Secure Storage (v1.1.0):</strong>
+                  <p className="mt-1">API keys are now stored with OS-level encryption in your device's secure app data directory. Keys are never sent to any server except directly to your chosen LLM provider.</p>
+                  <p className="mt-1 font-mono text-[10px] opacity-70">
+                    Storage: ~/.Library/Application Support/com.correctify/.keys/ (macOS)
+                  </p>
+                </div>
+              </div>
+
               <div className="p-3 bg-warning-bg border border-warning-border rounded-lg mt-3 flex gap-2">
                 <AlertCircle className="w-4 h-4 text-warning-text flex-shrink-0 mt-0.5" />
                 <p className="text-xs text-warning-text">
@@ -161,19 +197,38 @@ export default function HelpModal({ isOpen, onClose, shortcutKey }: HelpModalPro
               <Bot className="w-5 h-5" />
               {messages.helpModal.modelSelection}
             </h3>
-            <div className="space-y-2 text-sm text-foreground/80">
-              <p>{messages.helpModal.modelSelectionDescription}</p>
-              <ul className="space-y-2 ml-2">
-                <li>
-                  <strong className="text-foreground">{messages.helpModal.model1Name}</strong> {messages.helpModal.model1Description}
-                </li>
-                <li>
-                  <strong className="text-foreground">{messages.helpModal.model2Name}</strong> {messages.helpModal.model2Description}
-                </li>
-                <li>
-                  <strong className="text-foreground">{messages.helpModal.model3Name}</strong> {messages.helpModal.model3Description}
-                </li>
-              </ul>
+            <div className="space-y-3 text-sm text-foreground/80">
+              <p>Correctify now supports 10 models across 4 providers. Models are grouped by category:</p>
+              
+              <div>
+                <h4 className="font-semibold text-foreground mb-2">💰 Paid Models (API key + usage costs):</h4>
+                <ul className="space-y-1.5 ml-2">
+                  <li><strong>GPT-4o Mini</strong> - Fast, affordable, recommended for most users</li>
+                  <li><strong>GPT-4o</strong> - Most advanced OpenAI model</li>
+                  <li><strong>Claude 3.5 Sonnet</strong> - Intelligent, balanced</li>
+                  <li><strong>Claude 3.5 Haiku</strong> - Fast, compact</li>
+                  <li><strong>Mistral Large</strong> - Most capable Mistral</li>
+                  <li><strong>Mistral Small</strong> - Optimized performance</li>
+                </ul>
+              </div>
+
+              <div>
+                <h4 className="font-semibold text-foreground mb-2">🆓 Free Models (OpenRouter key required, no usage costs):</h4>
+                <ul className="space-y-1.5 ml-2">
+                  <li><strong>Llama 3.2 3B</strong> - Fast, lightweight</li>
+                  <li><strong>Gemma 2 9B</strong> - Google's open model</li>
+                  <li><strong>Phi-3 Mini</strong> - Microsoft research</li>
+                  <li><strong>Mistral 7B</strong> - Open source</li>
+                </ul>
+              </div>
+
+              <div className="p-3 bg-info-bg border border-info-border rounded-lg flex gap-2">
+                <Lightbulb className="w-4 h-4 text-info-text flex-shrink-0 mt-0.5" />
+                <div className="text-xs text-info-text">
+                  <strong>🎯 Smart Fallback:</strong>
+                  <p className="mt-1">If a paid model fails (e.g., insufficient credits), Correctify will offer to retry with a free OpenRouter model automatically.</p>
+                </div>
+              </div>
             </div>
           </section>
 
@@ -207,6 +262,30 @@ export default function HelpModal({ isOpen, onClose, shortcutKey }: HelpModalPro
                 <p className="text-xs text-info-text">
                   <strong>Note:</strong> Your selected writing style persists across sessions and is used for both in-app corrections and global shortcut corrections.
                 </p>
+              </div>
+            </div>
+          </section>
+
+          {/* Usage Tracking */}
+          <section>
+            <h3 className="text-lg font-semibold text-foreground mb-3 flex items-center gap-2">
+              <Bot className="w-5 h-5" />
+              Usage Statistics (v1.1.0)
+            </h3>
+            <div className="space-y-2 text-sm text-foreground/80">
+              <p>Track your LLM usage with built-in analytics. Click the <strong>Usage Stats</strong> button in the header menu to view:</p>
+              <ul className="space-y-1.5 ml-2">
+                <li>📊 Total requests and success rate</li>
+                <li>⏱️ Average response time per model</li>
+                <li>💰 Estimated cost breakdown by provider</li>
+                <li>📈 Token usage statistics</li>
+                <li>🗓️ Filterable by time period (7/30/90 days, or all time)</li>
+              </ul>
+              <div className="p-3 bg-info-bg border border-info-border rounded-lg flex gap-2">
+                <Lightbulb className="w-4 h-4 text-info-text flex-shrink-0 mt-0.5" />
+                <div className="text-xs text-info-text">
+                  <strong>🔒 Privacy:</strong> All usage data is stored locally on your device and never shared with any server.
+                </div>
               </div>
             </div>
           </section>

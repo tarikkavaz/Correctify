@@ -1,6 +1,6 @@
 {
   "productName": "Correctify",
-  "version": "1.0.1",
+  "version": "1.1.0",
   "identifier": "com.correctify",
   "build": {
     "beforeDevCommand": "pnpm dev",
@@ -49,7 +49,9 @@
             "autostart:default",
             "autostart:allow-enable",
             "autostart:allow-disable",
-            "autostart:allow-is-enabled"
+            "autostart:allow-is-enabled",
+            "core:app:allow-name",
+            "core:app:allow-version"
           ]
         },
         {

@@ -6,7 +6,10 @@ use std::thread;
 use std::time::Duration;
 use std::sync::{Arc, Mutex};
 use std::io::Cursor;
+use std::fs;
+use std::path::PathBuf;
 use enigo::{Enigo, Key, Keyboard, Settings};
+use base64::{Engine as _, engine::general_purpose};
 
 // Application state for settings
 struct AppState {
@@ -178,7 +181,6 @@ fn update_shortcut(
     // Unregister old shortcut
     if let Ok(old_shortcut) = old_shortcut_str.parse::<Shortcut>() {
         let _ = app.global_shortcut().unregister(old_shortcut);
-        println!("Unregistered old shortcut: {}", old_shortcut_str);
     }
     
     // Register new shortcut
@@ -187,7 +189,6 @@ fn update_shortcut(
             match app.global_shortcut().register(new_shortcut) {
                 Ok(_) => {
                     *shortcut_key = new_key.clone();
-                    println!("Registered new shortcut: {}", new_shortcut_str);
                     Ok(())
                 }
                 Err(e) => {
@@ -231,6 +232,75 @@ fn set_auto_paste_enabled(enabled: bool, state: tauri::State<AppState>) -> Resul
 fn get_auto_paste_enabled(state: tauri::State<AppState>) -> Result<bool, String> {
     let auto_paste_enabled = state.auto_paste_enabled.lock().unwrap();
     Ok(*auto_paste_enabled)
+}
+
+// Helper function to get storage file path
+fn get_storage_path(app: &tauri::AppHandle) -> Result<PathBuf, String> {
+    let app_data_dir = app.path().app_data_dir()
+        .map_err(|e| format!("Failed to get app data dir: {}", e))?;
+    
+    let keys_dir = app_data_dir.join(".keys");
+    
+    // Create the .keys directory if it doesn't exist
+    fs::create_dir_all(&keys_dir)
+        .map_err(|e| format!("Failed to create keys directory: {}", e))?;
+    
+    Ok(keys_dir)
+}
+
+// Secure storage commands using file-based storage
+// Files are stored in app data directory with base64 encoding
+#[tauri::command]
+fn secure_storage_get(app: tauri::AppHandle, key: String) -> Result<String, String> {
+    let storage_path = get_storage_path(&app)?;
+    let key_file = storage_path.join(format!("{}.dat", key));
+    
+    if !key_file.exists() {
+        return Err(format!("Key '{}' not found", key));
+    }
+    
+    match fs::read_to_string(&key_file) {
+        Ok(encoded) => {
+            // Decode from base64
+            match general_purpose::STANDARD.decode(&encoded) {
+                Ok(decoded_bytes) => {
+                    match String::from_utf8(decoded_bytes) {
+                        Ok(value) => {
+                            Ok(value)
+                        },
+                        Err(e) => Err(format!("Failed to decode value: {}", e))
+                    }
+                },
+                Err(e) => Err(format!("Failed to decode base64: {}", e))
+            }
+        },
+        Err(e) => Err(format!("Failed to read file: {}", e))
+    }
+}
+
+#[tauri::command]
+fn secure_storage_set(app: tauri::AppHandle, key: String, value: String) -> Result<(), String> {
+    let storage_path = get_storage_path(&app)?;
+    let key_file = storage_path.join(format!("{}.dat", key));
+    
+    // Encode to base64
+    let encoded = general_purpose::STANDARD.encode(value.as_bytes());
+    
+    fs::write(&key_file, encoded)
+        .map_err(|e| format!("Failed to write file: {}", e))
+}
+
+#[tauri::command]
+fn secure_storage_remove(app: tauri::AppHandle, key: String) -> Result<(), String> {
+    let storage_path = get_storage_path(&app)?;
+    let key_file = storage_path.join(format!("{}.dat", key));
+    
+    if !key_file.exists() {
+        return Ok(()); // Not an error if it doesn't exist
+    }
+    
+    fs::remove_file(&key_file)
+        .map_err(|e| format!("Failed to delete file: {}", e))
 }
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
@@ -370,7 +440,10 @@ pub fn run() {
             get_shortcut_key,
             play_sound_in_app,
             set_auto_paste_enabled,
-            get_auto_paste_enabled
+            get_auto_paste_enabled,
+            secure_storage_get,
+            secure_storage_set,
+            secure_storage_remove
         ])
         .setup(|app| {
             // Set activation policy to Accessory on macOS to hide dock icon

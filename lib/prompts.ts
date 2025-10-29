@@ -1,7 +1,9 @@
-import OpenAI from 'openai';
-import { Corrector, CorrectionInput, CorrectionResult, WritingStyle } from './types';
+import { WritingStyle } from './types';
 
-const BASE_SYSTEM_PROMPT = `
+/**
+ * Base system prompt for all correction tasks
+ */
+export const BASE_SYSTEM_PROMPT = `
 You are a writing assistant. Fix ALL spelling mistakes, grammar errors, punctuation issues, and typos.
 
 Rules:
@@ -15,7 +17,10 @@ Rules:
 8. Output ONLY the corrected text with markdown formatting intact. Do not explain or add anything else.
 `;
 
-const WRITING_STYLE_PROMPTS: Record<WritingStyle, string> = {
+/**
+ * Writing style-specific prompt additions
+ */
+export const WRITING_STYLE_PROMPTS: Record<WritingStyle, string> = {
   grammar: BASE_SYSTEM_PROMPT,
   formal: `${BASE_SYSTEM_PROMPT}
 
@@ -47,37 +52,9 @@ Additional Instructions for Concise Style:
 - Maintain a natural flow without sounding robotic or abrupt.`,
 };
 
-export class OpenAICorrector implements Corrector {
-  private client: OpenAI;
-  private defaultModel: string;
-
-  constructor(apiKey: string, defaultModel: string = 'gpt-4o-mini') {
-    if (!apiKey) {
-      throw new Error('OpenAI API key is required');
-    }
-    this.client = new OpenAI({ 
-      apiKey,
-      dangerouslyAllowBrowser: true // Safe in Tauri desktop app - API key stays local
-    });
-    this.defaultModel = defaultModel;
-  }
-
-  async correct(input: CorrectionInput): Promise<CorrectionResult> {
-    const model = input.model ?? this.defaultModel;
-    const writingStyle = input.writingStyle ?? 'grammar';
-    const systemPrompt = WRITING_STYLE_PROMPTS[writingStyle];
-
-    const res = await this.client.responses.create({
-      model,
-      instructions: systemPrompt,
-      input: typeof input.text === 'string' ? input.text : String(input.text),
-    });
-
-    const out = res.output_text?.trim();
-    if (!out) {
-      throw new Error('Invalid response from OpenAI API');
-    }
-
-    return { result: out };
-  }
+/**
+ * Get the system prompt for a given writing style
+ */
+export function getSystemPrompt(writingStyle: WritingStyle = 'grammar'): string {
+  return WRITING_STYLE_PROMPTS[writingStyle];
 }

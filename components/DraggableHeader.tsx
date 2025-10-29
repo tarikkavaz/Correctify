@@ -1,12 +1,14 @@
 'use client';
 
-import { Settings, Sun, Moon, Monitor, HelpCircle, Info, RefreshCcw } from 'lucide-react';
+import { useState, useRef, useEffect } from 'react';
+import { Settings, Sun, Moon, Monitor, HelpCircle, Info, RefreshCcw, BarChart3, MoreVertical } from 'lucide-react';
 import { Theme } from '@/lib/useTheme';
 import { useLocale } from '@/lib/useLocale';
 
 interface DraggableHeaderProps {
   onSettingsClick: () => void;
   onHelpClick: () => void;
+  onUsageClick: () => void;
   onAboutClick: () => void;
   onReloadClick: () => void;
   theme: Theme;
@@ -16,13 +18,29 @@ interface DraggableHeaderProps {
 export default function DraggableHeader({
   onSettingsClick,
   onHelpClick,
+  onUsageClick,
   onAboutClick,
   onReloadClick,
   theme,
   onThemeToggle,
 }: DraggableHeaderProps) {
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const menuRef = useRef<HTMLDivElement>(null);
   const ThemeIcon = theme === 'system' ? Monitor : theme === 'dark' ? Moon : Sun;
   const { messages } = useLocale();
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
+        setIsMenuOpen(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, []);
 
   return (
     <div
@@ -45,38 +63,7 @@ export default function DraggableHeader({
         </div>
       </div>
       <div className="flex items-center gap-2">
-        <div className="relative flex flex-col items-center group">
-          <button
-            onClick={onAboutClick}
-            className="p-2 hover:bg-foreground/5 rounded-lg transition-colors"
-            aria-label={messages.header.about}
-          >
-            <Info className="w-5 h-5 text-text-muted hover:text-foreground transition-colors" />
-          </button>
-          <div className="absolute top-0 hidden items-center mt-10 group-hover:flex group-hover:flex-col">
-            <div className="w-3 h-3 -mb-2 rotate-45 bg-tooltip-bg"></div>
-            <span className="relative z-10 px-2 py-1 text-xs leading-none text-text-on-primary whitespace-nowrap bg-tooltip-bg shadow-lg rounded">
-              {messages.header.about}
-            </span>
-          </div>
-        </div>
-
-        <div className="relative flex flex-col items-center group">
-          <button
-            onClick={onHelpClick}
-            className="p-2 hover:bg-foreground/5 rounded-lg transition-colors"
-            aria-label={messages.header.help}
-          >
-            <HelpCircle className="w-5 h-5 text-text-muted hover:text-foreground transition-colors" />
-          </button>
-          <div className="absolute top-0 hidden items-center mt-10 group-hover:flex group-hover:flex-col">
-            <div className="w-3 h-3 -mb-2 rotate-45 bg-tooltip-bg"></div>
-            <span className="relative z-10 px-2 py-1 text-xs leading-none text-text-on-primary whitespace-nowrap bg-tooltip-bg shadow-lg rounded">
-              {messages.header.help}
-            </span>
-          </div>
-        </div>
-
+        {/* Theme Toggle */}
         <div className="relative flex flex-col items-center group">
           <button
             onClick={onThemeToggle}
@@ -93,6 +80,7 @@ export default function DraggableHeader({
           </div>
         </div>
 
+        {/* Reload */}
         <div className="relative flex flex-col items-center group">
           <button
             onClick={onReloadClick}
@@ -109,6 +97,7 @@ export default function DraggableHeader({
           </div>
         </div>
 
+        {/* Settings */}
         <div className="relative flex flex-col items-center group">
           <button
             onClick={onSettingsClick}
@@ -123,6 +112,45 @@ export default function DraggableHeader({
               {messages.header.settings}
             </span>
           </div>
+        </div>
+
+        {/* More Menu */}
+        <div className="relative" ref={menuRef}>
+          <button
+            onClick={() => setIsMenuOpen(!isMenuOpen)}
+            className="p-2 hover:bg-foreground/5 rounded-lg transition-colors"
+            aria-label="More options"
+          >
+            <MoreVertical className="w-5 h-5 text-text-muted hover:text-foreground transition-colors" />
+          </button>
+          
+          {isMenuOpen && (
+            <div className="absolute top-full right-0 mt-2 w-48 bg-white dark:bg-stone-800 border border-border rounded-lg shadow-lg z-50">
+              <button
+                onClick={() => { onAboutClick(); setIsMenuOpen(false); }}
+                className="w-full flex items-center gap-3 px-4 py-3 text-sm text-foreground hover:bg-foreground/5 transition-colors first:rounded-t-lg"
+              >
+                <Info className="w-4 h-4" />
+                <span>{messages.header.about}</span>
+              </button>
+              
+              <button
+                onClick={() => { onHelpClick(); setIsMenuOpen(false); }}
+                className="w-full flex items-center gap-3 px-4 py-3 text-sm text-foreground hover:bg-foreground/5 transition-colors"
+              >
+                <HelpCircle className="w-4 h-4" />
+                <span>{messages.header.help}</span>
+              </button>
+              
+              <button
+                onClick={() => { onUsageClick(); setIsMenuOpen(false); }}
+                className="w-full flex items-center gap-3 px-4 py-3 text-sm text-foreground hover:bg-foreground/5 transition-colors last:rounded-b-lg"
+              >
+                <BarChart3 className="w-4 h-4" />
+                <span>Usage Stats</span>
+              </button>
+            </div>
+          )}
         </div>
       </div>
     </div>
