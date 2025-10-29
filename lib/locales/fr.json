@@ -3,6 +3,7 @@
     "settings": "Paramètres",
     "help": "Aide",
     "about": "À propos",
+    "quit": "Quitter",
     "theme": "Changer de thème",
     "reload": "Recharger",
     "subtitle": "Correction grammaticale alimentée par l'IA"

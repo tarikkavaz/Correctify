@@ -3,6 +3,7 @@
     "settings": "Settings",
     "help": "Help",
     "about": "About",
+    "quit": "Quit",
     "theme": "Toggle theme",
     "reload": "Reload",
     "subtitle": "AI-powered grammar correction"
