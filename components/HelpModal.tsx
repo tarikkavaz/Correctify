@@ -43,7 +43,7 @@ export default function HelpModal({ isOpen, onClose, shortcutKey }: HelpModalPro
             </h3>
             <div className="space-y-3 text-sm text-foreground/80">
               <p>
-                Correctify v1.1.0 supports <strong>4 LLM providers</strong> with 10 total models (6 paid, 4 free). You can add API keys for any or all providers.
+                Correctify v1.1.0 supports <strong>4 LLM providers</strong> with 12 total models (8 paid, 4 free). You can add API keys for any or all providers.
               </p>
               
               <div className="space-y-2">
@@ -198,13 +198,15 @@ export default function HelpModal({ isOpen, onClose, shortcutKey }: HelpModalPro
               {messages.helpModal.modelSelection}
             </h3>
             <div className="space-y-3 text-sm text-foreground/80">
-              <p>Correctify now supports 10 models across 4 providers. Models are grouped by category:</p>
+              <p>Correctify now supports 12 models across 4 providers. Models are grouped by category:</p>
               
               <div>
                 <h4 className="font-semibold text-foreground mb-2">💰 Paid Models (API key + usage costs):</h4>
                 <ul className="space-y-1.5 ml-2">
                   <li><strong>GPT-4o Mini</strong> - Fast, affordable, recommended for most users</li>
                   <li><strong>GPT-4o</strong> - Most advanced OpenAI model</li>
+                  <li><strong>GPT-4 Turbo</strong> - Powerful and versatile</li>
+                  <li><strong>GPT-3.5 Turbo</strong> - Very affordable and fast</li>
                   <li><strong>Claude 3.5 Sonnet</strong> - Intelligent, balanced</li>
                   <li><strong>Claude 3.5 Haiku</strong> - Fast, compact</li>
                   <li><strong>Mistral Large</strong> - Most capable Mistral</li>
