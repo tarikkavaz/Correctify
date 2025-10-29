@@ -803,7 +803,7 @@ export default function HomePage() {
                 onChange={(e) => setInputText(e.target.value)}
                 onKeyDown={handleKeyDown}
                 placeholder={messages.home.inputPlaceholder}
-                className="w-full h-96 px-4 py-3 bg-card border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary resize-none text-foreground transition-colors"
+                className="w-full h-96 px-4 py-3 bg-card border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary resize-none text-foreground transition-colors placeholder:text-muted-foreground"
                 disabled={isLoading}
               />
             </div>

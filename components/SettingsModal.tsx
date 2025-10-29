@@ -199,7 +199,7 @@ export default function SettingsModal({
                   value={apiKeys[config.provider]}
                   onChange={(e) => handleApiKeyChange(config.provider, e.target.value)}
                   placeholder={`Enter your ${config.label}`}
-                  className="w-full px-4 py-2.5 bg-background border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary text-foreground transition-colors text-sm"
+                  className="w-full px-4 py-2.5 bg-background border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary text-foreground transition-colors text-sm placeholder:text-muted-foreground"
                 />
                 <div className="flex items-center justify-between">
                   <button
@@ -241,7 +241,7 @@ export default function SettingsModal({
                       type="checkbox"
                       checked={autostartEnabled}
                       onChange={(e) => setAutostartEnabled(e.target.checked)}
-                      className="mt-1 w-4 h-4 text-primary bg-background border-border rounded focus:ring-2 focus:ring-primary"
+                      className="mt-1 w-4 h-4 accent-primary bg-background border-border rounded focus:ring-2 focus:ring-primary"
                     />
                     <div className="flex-1">
                       <label htmlFor="autostart" className="block text-sm font-medium text-foreground cursor-pointer">
@@ -264,7 +264,7 @@ export default function SettingsModal({
                       type="checkbox"
                       checked={soundEnabled}
                       onChange={(e) => setSoundEnabled(e.target.checked)}
-                      className="mt-1 w-4 h-4 text-primary bg-background border-border rounded focus:ring-2 focus:ring-primary"
+                      className="mt-1 w-4 h-4 accent-primary bg-background border-border rounded focus:ring-2 focus:ring-primary"
                     />
                     <div className="flex-1">
                       <label htmlFor="soundEnabled" className="block text-sm font-medium text-foreground cursor-pointer">
@@ -295,7 +295,7 @@ export default function SettingsModal({
                       onChange={(e) => setShortcutKey(e.target.value.slice(-1).toUpperCase())}
                       maxLength={1}
                       placeholder="]"
-                      className="w-16 text-center px-3 py-2 bg-background border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary text-foreground transition-colors uppercase"
+                      className="w-16 text-center px-3 py-2 bg-background border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary text-foreground transition-colors uppercase placeholder:text-muted-foreground"
                     />
                   </div>
                   <p className="text-xs text-foreground/60">
@@ -313,7 +313,7 @@ export default function SettingsModal({
                       type="checkbox"
                       checked={autoPasteEnabled}
                       onChange={(e) => setAutoPasteEnabled(e.target.checked)}
-                      className="mt-1 w-4 h-4 text-primary bg-background border-border rounded focus:ring-2 focus:ring-primary"
+                      className="mt-1 w-4 h-4 accent-primary bg-background border-border rounded focus:ring-2 focus:ring-primary"
                     />
                     <div className="flex-1">
                       <label htmlFor="autoPaste" className="block text-sm font-medium text-foreground cursor-pointer">

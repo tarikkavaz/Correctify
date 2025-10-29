@@ -117,14 +117,20 @@ export default function DraggableHeader({
         </div>
 
         {/* More Menu */}
-        <div className="relative" ref={menuRef}>
+        <div className="relative flex flex-col items-center group" ref={menuRef}>
           <button
             onClick={() => setIsMenuOpen(!isMenuOpen)}
             className="p-2 hover:bg-foreground/5 rounded-lg transition-colors"
-            aria-label="More options"
+            aria-label={messages.header.menu}
           >
             <MoreVertical className="w-5 h-5 text-text-muted hover:text-foreground transition-colors" />
           </button>
+          <div className="absolute top-0 hidden items-center mt-10 group-hover:flex group-hover:flex-col">
+            <div className="w-3 h-3 -mb-2 rotate-45 bg-tooltip-bg"></div>
+            <span className="relative z-10 px-2 py-1 text-xs leading-none text-text-on-primary whitespace-nowrap bg-tooltip-bg shadow-lg rounded">
+              {messages.header.menu}
+            </span>
+          </div>
           
           {isMenuOpen && (
             <div className="absolute top-full right-0 mt-2 w-48 bg-card-bg border border-border rounded-lg shadow-lg z-50">
