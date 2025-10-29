@@ -181,7 +181,6 @@ fn update_shortcut(
     // Unregister old shortcut
     if let Ok(old_shortcut) = old_shortcut_str.parse::<Shortcut>() {
         let _ = app.global_shortcut().unregister(old_shortcut);
-        println!("Unregistered old shortcut: {}", old_shortcut_str);
     }
     
     // Register new shortcut
@@ -190,7 +189,6 @@ fn update_shortcut(
             match app.global_shortcut().register(new_shortcut) {
                 Ok(_) => {
                     *shortcut_key = new_key.clone();
-                    println!("Registered new shortcut: {}", new_shortcut_str);
                     Ok(())
                 }
                 Err(e) => {
@@ -254,13 +252,10 @@ fn get_storage_path(app: &tauri::AppHandle) -> Result<PathBuf, String> {
 // Files are stored in app data directory with base64 encoding
 #[tauri::command]
 fn secure_storage_get(app: tauri::AppHandle, key: String) -> Result<String, String> {
-    println!("[SecureStorage Rust] Getting key: {}", key);
-    
     let storage_path = get_storage_path(&app)?;
     let key_file = storage_path.join(format!("{}.dat", key));
     
     if !key_file.exists() {
-        println!("[SecureStorage Rust] Key '{}' not found (file doesn't exist)", key);
         return Err(format!("Key '{}' not found", key));
     }
     
@@ -271,7 +266,6 @@ fn secure_storage_get(app: tauri::AppHandle, key: String) -> Result<String, Stri
                 Ok(decoded_bytes) => {
                     match String::from_utf8(decoded_bytes) {
                         Ok(value) => {
-                            println!("[SecureStorage Rust] Successfully retrieved key: {}", key);
                             Ok(value)
                         },
                         Err(e) => Err(format!("Failed to decode value: {}", e))
@@ -286,48 +280,27 @@ fn secure_storage_get(app: tauri::AppHandle, key: String) -> Result<String, Stri
 
 #[tauri::command]
 fn secure_storage_set(app: tauri::AppHandle, key: String, value: String) -> Result<(), String> {
-    println!("[SecureStorage Rust] Setting key: {} (value length: {})", key, value.len());
-    
     let storage_path = get_storage_path(&app)?;
     let key_file = storage_path.join(format!("{}.dat", key));
     
     // Encode to base64
     let encoded = general_purpose::STANDARD.encode(value.as_bytes());
     
-    match fs::write(&key_file, encoded) {
-        Ok(_) => {
-            println!("[SecureStorage Rust] Successfully set key: {}", key);
-            Ok(())
-        },
-        Err(e) => {
-            println!("[SecureStorage Rust] Failed to write file: {}", e);
-            Err(format!("Failed to write file: {}", e))
-        }
-    }
+    fs::write(&key_file, encoded)
+        .map_err(|e| format!("Failed to write file: {}", e))
 }
 
 #[tauri::command]
 fn secure_storage_remove(app: tauri::AppHandle, key: String) -> Result<(), String> {
-    println!("[SecureStorage Rust] Removing key: {}", key);
-    
     let storage_path = get_storage_path(&app)?;
     let key_file = storage_path.join(format!("{}.dat", key));
     
     if !key_file.exists() {
-        println!("[SecureStorage Rust] Key '{}' doesn't exist, nothing to remove", key);
         return Ok(()); // Not an error if it doesn't exist
     }
     
-    match fs::remove_file(&key_file) {
-        Ok(_) => {
-            println!("[SecureStorage Rust] Successfully removed key: {}", key);
-            Ok(())
-        },
-        Err(e) => {
-            println!("[SecureStorage Rust] Failed to delete file: {}", e);
-            Err(format!("Failed to delete file: {}", e))
-        }
-    }
+    fs::remove_file(&key_file)
+        .map_err(|e| format!("Failed to delete file: {}", e))
 }
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
