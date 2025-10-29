@@ -2,7 +2,7 @@
 
 import { check } from '@tauri-apps/plugin-updater';
 import { ask, message } from '@tauri-apps/plugin-dialog';
-import { relaunch } from '@tauri-apps/api/process';
+import { relaunch } from '@tauri-apps/plugin-process';
 
 export async function checkForUpdates(silent: boolean = false) {
   try {
@@ -57,4 +57,3 @@ export async function checkForUpdates(silent: boolean = false) {
     }
   }
 }
-
