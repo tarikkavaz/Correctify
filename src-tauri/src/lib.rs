@@ -6,7 +6,10 @@ use std::thread;
 use std::time::Duration;
 use std::sync::{Arc, Mutex};
 use std::io::Cursor;
+use std::fs;
+use std::path::PathBuf;
 use enigo::{Enigo, Key, Keyboard, Settings};
+use base64::{Engine as _, engine::general_purpose};
 
 // Application state for settings
 struct AppState {
@@ -233,6 +236,100 @@ fn get_auto_paste_enabled(state: tauri::State<AppState>) -> Result<bool, String>
     Ok(*auto_paste_enabled)
 }
 
+// Helper function to get storage file path
+fn get_storage_path(app: &tauri::AppHandle) -> Result<PathBuf, String> {
+    let app_data_dir = app.path().app_data_dir()
+        .map_err(|e| format!("Failed to get app data dir: {}", e))?;
+    
+    let keys_dir = app_data_dir.join(".keys");
+    
+    // Create the .keys directory if it doesn't exist
+    fs::create_dir_all(&keys_dir)
+        .map_err(|e| format!("Failed to create keys directory: {}", e))?;
+    
+    Ok(keys_dir)
+}
+
+// Secure storage commands using file-based storage
+// Files are stored in app data directory with base64 encoding
+#[tauri::command]
+fn secure_storage_get(app: tauri::AppHandle, key: String) -> Result<String, String> {
+    println!("[SecureStorage Rust] Getting key: {}", key);
+    
+    let storage_path = get_storage_path(&app)?;
+    let key_file = storage_path.join(format!("{}.dat", key));
+    
+    if !key_file.exists() {
+        println!("[SecureStorage Rust] Key '{}' not found (file doesn't exist)", key);
+        return Err(format!("Key '{}' not found", key));
+    }
+    
+    match fs::read_to_string(&key_file) {
+        Ok(encoded) => {
+            // Decode from base64
+            match general_purpose::STANDARD.decode(&encoded) {
+                Ok(decoded_bytes) => {
+                    match String::from_utf8(decoded_bytes) {
+                        Ok(value) => {
+                            println!("[SecureStorage Rust] Successfully retrieved key: {}", key);
+                            Ok(value)
+                        },
+                        Err(e) => Err(format!("Failed to decode value: {}", e))
+                    }
+                },
+                Err(e) => Err(format!("Failed to decode base64: {}", e))
+            }
+        },
+        Err(e) => Err(format!("Failed to read file: {}", e))
+    }
+}
+
+#[tauri::command]
+fn secure_storage_set(app: tauri::AppHandle, key: String, value: String) -> Result<(), String> {
+    println!("[SecureStorage Rust] Setting key: {} (value length: {})", key, value.len());
+    
+    let storage_path = get_storage_path(&app)?;
+    let key_file = storage_path.join(format!("{}.dat", key));
+    
+    // Encode to base64
+    let encoded = general_purpose::STANDARD.encode(value.as_bytes());
+    
+    match fs::write(&key_file, encoded) {
+        Ok(_) => {
+            println!("[SecureStorage Rust] Successfully set key: {}", key);
+            Ok(())
+        },
+        Err(e) => {
+            println!("[SecureStorage Rust] Failed to write file: {}", e);
+            Err(format!("Failed to write file: {}", e))
+        }
+    }
+}
+
+#[tauri::command]
+fn secure_storage_remove(app: tauri::AppHandle, key: String) -> Result<(), String> {
+    println!("[SecureStorage Rust] Removing key: {}", key);
+    
+    let storage_path = get_storage_path(&app)?;
+    let key_file = storage_path.join(format!("{}.dat", key));
+    
+    if !key_file.exists() {
+        println!("[SecureStorage Rust] Key '{}' doesn't exist, nothing to remove", key);
+        return Ok(()); // Not an error if it doesn't exist
+    }
+    
+    match fs::remove_file(&key_file) {
+        Ok(_) => {
+            println!("[SecureStorage Rust] Successfully removed key: {}", key);
+            Ok(())
+        },
+        Err(e) => {
+            println!("[SecureStorage Rust] Failed to delete file: {}", e);
+            Err(format!("Failed to delete file: {}", e))
+        }
+    }
+}
+
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     // Initialize app state with default values
@@ -252,7 +349,6 @@ pub fn run() {
             tauri_plugin_autostart::MacosLauncher::LaunchAgent,
             Some(vec![]),
         ))
-        .plugin(tauri_plugin_secure_storage::init())
         .plugin(
             tauri_plugin_global_shortcut::Builder::new()
                 .with_handler(|app, _shortcut, event| {
@@ -371,7 +467,10 @@ pub fn run() {
             get_shortcut_key,
             play_sound_in_app,
             set_auto_paste_enabled,
-            get_auto_paste_enabled
+            get_auto_paste_enabled,
+            secure_storage_get,
+            secure_storage_set,
+            secure_storage_remove
         ])
         .setup(|app| {
             // Set activation policy to Accessory on macOS to hide dock icon
