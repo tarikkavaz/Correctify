@@ -1,6 +1,6 @@
 # Correctify
 
-A simple, cross-platform grammar correction app powered by multiple AI providers. Bring your own API key, choose from 10 models (including free options), and keep your data private with secure local storage.
+A simple, cross-platform grammar correction app powered by multiple AI providers. Bring your own API key, choose from 12 models (including free options), and keep your data private with secure local storage.
 
 ![Correctify Screenshot](public/screenshot.png)
 
@@ -26,7 +26,7 @@ For detailed user documentation, visit the [landing page](https://tarikkavaz.git
 ## Supported Models
 
 ### Paid Models (API Key Required)
-- **OpenAI**: GPT-4o, GPT-4o Mini
+- **OpenAI**: GPT-4o, GPT-4o Mini, GPT-4 Turbo, GPT-3.5 Turbo
 - **Anthropic**: Claude 3.5 Sonnet, Claude 3.5 Haiku
 - **Mistral**: Mistral Large, Mistral Small
 
