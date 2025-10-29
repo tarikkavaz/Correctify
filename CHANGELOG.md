@@ -15,11 +15,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Keys stored in app data directory with base64 encoding
   - Individual key management per provider
 - **Multi-LLM Provider Support**: Expanded beyond OpenAI to support 4 major providers
-  - OpenAI (GPT-4o, GPT-4o Mini, GPT-4 Turbo, GPT-3.5 Turbo)
+  - OpenAI (GPT-5, GPT-5 Mini, GPT-4o, GPT-4o Mini, GPT-4 Turbo, GPT-3.5 Turbo)
   - Anthropic (Claude 3.5 Sonnet, Claude 3.5 Haiku)
   - Mistral (Mistral Large, Mistral Small)
   - OpenRouter (4 free models: Llama 3.2 3B, Gemma 2 9B, Phi-3 Mini, Mistral 7B)
-  - Total of 12 models (8 paid, 4 free)
+  - Total of 14 models (10 paid, 4 free)
 - **Vercel AI SDK Integration**: Unified LLM interface for all providers
   - Consistent correction behavior across all models
   - Centralized prompt management system
