@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { OpenAICorrector } from '@/lib/openai';
+import { UnifiedCorrector } from '@/lib/llm';
 import { CorrectionRequest, CorrectionResponse } from '@/lib/types';
 
 export async function POST(request: NextRequest): Promise<NextResponse> {
@@ -19,30 +19,33 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       );
     }
 
-    if (!provider || provider !== 'openai') {
+    // Validate provider
+    const validProviders = ['openai', 'anthropic', 'mistral', 'openrouter'];
+    if (!provider || !validProviders.includes(provider)) {
       return NextResponse.json(
         {
           ok: false,
-          error: 'Invalid provider. Must be "openai"',
+          error: `Invalid provider. Must be one of: ${validProviders.join(', ')}`,
         } as CorrectionResponse,
         { status: 400 }
       );
     }
 
-    // Get API key
-    const apiKey = request.headers.get('x-openai-key');
+    // Get API key from appropriate header
+    const headerName = `x-${provider}-key`;
+    const apiKey = request.headers.get(headerName);
     if (!apiKey) {
       return NextResponse.json(
         {
           ok: false,
-          error: 'OpenAI API key is required in X-OPENAI-KEY header',
+          error: `${provider} API key is required in ${headerName.toUpperCase()} header`,
         } as CorrectionResponse,
         { status: 400 }
       );
     }
 
-    // Perform correction
-    const corrector = new OpenAICorrector(apiKey);
+    // Perform correction using unified corrector
+    const corrector = new UnifiedCorrector(provider, apiKey, model);
     const response = await corrector.correct({ text, model, temperature, writingStyle });
     const result = response.result;
 
