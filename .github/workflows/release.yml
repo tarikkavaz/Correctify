@@ -223,31 +223,40 @@ jobs:
       - name: Generate updater JSON
         run: |
           VERSION="${{ needs.check-release.outputs.version }}"
-          cat > installers/latest.json << EOF
-          {
-            "version": "${VERSION#v}",
-            "notes": "${{ needs.check-release.outputs.changelog }}",
-            "pub_date": "$(date -u +"%Y-%m-%dT%H:%M:%SZ")",
-            "platforms": {
-              "darwin-aarch64": {
-                "signature": "",
-                "url": "https://github.com/tarikkavaz/Correctify/releases/download/${VERSION}/Correctify_${VERSION#v}_aarch64.dmg"
-              },
-              "darwin-x86_64": {
-                "signature": "",
-                "url": "https://github.com/tarikkavaz/Correctify/releases/download/${VERSION}/Correctify_${VERSION#v}_x64.dmg"
-              },
-              "linux-x86_64": {
-                "signature": "",
-                "url": "https://github.com/tarikkavaz/Correctify/releases/download/${VERSION}/correctify_${VERSION#v}_amd64.AppImage"
-              },
-              "windows-x86_64": {
-                "signature": "",
-                "url": "https://github.com/tarikkavaz/Correctify/releases/download/${VERSION}/Correctify_${VERSION#v}_x64-setup.exe"
+          NOTES="See release notes at: https://github.com/tarikkavaz/Correctify/releases/tag/${VERSION}"
+          
+          jq -n \
+            --arg version "${VERSION#v}" \
+            --arg notes "$NOTES" \
+            --arg pub_date "$(date -u +"%Y-%m-%dT%H:%M:%SZ")" \
+            --arg darwin_aarch64_url "https://github.com/tarikkavaz/Correctify/releases/download/${VERSION}/Correctify_${VERSION#v}_aarch64.dmg" \
+            --arg darwin_x64_url "https://github.com/tarikkavaz/Correctify/releases/download/${VERSION}/Correctify_${VERSION#v}_x64.dmg" \
+            --arg linux_url "https://github.com/tarikkavaz/Correctify/releases/download/${VERSION}/correctify_${VERSION#v}_amd64.AppImage" \
+            --arg windows_url "https://github.com/tarikkavaz/Correctify/releases/download/${VERSION}/Correctify_${VERSION#v}_x64-setup.exe" \
+            '{
+              version: $version,
+              notes: $notes,
+              pub_date: $pub_date,
+              platforms: {
+                "darwin-aarch64": {
+                  signature: "",
+                  url: $darwin_aarch64_url
+                },
+                "darwin-x86_64": {
+                  signature: "",
+                  url: $darwin_x64_url
+                },
+                "linux-x86_64": {
+                  signature: "",
+                  url: $linux_url
+                },
+                "windows-x86_64": {
+                  signature: "",
+                  url: $windows_url
+                }
               }
-            }
-          }
-          EOF
+            }' > installers/latest.json
+          
           cat installers/latest.json
 
       - name: Create GitHub Release
