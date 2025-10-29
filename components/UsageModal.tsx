@@ -89,7 +89,7 @@ export default function UsageModal({ isOpen, onClose }: UsageModalProps) {
                 <BarChart3 className="w-3.5 h-3.5" />
                 <span>Success Rate</span>
               </div>
-              <p className="text-2xl font-bold text-green-600 dark:text-green-400">
+              <p className="text-2xl font-bold text-success-text">
                 {stats.totalRequests > 0 ? Math.round((stats.successfulRequests / stats.totalRequests) * 100) : 0}%
               </p>
             </div>
@@ -160,7 +160,7 @@ export default function UsageModal({ isOpen, onClose }: UsageModalProps) {
           <div className="pt-4 border-t border-border">
             <button
               onClick={handleClearHistory}
-              className="w-full flex items-center justify-center gap-2 px-4 py-2 text-sm font-medium text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors"
+              className="w-full flex items-center justify-center gap-2 px-4 py-2 text-sm font-medium text-error-text hover:bg-error-bg rounded-lg transition-colors"
             >
               <Trash2 className="w-4 h-4" />
               Clear All Usage History

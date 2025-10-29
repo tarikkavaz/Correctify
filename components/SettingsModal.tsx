@@ -178,7 +178,7 @@ export default function SettingsModal({
                   <label htmlFor={`apiKey-${config.provider}`} className="block text-sm font-medium text-foreground">
                     {config.label}
                     {config.provider === 'openrouter' && (
-                      <span className="ml-2 text-xs text-green-600 dark:text-green-400 font-semibold">
+                      <span className="ml-2 text-xs text-success-text font-semibold">
                         (FREE MODELS - KEY REQUIRED)
                       </span>
                     )}
@@ -213,7 +213,7 @@ export default function SettingsModal({
                     <button
                       type="button"
                       onClick={() => handleRemoveStoredKey(config.provider)}
-                      className="inline-flex items-center text-xs text-red-600 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300 hover:underline cursor-pointer"
+                      className="inline-flex items-center text-xs text-error-text hover:text-error-text hover:underline cursor-pointer"
                     >
                       Remove from storage
                     </button>
