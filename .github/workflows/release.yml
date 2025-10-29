@@ -220,6 +220,36 @@ jobs:
           echo "Downloaded installers:"
           find installers -type f
 
+      - name: Generate updater JSON
+        run: |
+          VERSION="${{ needs.check-release.outputs.version }}"
+          cat > installers/latest.json << EOF
+          {
+            "version": "${VERSION#v}",
+            "notes": "${{ needs.check-release.outputs.changelog }}",
+            "pub_date": "$(date -u +"%Y-%m-%dT%H:%M:%SZ")",
+            "platforms": {
+              "darwin-aarch64": {
+                "signature": "",
+                "url": "https://github.com/tarikkavaz/Correctify/releases/download/${VERSION}/Correctify_${VERSION#v}_aarch64.dmg"
+              },
+              "darwin-x86_64": {
+                "signature": "",
+                "url": "https://github.com/tarikkavaz/Correctify/releases/download/${VERSION}/Correctify_${VERSION#v}_x64.dmg"
+              },
+              "linux-x86_64": {
+                "signature": "",
+                "url": "https://github.com/tarikkavaz/Correctify/releases/download/${VERSION}/correctify_${VERSION#v}_amd64.AppImage"
+              },
+              "windows-x86_64": {
+                "signature": "",
+                "url": "https://github.com/tarikkavaz/Correctify/releases/download/${VERSION}/Correctify_${VERSION#v}_x64-setup.exe"
+              }
+            }
+          }
+          EOF
+          cat installers/latest.json
+
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v1
         with:
@@ -257,4 +287,5 @@ jobs:
             installers/**/*.deb
             installers/**/*.rpm
             installers/**/*.AppImage
+            installers/latest.json
           fail_on_unmatched_files: false
