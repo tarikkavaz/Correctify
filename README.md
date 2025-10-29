@@ -1,15 +1,17 @@
 # Correctify
 
-A simple, cross-platform grammar correction app powered by multiple AI providers. Bring your own API key, choose from 14 models (including free options), and keep your data private with secure local storage.
+A simple, cross-platform grammar correction app powered by multiple AI providers. 
+Bring your own API key, choose from 14 models (including free options), and keep your data private with secure local storage.
 
 ![Correctify Screenshot](public/screenshot.png)
 
 ## Overview
 
-Correctify corrects grammar, spelling, and punctuation while preserving your writing style and formatting. It's a minimal, distraction-free menubar app that works on macOS, Windows, and Linux.
+Correctify corrects grammar, spelling, and punctuation while preserving your writing style and formatting. 
+It's a minimal, distraction-free menubar app that works on macOS, Windows, and Linux.
 
 **Key Features**
-- **Secure API Key Storage** - OS-level encrypted storage, no keys in browser
+- **Secure API Key Storage** - OS-level encrypted storage
 - **Multiple LLM Providers** - OpenAI, Anthropic, Mistral, and OpenRouter
 - **Free Models Available** - 4 free models via OpenRouter (no credit card needed)
 - **Usage Tracking** - Monitor token usage, costs, and performance locally
@@ -36,15 +38,16 @@ For detailed user documentation, visit the [landing page](https://tarikkavaz.git
 - **Microsoft Phi**: Phi-3 Mini
 - **Mistral**: Mistral 7B
 
-💡 **Note**: OpenRouter free models require a free account and API key (no credit card needed).
+> [!NOTE]
+> OpenRouter free models require a free account and API key (no credit card needed).
 
 ## API Key Configuration & Security
 
-- ✅ **File-Based Encryption** - Keys stored in OS-protected app data directory
-- ✅ **Automatic Migration** - Seamlessly migrates from localStorage to secure storage
-- ✅ **Per-Provider Keys** - Configure keys for each provider independently
-- ✅ **Local Storage Only** - Keys never leave your device or sent to any server
-- ✅ **Base64 Encoding** - Additional obfuscation layer for stored keys
+- **File-Based Encryption** - Keys stored in OS-protected app data directory
+- **Automatic Migration** - Seamlessly migrates from localStorage to secure storage
+- **Per-Provider Keys** - Configure keys for each provider independently
+- **Local Storage Only** - Keys never leave your device or sent to any server
+- **Base64 Encoding** - Additional obfuscation layer for stored keys
 
 **Storage Location:**
 - **macOS**: `~/Library/Application Support/com.correctify/.keys/`
@@ -52,6 +55,10 @@ For detailed user documentation, visit the [landing page](https://tarikkavaz.git
 - **Linux**: `~/.config/com.correctify/.keys/`
 
 All API requests are made directly from your device to the LLM provider. No intermediary servers, no data collection.
+
+
+
+
 
 ## Development Setup
 
@@ -110,13 +117,13 @@ The Tauri build will create platform-specific installers in `src-tauri/target/re
 
 ```
 Correctify/
-├── app/                    # Next.js app directory
-│   ├── api/               # API routes
-│   ├── globals.css        # Global styles
-│   └── layout.tsx         # Root layout
-├── components/            # React components
-├── lib/                   # Utilities and types
-├── public/               # Static assets
+├── app/                 # Next.js app directory
+│   ├── api/             # API routes
+│   ├── globals.css      # Global styles
+│   └── layout.tsx       # Root layout
+├── components/          # React components
+├── lib/                 # Utilities and types
+├── public/              # Static assets
 ├── src-tauri/           # Tauri backend (Rust)
 │   ├── src/             # Rust source code
 │   ├── Cargo.toml       # Rust dependencies
@@ -156,6 +163,7 @@ Use the provided script for automated signing and notarization:
 chmod +x scripts/build-signed.sh
 ./scripts/build-signed.sh
 ```
+or use the `pnpm tauri:build:signed`. 
 
 This script will:
 1. Build the Tauri app
@@ -184,6 +192,5 @@ MIT License
 
 ## Support
 
-- **User Documentation**: [docs/index.html](docs/index.html)
 - **Issues**: [GitHub Issues](https://github.com/tarikkavaz/Correctify/issues)
 - **Releases**: [GitHub Releases](https://github.com/tarikkavaz/Correctify/releases)
