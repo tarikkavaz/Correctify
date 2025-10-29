@@ -8,18 +8,18 @@ A simple, cross-platform grammar correction app powered by multiple AI providers
 
 Correctify corrects grammar, spelling, and punctuation while preserving your writing style and formatting. It's a minimal, distraction-free menubar app that works on macOS, Windows, and Linux.
 
-**Key Features (v1.1.0):**
-- 🔐 **Secure API Key Storage** - OS-level encrypted storage, no keys in browser
-- 🤖 **Multiple LLM Providers** - OpenAI, Anthropic, Mistral, and OpenRouter
-- 🆓 **Free Models Available** - 4 free models via OpenRouter (no credit card needed)
-- 📊 **Usage Tracking** - Monitor token usage, costs, and performance locally
-- 🎯 **Intelligent Fallback** - Auto-retry with free models on failure
-- ⌨️ **Global Shortcuts** - Correct text from anywhere with Cmd+Shift+]
-- 📋 **Auto Copy/Paste** - Seamless text correction in any app
-- ✍️ **5 Writing Styles** - Grammar, Formal, Informal, Collaborative, Concise
-- 🎨 **Modern UI** - Clean interface with dark mode support
-- 🔒 **Privacy-First** - All data stays on your device
-- 🌍 **Cross-Platform** - macOS, Windows, and Linux support
+**Key Features**
+- **Secure API Key Storage** - OS-level encrypted storage, no keys in browser
+- **Multiple LLM Providers** - OpenAI, Anthropic, Mistral, and OpenRouter
+- **Free Models Available** - 4 free models via OpenRouter (no credit card needed)
+- **Usage Tracking** - Monitor token usage, costs, and performance locally
+- **Intelligent Fallback** - Auto-retry with free models on failure
+- **Global Shortcuts** - Correct text from anywhere with Cmd+Shift+]
+- **Auto Copy/Paste** - Seamless text correction in any app
+- **5 Writing Styles** - Grammar, Formal, Informal, Collaborative, Concise
+- **Modern UI** - Clean interface with dark mode support
+- **Privacy-First** - All data stays on your device
+- **Cross-Platform** - macOS, Windows, and Linux support
 
 For detailed user documentation, visit the [landing page](https://tarikkavaz.github.io/Correctify/).
 
@@ -39,8 +39,6 @@ For detailed user documentation, visit the [landing page](https://tarikkavaz.git
 💡 **Note**: OpenRouter free models require a free account and API key (no credit card needed).
 
 ## API Key Configuration & Security
-
-Correctify v1.1.0 introduces **secure API key storage**:
 
 - ✅ **File-Based Encryption** - Keys stored in OS-protected app data directory
 - ✅ **Automatic Migration** - Seamlessly migrates from localStorage to secure storage
