@@ -51,7 +51,12 @@
             "autostart:allow-disable",
             "autostart:allow-is-enabled",
             "core:app:allow-name",
-            "core:app:allow-version"
+            "core:app:allow-version",
+            "updater:default",
+            "updater:allow-check",
+            "updater:allow-download",
+            "updater:allow-install",
+            "updater:allow-download-and-install"
           ]
         },
         {
@@ -91,6 +96,17 @@
           "width": 680,
           "height": 470
         }
+      }
+    }
+  },
+  "plugins": {
+    "updater": {
+      "endpoints": [
+        "https://github.com/tarikkavaz/Correctify/releases/latest/download/latest.json"
+      ],
+      "pubkey": "",
+      "windows": {
+        "installMode": "passive"
       }
     }
   }

@@ -17,6 +17,7 @@ import { useLocale } from '@/lib/useLocale';
 import { getKey, setKey, deleteKey, migrateFromLocalStorage } from '@/lib/secure-keys';
 import { MODELS, getAvailableModels, getModelById, ModelInfo } from '@/lib/models';
 import { trackUsage, estimateTokens } from '@/lib/usage-tracker';
+import { checkForUpdates } from '@/lib/updater';
 
 export default function HomePage() {
   const { messages } = useLocale();
@@ -258,6 +259,13 @@ export default function HomePage() {
     initializeApp().catch(err => {
       console.error('Failed to initialize app:', err);
     });
+
+    // Check for updates (Tauri only, silent check on startup)
+    if (isTauri()) {
+      checkForUpdates(true).catch(err => {
+        console.error('Update check failed:', err);
+      });
+    }
   }, []);
 
   useEffect(() => {
