@@ -1,6 +1,6 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { UnifiedCorrector } from '@/lib/llm';
-import { CorrectionRequest, CorrectionResponse } from '@/lib/types';
+import { UnifiedCorrector } from "@/lib/llm";
+import type { CorrectionRequest, CorrectionResponse } from "@/lib/types";
+import { type NextRequest, NextResponse } from "next/server";
 
 export async function POST(request: NextRequest): Promise<NextResponse> {
   const startTime = Date.now();
@@ -9,25 +9,25 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     const body: CorrectionRequest = await request.json();
     const { text, provider, model, temperature = 0, writingStyle } = body;
 
-    if (!text || typeof text !== 'string' || text.trim().length === 0) {
+    if (!text || typeof text !== "string" || text.trim().length === 0) {
       return NextResponse.json(
         {
           ok: false,
-          error: 'Text is required',
+          error: "Text is required",
         } as CorrectionResponse,
-        { status: 400 }
+        { status: 400 },
       );
     }
 
     // Validate provider
-    const validProviders = ['openai', 'anthropic', 'mistral', 'openrouter'];
+    const validProviders = ["openai", "anthropic", "mistral", "openrouter"];
     if (!provider || !validProviders.includes(provider)) {
       return NextResponse.json(
         {
           ok: false,
-          error: `Invalid provider. Must be one of: ${validProviders.join(', ')}`,
+          error: `Invalid provider. Must be one of: ${validProviders.join(", ")}`,
         } as CorrectionResponse,
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -40,7 +40,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
           ok: false,
           error: `${provider} API key is required in ${headerName.toUpperCase()} header`,
         } as CorrectionResponse,
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -57,16 +57,15 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
         result,
         meta: {
           duration,
-          model: model || 'gpt-4o-mini',
+          model: model || "gpt-4o-mini",
           provider,
         },
       } as CorrectionResponse,
-      { status: 200 }
+      { status: 200 },
     );
   } catch (error) {
     const duration = Date.now() - startTime;
-    const errorMessage =
-      error instanceof Error ? error.message : 'Unknown error occurred';
+    const errorMessage = error instanceof Error ? error.message : "Unknown error occurred";
 
     return NextResponse.json(
       {
@@ -76,7 +75,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
           duration,
         },
       } as CorrectionResponse,
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

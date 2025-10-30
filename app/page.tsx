@@ -1,47 +1,47 @@
-'use client';
+"use client";
 
-import { useState, useEffect, useRef, FormEvent, KeyboardEvent } from 'react';
-import { Command, CornerDownLeft, Copy, Check, ChevronDown, Lightbulb } from 'lucide-react';
-import ReactMarkdown from 'react-markdown';
-import remarkGfm from 'remark-gfm';
-import { CorrectionResponse, WritingStyle, Provider } from '@/lib/types';
-import SettingsModal from '@/components/SettingsModal';
-import HelpModal from '@/components/HelpModal';
-import AboutModal from '@/components/AboutModal';
-import UsageModal from '@/components/UsageModal';
-import DraggableHeader from '@/components/DraggableHeader';
-import { UnifiedCorrector, getProviderForModel } from '@/lib/llm';
-import { isTauri } from '@/lib/utils';
-import { useTheme } from '@/lib/useTheme';
-import { useLocale } from '@/lib/useLocale';
-import { getKey, setKey, deleteKey, migrateFromLocalStorage } from '@/lib/secure-keys';
-import { MODELS, getAvailableModels, getModelById, ModelInfo } from '@/lib/models';
-import { trackUsage, estimateTokens } from '@/lib/usage-tracker';
-import { checkForUpdates } from '@/lib/updater';
+import AboutModal from "@/components/AboutModal";
+import DraggableHeader from "@/components/DraggableHeader";
+import HelpModal from "@/components/HelpModal";
+import SettingsModal from "@/components/SettingsModal";
+import UsageModal from "@/components/UsageModal";
+import { UnifiedCorrector, getProviderForModel } from "@/lib/llm";
+import { MODELS, type ModelInfo, getAvailableModels, getModelById } from "@/lib/models";
+import { deleteKey, getKey, migrateFromLocalStorage, setKey } from "@/lib/secure-keys";
+import type { CorrectionResponse, Provider, WritingStyle } from "@/lib/types";
+import { checkForUpdates } from "@/lib/updater";
+import { estimateTokens, trackUsage } from "@/lib/usage-tracker";
+import { useLocale } from "@/lib/useLocale";
+import { useTheme } from "@/lib/useTheme";
+import { isTauri } from "@/lib/utils";
+import { Check, ChevronDown, Command, Copy, CornerDownLeft, Lightbulb } from "lucide-react";
+import { type FormEvent, type KeyboardEvent, useEffect, useRef, useState } from "react";
+import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
 
 export default function HomePage() {
   const { messages } = useLocale();
-  const [inputText, setInputText] = useState('');
-  const [outputText, setOutputText] = useState('');
-  const [apiKey, setApiKey] = useState('');
+  const [inputText, setInputText] = useState("");
+  const [outputText, setOutputText] = useState("");
+  const [apiKey, setApiKey] = useState("");
   const [apiKeys, setApiKeys] = useState<Record<Provider, string>>({
-    openai: '',
-    anthropic: '',
-    mistral: '',
-    openrouter: '',
+    openai: "",
+    anthropic: "",
+    mistral: "",
+    openrouter: "",
   });
   const [autostartEnabled, setAutostartEnabled] = useState(false);
   const [soundEnabled, setSoundEnabled] = useState(true); // Default: enabled
-  const [shortcutKey, setShortcutKey] = useState('.'); // Default: period
+  const [shortcutKey, setShortcutKey] = useState("."); // Default: period
   const [autoPasteEnabled, setAutoPasteEnabled] = useState(false); // Default: disabled
-  const [model, setModel] = useState<string>('gpt-4o-mini');
+  const [model, setModel] = useState<string>("gpt-4o-mini");
   const [availableModels, setAvailableModels] = useState<ModelInfo[]>([]);
   const [isModelDropdownOpen, setIsModelDropdownOpen] = useState(false);
-  const [writingStyle, setWritingStyle] = useState<WritingStyle>('grammar');
+  const [writingStyle, setWritingStyle] = useState<WritingStyle>("grammar");
   const [isStyleDropdownOpen, setIsStyleDropdownOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState('');
-  const [meta, setMeta] = useState<CorrectionResponse['meta'] | null>(null);
+  const [error, setError] = useState("");
+  const [meta, setMeta] = useState<CorrectionResponse["meta"] | null>(null);
   const [showFallbackOption, setShowFallbackOption] = useState(false);
   const [fallbackModelId, setFallbackModelId] = useState<string | null>(null);
   const [isSettingsModalOpen, setIsSettingsModalOpen] = useState(false);
@@ -62,19 +62,19 @@ export default function HomePage() {
       if (isTauri()) {
         await migrateFromLocalStorage();
       }
-      
+
       // Load all API keys from secure storage
       const loadedKeys: Record<Provider, string> = {
-        openai: (await getKey('openai-api-key')) || '',
-        anthropic: (await getKey('anthropic-api-key')) || '',
-        mistral: (await getKey('mistral-api-key')) || '',
-        openrouter: (await getKey('openrouter-api-key')) || '',
+        openai: (await getKey("openai-api-key")) || "",
+        anthropic: (await getKey("anthropic-api-key")) || "",
+        mistral: (await getKey("mistral-api-key")) || "",
+        openrouter: (await getKey("openrouter-api-key")) || "",
       };
-      
+
       setApiKeys(loadedKeys);
       // Keep apiKey state for backward compatibility
       setApiKey(loadedKeys.openai);
-      
+
       // Compute available models based on API keys
       const hasKeys: Record<Provider, boolean> = {
         openai: !!loadedKeys.openai,
@@ -84,38 +84,41 @@ export default function HomePage() {
       };
       const available = getAvailableModels(hasKeys);
       setAvailableModels(available);
-      
+
       // Load saved model or default to first available
-      const savedModel = localStorage.getItem('selected-model');
-      if (savedModel && available.some(m => m.id === savedModel)) {
+      const savedModel = localStorage.getItem("selected-model");
+      if (savedModel && available.some((m) => m.id === savedModel)) {
         setModel(savedModel);
       } else if (available.length > 0) {
         setModel(available[0].id);
       }
 
-      const savedStyle = localStorage.getItem('writing-style') as WritingStyle | null;
-      if (savedStyle && ['grammar', 'formal', 'informal', 'collaborative', 'concise'].includes(savedStyle)) {
+      const savedStyle = localStorage.getItem("writing-style") as WritingStyle | null;
+      if (
+        savedStyle &&
+        ["grammar", "formal", "informal", "collaborative", "concise"].includes(savedStyle)
+      ) {
         setWritingStyle(savedStyle);
       }
 
-      const savedAutostart = localStorage.getItem('autostart-enabled');
-      if (savedAutostart === 'true') {
+      const savedAutostart = localStorage.getItem("autostart-enabled");
+      if (savedAutostart === "true") {
         setAutostartEnabled(true);
       }
 
-      const savedSoundEnabled = localStorage.getItem('sound-enabled');
+      const savedSoundEnabled = localStorage.getItem("sound-enabled");
       if (savedSoundEnabled !== null) {
-        setSoundEnabled(savedSoundEnabled === 'true');
+        setSoundEnabled(savedSoundEnabled === "true");
       }
 
-      const savedShortcutKey = localStorage.getItem('shortcut-key');
+      const savedShortcutKey = localStorage.getItem("shortcut-key");
       if (savedShortcutKey) {
         setShortcutKey(savedShortcutKey);
       }
 
-      const savedAutoPasteEnabled = localStorage.getItem('auto-paste-enabled');
+      const savedAutoPasteEnabled = localStorage.getItem("auto-paste-enabled");
       if (savedAutoPasteEnabled !== null) {
-        setAutoPasteEnabled(savedAutoPasteEnabled === 'true');
+        setAutoPasteEnabled(savedAutoPasteEnabled === "true");
       }
 
       // Check if running in Tauri (client-side only)
@@ -123,147 +126,158 @@ export default function HomePage() {
 
       // Listen for global shortcut event from Rust backend
       if (isTauri()) {
-        const { listen } = await import('@tauri-apps/api/event');
-        const { invoke } = await import('@tauri-apps/api/core');
-        const { isPermissionGranted, requestPermission } = await import('@tauri-apps/plugin-notification');
+        const { listen } = await import("@tauri-apps/api/event");
+        const { invoke } = await import("@tauri-apps/api/core");
+        const { isPermissionGranted, requestPermission } = await import(
+          "@tauri-apps/plugin-notification"
+        );
 
-        console.log('Setting up global shortcut event listener...');
+        console.log("Setting up global shortcut event listener...");
 
         // Initialize Rust settings from localStorage
-        const currentSoundEnabled = localStorage.getItem('sound-enabled') !== 'false'; // Default: true
-        const currentShortcutKey = localStorage.getItem('shortcut-key') || '.';
-        const currentAutoPasteEnabled = localStorage.getItem('auto-paste-enabled') === 'true'; // Default: false
-        
+        const currentSoundEnabled = localStorage.getItem("sound-enabled") !== "false"; // Default: true
+        const currentShortcutKey = localStorage.getItem("shortcut-key") || ".";
+        const currentAutoPasteEnabled = localStorage.getItem("auto-paste-enabled") === "true"; // Default: false
+
         try {
-          await invoke('set_sound_enabled', { enabled: currentSoundEnabled });
-          console.log('Sound enabled set to:', currentSoundEnabled);
-          
-          await invoke('set_auto_paste_enabled', { enabled: currentAutoPasteEnabled });
-          console.log('Auto-paste enabled set to:', currentAutoPasteEnabled);
-          
-          if (currentShortcutKey !== '.') {
-            await invoke('update_shortcut', { newKey: currentShortcutKey });
-            console.log('Shortcut key set to:', currentShortcutKey);
+          await invoke("set_sound_enabled", { enabled: currentSoundEnabled });
+          console.log("Sound enabled set to:", currentSoundEnabled);
+
+          await invoke("set_auto_paste_enabled", { enabled: currentAutoPasteEnabled });
+          console.log("Auto-paste enabled set to:", currentAutoPasteEnabled);
+
+          if (currentShortcutKey !== ".") {
+            await invoke("update_shortcut", { newKey: currentShortcutKey });
+            console.log("Shortcut key set to:", currentShortcutKey);
           }
         } catch (err) {
-          console.error('Failed to initialize settings:', err);
+          console.error("Failed to initialize settings:", err);
         }
 
         // Check and request notification permissions
         let permissionGranted = await isPermissionGranted();
-        console.log('Notification permission granted:', permissionGranted);
-        
+        console.log("Notification permission granted:", permissionGranted);
+
         if (!permissionGranted) {
-          console.log('Requesting notification permission...');
+          console.log("Requesting notification permission...");
           const permission = await requestPermission();
-          permissionGranted = permission === 'granted';
-          console.log('Notification permission result:', permission);
+          permissionGranted = permission === "granted";
+          console.log("Notification permission result:", permission);
         }
 
         // Send a test notification if permissions are granted
         if (permissionGranted) {
-          const { sendNotification } = await import('@tauri-apps/plugin-notification');
-          const { platform } = await import('@tauri-apps/plugin-os');
-          
+          const { sendNotification } = await import("@tauri-apps/plugin-notification");
+          const { platform } = await import("@tauri-apps/plugin-os");
+
           try {
             const platformName = await platform();
-            const shortcutKey = platformName === 'macos' ? 'Cmd' : 'Ctrl';
-            
+            const shortcutKey = platformName === "macos" ? "Cmd" : "Ctrl";
+
             await sendNotification({
-              title: '🚀 Correctify Ready',
-              body: `Global shortcut ${shortcutKey}+Shift+] is active!`
+              title: "🚀 Correctify Ready",
+              body: `Global shortcut ${shortcutKey}+Shift+] is active!`,
             });
-            console.log('✅ Test notification sent successfully');
+            console.log("✅ Test notification sent successfully");
           } catch (err) {
-            console.error('❌ Failed to send test notification:', err);
+            console.error("❌ Failed to send test notification:", err);
           }
         } else {
-          console.warn('⚠️ Notification permission not granted. Notifications will not work.');
-          console.warn('Please enable notifications in System Settings > Notifications > Correctify');
+          console.warn("⚠️ Notification permission not granted. Notifications will not work.");
+          console.warn(
+            "Please enable notifications in System Settings > Notifications > Correctify",
+          );
         }
 
-        const unlisten = await listen('correct-clipboard-text', async (event: any) => {
-          const textToCorrect = event.payload;
-          console.log('=== Received text to correct from global shortcut ===');
-          console.log('Text length:', textToCorrect.length);
-          console.log('Text preview:', textToCorrect.substring(0, 100));
+        const unlisten = await listen(
+          "correct-clipboard-text",
+          async (event: { payload: string }) => {
+            const textToCorrect = event.payload;
+            console.log("=== Received text to correct from global shortcut ===");
+            console.log("Text length:", textToCorrect.length);
+            console.log("Text preview:", textToCorrect.substring(0, 100));
 
-          // Check if API key is available
-          // Get current model and its provider
-          const currentModel = localStorage.getItem('selected-model') || 'gpt-4o-mini';
-          const provider = getProviderForModel(currentModel);
-          
-          // Check if API key for this provider is configured
-          const currentApiKey = await getKey(`${provider}-api-key`);
-          if (!currentApiKey) {
-            console.error('❌ No API key available - please configure in settings');
-            // Send error notification
+            // Check if API key is available
+            // Get current model and its provider
+            const currentModel = localStorage.getItem("selected-model") || "gpt-4o-mini";
+            const provider = getProviderForModel(currentModel);
+
+            // Check if API key for this provider is configured
+            const currentApiKey = await getKey(`${provider}-api-key`);
+            if (!currentApiKey) {
+              console.error("❌ No API key available - please configure in settings");
+              // Send error notification
+              try {
+                const { sendNotification } = await import("@tauri-apps/plugin-notification");
+                const providerName = provider.charAt(0).toUpperCase() + provider.slice(1);
+                await sendNotification({
+                  title: "❌ Correctify Error",
+                  body: `Please configure your ${providerName} API key in settings first!`,
+                });
+                console.log("✅ Error notification sent for missing API key");
+              } catch (err) {
+                console.error("❌ Failed to send error notification:", err);
+              }
+              return;
+            }
+
             try {
-              const { sendNotification } = await import('@tauri-apps/plugin-notification');
-              const providerName = provider.charAt(0).toUpperCase() + provider.slice(1);
-              await sendNotification({
-                title: '❌ Correctify Error',
-                body: `Please configure your ${providerName} API key in settings first!`
+              console.log("Starting correction...");
+              const correctionStartTime = Date.now();
+
+              // Perform correction
+              const currentStyle =
+                (localStorage.getItem("writing-style") as WritingStyle) || "grammar";
+              const corrector = new UnifiedCorrector(provider, currentApiKey, currentModel);
+              const result = await corrector.correct({
+                text: textToCorrect,
+                writingStyle: currentStyle,
               });
-              console.log('✅ Error notification sent for missing API key');
+
+              const correctionDuration = Date.now() - correctionStartTime;
+              console.log("Correction result:", result.result.substring(0, 100));
+              console.log("Correction duration:", correctionDuration, "ms");
+
+              // Get auto-paste setting
+              const autoPasteEnabled = localStorage.getItem("auto-paste-enabled") === "true";
+
+              // Send corrected text back to Rust with model, duration, and auto-paste flag
+              await invoke("handle_corrected_text", {
+                text: result.result,
+                model: currentModel,
+                duration: correctionDuration,
+                autoPaste: autoPasteEnabled,
+              });
+              console.log("=== Correction completed successfully ===");
             } catch (err) {
-              console.error('❌ Failed to send error notification:', err);
+              console.error("❌ Failed to correct text:", err);
+              // Send error notification
+              try {
+                const { sendNotification } = await import("@tauri-apps/plugin-notification");
+                await sendNotification({
+                  title: "❌ Correctify Error",
+                  body: `Failed to correct text: ${err instanceof Error ? err.message : "Unknown error"}`,
+                });
+                console.log("✅ Error notification sent for correction failure");
+              } catch (notifErr) {
+                console.error("❌ Failed to send error notification:", notifErr);
+              }
             }
-            return;
-          }
-
-          try {
-            console.log('Starting correction...');
-            const correctionStartTime = Date.now();
-            
-            // Perform correction
-            const currentStyle = localStorage.getItem('writing-style') as WritingStyle || 'grammar';
-            const corrector = new UnifiedCorrector(provider, currentApiKey, currentModel);
-            const result = await corrector.correct({ text: textToCorrect, writingStyle: currentStyle });
-
-            const correctionDuration = Date.now() - correctionStartTime;
-            console.log('Correction result:', result.result.substring(0, 100));
-            console.log('Correction duration:', correctionDuration, 'ms');
-            
-            // Get auto-paste setting
-            const autoPasteEnabled = localStorage.getItem('auto-paste-enabled') === 'true';
-            
-            // Send corrected text back to Rust with model, duration, and auto-paste flag
-            await invoke('handle_corrected_text', { 
-              text: result.result,
-              model: currentModel,
-              duration: correctionDuration,
-              autoPaste: autoPasteEnabled
-            });
-            console.log('=== Correction completed successfully ===');
-          } catch (err) {
-            console.error('❌ Failed to correct text:', err);
-            // Send error notification
-            try {
-              const { sendNotification } = await import('@tauri-apps/plugin-notification');
-              await sendNotification({
-                title: '❌ Correctify Error',
-                body: 'Failed to correct text: ' + (err instanceof Error ? err.message : 'Unknown error')
-              });
-              console.log('✅ Error notification sent for correction failure');
-            } catch (notifErr) {
-              console.error('❌ Failed to send error notification:', notifErr);
-            }
-          }
-        });
+          },
+        );
 
         return unlisten;
       }
     };
 
-    initializeApp().catch(err => {
-      console.error('Failed to initialize app:', err);
+    initializeApp().catch((err) => {
+      console.error("Failed to initialize app:", err);
     });
 
     // Check for updates (Tauri only, silent check on startup)
     if (isTauri()) {
-      checkForUpdates(true).catch(err => {
-        console.error('Update check failed:', err);
+      checkForUpdates(true).catch((err) => {
+        console.error("Update check failed:", err);
       });
     }
   }, []);
@@ -278,9 +292,9 @@ export default function HomePage() {
       }
     };
 
-    document.addEventListener('mousedown', handleClickOutside);
+    document.addEventListener("mousedown", handleClickOutside);
     return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener("mousedown", handleClickOutside);
     };
   }, []);
 
@@ -290,32 +304,36 @@ export default function HomePage() {
       setIsCopied(true);
       setTimeout(() => setIsCopied(false), 2000);
     } catch (err) {
-      console.error('Failed to copy text:', err);
+      console.error("Failed to copy text:", err);
     }
   };
 
   const handleModelChange = (newModelId: string) => {
     setModel(newModelId);
-    localStorage.setItem('selected-model', newModelId);
+    localStorage.setItem("selected-model", newModelId);
     setIsModelDropdownOpen(false);
   };
 
   const handleStyleChange = (newStyle: WritingStyle) => {
     setWritingStyle(newStyle);
-    localStorage.setItem('writing-style', newStyle);
+    localStorage.setItem("writing-style", newStyle);
     setIsStyleDropdownOpen(false);
   };
 
   // Group available models by category
-  const paidModels = availableModels.filter(m => m.category === 'paid');
-  const freeModels = availableModels.filter(m => m.category === 'free');
+  const paidModels = availableModels.filter((m) => m.category === "paid");
+  const freeModels = availableModels.filter((m) => m.category === "free");
 
   const styleOptions = [
-    { value: 'grammar', label: 'Grammar Only', description: 'Fixes grammar and typos only' },
-    { value: 'formal', label: 'Formal', description: 'Polished and professional tone' },
-    { value: 'informal', label: 'Informal', description: 'Natural and conversational tone' },
-    { value: 'collaborative', label: 'Collaborative', description: 'Friendly, inclusive team tone' },
-    { value: 'concise', label: 'Concise', description: 'Clear and to the point' },
+    { value: "grammar", label: "Grammar Only", description: "Fixes grammar and typos only" },
+    { value: "formal", label: "Formal", description: "Polished and professional tone" },
+    { value: "informal", label: "Informal", description: "Natural and conversational tone" },
+    {
+      value: "collaborative",
+      label: "Collaborative",
+      description: "Friendly, inclusive team tone",
+    },
+    { value: "concise", label: "Concise", description: "Clear and to the point" },
   ] as const;
 
   const handleOpenAbout = () => {
@@ -327,7 +345,7 @@ export default function HomePage() {
       try {
         window.location.reload();
       } catch (err) {
-        console.error('Failed to reload window:', err);
+        console.error("Failed to reload window:", err);
       }
     }
   };
@@ -335,10 +353,10 @@ export default function HomePage() {
   const handleQuit = async () => {
     if (isTauri()) {
       try {
-        const { exit } = await import('@tauri-apps/plugin-process');
+        const { exit } = await import("@tauri-apps/plugin-process");
         await exit(0);
       } catch (err) {
-        console.error('Failed to quit app:', err);
+        console.error("Failed to quit app:", err);
       }
     }
   };
@@ -348,7 +366,7 @@ export default function HomePage() {
     newAutostartEnabled: boolean,
     newSoundEnabled: boolean,
     newShortcutKey: string,
-    newAutoPasteEnabled: boolean
+    newAutoPasteEnabled: boolean,
   ) => {
     // Update state
     setApiKeys(newApiKeys);
@@ -363,7 +381,7 @@ export default function HomePage() {
       for (const provider of Object.keys(newApiKeys) as Provider[]) {
         const keyValue = newApiKeys[provider];
         const keyName = `${provider}-api-key`;
-        
+
         if (keyValue && keyValue.trim().length > 0) {
           await setKey(keyName, keyValue);
         } else {
@@ -375,7 +393,7 @@ export default function HomePage() {
           }
         }
       }
-      
+
       // Recompute available models
       const hasKeys: Record<Provider, boolean> = {
         openai: !!newApiKeys.openai,
@@ -385,55 +403,55 @@ export default function HomePage() {
       };
       const available = getAvailableModels(hasKeys);
       setAvailableModels(available);
-      
+
       // Reset model if current model is no longer available
-      if (!available.some(m => m.id === model) && available.length > 0) {
+      if (!available.some((m) => m.id === model) && available.length > 0) {
         setModel(available[0].id);
-        localStorage.setItem('selected-model', available[0].id);
+        localStorage.setItem("selected-model", available[0].id);
       }
     } catch (error) {
-      console.error('Failed to save API keys:', error);
-      alert('Failed to save API keys securely. Please try again.');
+      console.error("Failed to save API keys:", error);
+      alert("Failed to save API keys securely. Please try again.");
       return;
     }
 
-    localStorage.setItem('autostart-enabled', newAutostartEnabled.toString());
-    localStorage.setItem('sound-enabled', newSoundEnabled.toString());
-    localStorage.setItem('shortcut-key', newShortcutKey);
-    localStorage.setItem('auto-paste-enabled', newAutoPasteEnabled.toString());
+    localStorage.setItem("autostart-enabled", newAutostartEnabled.toString());
+    localStorage.setItem("sound-enabled", newSoundEnabled.toString());
+    localStorage.setItem("shortcut-key", newShortcutKey);
+    localStorage.setItem("auto-paste-enabled", newAutoPasteEnabled.toString());
 
     // Handle settings via Tauri
     if (isTauri()) {
       try {
-        const { invoke } = await import('@tauri-apps/api/core');
-        
+        const { invoke } = await import("@tauri-apps/api/core");
+
         // Update sound setting in Rust
-        await invoke('set_sound_enabled', { enabled: newSoundEnabled });
-        console.log('Sound enabled updated to:', newSoundEnabled);
-        
+        await invoke("set_sound_enabled", { enabled: newSoundEnabled });
+        console.log("Sound enabled updated to:", newSoundEnabled);
+
         // Update auto-paste setting in Rust
-        await invoke('set_auto_paste_enabled', { enabled: newAutoPasteEnabled });
-        console.log('Auto-paste enabled updated to:', newAutoPasteEnabled);
-        
+        await invoke("set_auto_paste_enabled", { enabled: newAutoPasteEnabled });
+        console.log("Auto-paste enabled updated to:", newAutoPasteEnabled);
+
         // Update shortcut if changed
         if (newShortcutKey !== shortcutKey) {
-          await invoke('update_shortcut', { newKey: newShortcutKey });
-          console.log('Shortcut updated to: Cmd+Shift+' + newShortcutKey);
+          await invoke("update_shortcut", { newKey: newShortcutKey });
+          console.log(`Shortcut updated to: Cmd+Shift+${newShortcutKey}`);
         }
-        
+
         // Handle autostart
-        const { enable, disable, isEnabled } = await import('@tauri-apps/plugin-autostart');
+        const { enable, disable, isEnabled } = await import("@tauri-apps/plugin-autostart");
         const currentlyEnabled = await isEnabled();
-        
+
         if (newAutostartEnabled && !currentlyEnabled) {
           await enable();
-          console.log('Autostart enabled');
+          console.log("Autostart enabled");
         } else if (!newAutostartEnabled && currentlyEnabled) {
           await disable();
-          console.log('Autostart disabled');
+          console.log("Autostart disabled");
         }
       } catch (err) {
-        console.error('Failed to update settings:', err);
+        console.error("Failed to update settings:", err);
       }
     }
   };
@@ -444,14 +462,14 @@ export default function HomePage() {
     }
 
     if (!inputText.trim()) {
-      setError('Please enter some text to correct');
+      setError("Please enter some text to correct");
       return;
     }
 
     // Get provider and API key for selected model
     const provider = getProviderForModel(model);
     const modelApiKey = apiKeys[provider];
-    
+
     if (!modelApiKey || !modelApiKey.trim()) {
       const providerName = provider.charAt(0).toUpperCase() + provider.slice(1);
       setError(`Please add your ${providerName} API key in Settings`);
@@ -468,28 +486,28 @@ export default function HomePage() {
     }
 
     setIsLoading(true);
-    setError('');
-    setOutputText('');
+    setError("");
+    setOutputText("");
     setMeta(null);
 
     const startTime = Date.now();
 
     try {
       // Check if we're in production build or dev mode
-      const isProduction = process.env.NODE_ENV === 'production';
-      
+      const isProduction = process.env.NODE_ENV === "production";
+
       // In Tauri production, call LLM directly since static export doesn't support API routes
       // In dev mode, always use API route to avoid CORS issues
       if (isTauri() && isProduction) {
-        const { invoke } = await import('@tauri-apps/api/core');
-        
+        const { invoke } = await import("@tauri-apps/api/core");
+
         // Play processing sound
         try {
-          await invoke('play_sound_in_app', { soundType: 'processing' });
+          await invoke("play_sound_in_app", { soundType: "processing" });
         } catch (err) {
-          console.error('Failed to play processing sound:', err);
+          console.error("Failed to play processing sound:", err);
         }
-        
+
         const corrector = new UnifiedCorrector(provider, modelApiKey, model);
         const result = await corrector.correct({
           text: inputText,
@@ -504,7 +522,7 @@ export default function HomePage() {
           model: model,
           provider: provider,
         });
-        
+
         // Track usage
         trackUsage({
           timestamp: Date.now(),
@@ -514,22 +532,22 @@ export default function HomePage() {
           duration,
           success: true,
         });
-        
+
         // Play completed sound
         try {
-          await invoke('play_sound_in_app', { soundType: 'completed' });
+          await invoke("play_sound_in_app", { soundType: "completed" });
         } catch (err) {
-          console.error('Failed to play completed sound:', err);
+          console.error("Failed to play completed sound:", err);
         }
       } else {
         // In browser, use API route to keep API key more secure
         const headers: Record<string, string> = {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
           [`x-${provider}-key`]: modelApiKey,
         };
 
-        const response = await fetch('/api/correct', {
-          method: 'POST',
+        const response = await fetch("/api/correct", {
+          method: "POST",
           headers,
           body: JSON.stringify({
             text: inputText,
@@ -542,8 +560,8 @@ export default function HomePage() {
         const data: CorrectionResponse = await response.json();
 
         if (!data.ok) {
-          setError(data.error || 'An error occurred');
-          
+          setError(data.error || "An error occurred");
+
           // Track failed usage
           trackUsage({
             timestamp: Date.now(),
@@ -552,27 +570,27 @@ export default function HomePage() {
             tokens: estimateTokens(inputText),
             duration: Date.now() - startTime,
             success: false,
-            error: data.error || 'An error occurred',
+            error: data.error || "An error occurred",
           });
         } else {
-          setOutputText(data.result || '');
+          setOutputText(data.result || "");
           setMeta(data.meta || null);
-          
+
           // Track successful usage
           trackUsage({
             timestamp: Date.now(),
             provider,
             model,
-            tokens: estimateTokens(inputText) + estimateTokens(data.result || ''),
-            duration: data.meta?.duration || (Date.now() - startTime),
+            tokens: estimateTokens(inputText) + estimateTokens(data.result || ""),
+            duration: data.meta?.duration || Date.now() - startTime,
             success: true,
           });
         }
       }
     } catch (err) {
-      const errorMsg = err instanceof Error ? err.message : 'Failed to connect to the server';
+      const errorMsg = err instanceof Error ? err.message : "Failed to connect to the server";
       setError(errorMsg);
-      
+
       // Track failed usage
       trackUsage({
         timestamp: Date.now(),
@@ -583,9 +601,9 @@ export default function HomePage() {
         success: false,
         error: errorMsg,
       });
-      
+
       // Check if a free fallback model is available
-      const freeModels = availableModels.filter(m => m.category === 'free');
+      const freeModels = availableModels.filter((m) => m.category === "free");
       if (freeModels.length > 0 && model !== freeModels[0].id) {
         setFallbackModelId(freeModels[0].id);
         setShowFallbackOption(true);
@@ -594,11 +612,11 @@ export default function HomePage() {
       setIsLoading(false);
     }
   };
-  
+
   const handleRetryWithFallback = () => {
     if (fallbackModelId) {
       setModel(fallbackModelId);
-      localStorage.setItem('selected-model', fallbackModelId);
+      localStorage.setItem("selected-model", fallbackModelId);
       setShowFallbackOption(false);
       setFallbackModelId(null);
       // Trigger correction with the fallback model
@@ -609,7 +627,7 @@ export default function HomePage() {
   };
 
   const handleKeyDown = (e: KeyboardEvent<HTMLTextAreaElement>) => {
-    if ((e.metaKey || e.ctrlKey) && e.key === 'Enter') {
+    if ((e.metaKey || e.ctrlKey) && e.key === "Enter") {
       e.preventDefault();
       handleSubmit();
     }
@@ -645,15 +663,9 @@ export default function HomePage() {
         shortcutKey={shortcutKey}
       />
 
-      <AboutModal
-        isOpen={isAboutModalOpen}
-        onClose={() => setIsAboutModalOpen(false)}
-      />
+      <AboutModal isOpen={isAboutModalOpen} onClose={() => setIsAboutModalOpen(false)} />
 
-      <UsageModal
-        isOpen={isUsageModalOpen}
-        onClose={() => setIsUsageModalOpen(false)}
-      />
+      <UsageModal isOpen={isUsageModalOpen} onClose={() => setIsUsageModalOpen(false)} />
 
       <main className="h-screen flex justify-center p-6 bg-background pt-24 transition-colors overflow-auto">
         <div className="w-full max-w-4xl">
@@ -665,9 +677,7 @@ export default function HomePage() {
                 </label>
                 <div className="flex items-center gap-4">
                   <div className="flex items-center gap-2">
-                    <label className="text-xs font-medium text-foreground/60">
-                      Style
-                    </label>
+                    <span className="text-xs font-medium text-foreground/60">Style</span>
                     <div className="relative" ref={styleDropdownRef}>
                       <button
                         type="button"
@@ -675,10 +685,14 @@ export default function HomePage() {
                         className="flex items-center gap-2 px-3 py-1.5 text-xs font-medium text-foreground/70 bg-foreground/5 hover:bg-foreground/10 hover:text-foreground border-0 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed transition-colors min-w-[140px]"
                         disabled={isLoading}
                       >
-                        <span className="flex-1 text-left">{styleOptions.find(option => option.value === writingStyle)?.label}</span>
-                        <ChevronDown className={`w-3 h-3 transition-transform flex-shrink-0 ${isStyleDropdownOpen ? 'rotate-180' : ''}`} />
+                        <span className="flex-1 text-left">
+                          {styleOptions.find((option) => option.value === writingStyle)?.label}
+                        </span>
+                        <ChevronDown
+                          className={`w-3 h-3 transition-transform flex-shrink-0 ${isStyleDropdownOpen ? "rotate-180" : ""}`}
+                        />
                       </button>
-                      
+
                       {isStyleDropdownOpen && (
                         <div className="absolute top-full right-0 mt-1 w-64 bg-card-bg border border-border rounded-lg shadow-lg z-10">
                           {styleOptions.map((option) => (
@@ -688,16 +702,18 @@ export default function HomePage() {
                               onClick={() => handleStyleChange(option.value)}
                               className={`w-full text-left px-3 py-2.5 transition-colors first:rounded-t-lg last:rounded-b-lg ${
                                 writingStyle === option.value
-                                  ? 'bg-primary text-button-text'
-                                  : 'text-foreground hover:bg-foreground/5'
+                                  ? "bg-primary text-button-text"
+                                  : "text-foreground hover:bg-foreground/5"
                               }`}
                             >
                               <div className="font-medium text-xs">{option.label}</div>
-                              <div className={`text-xs mt-0.5 ${
-                                writingStyle === option.value
-                                  ? 'text-button-text/80'
-                                  : 'text-foreground/60'
-                              }`}>
+                              <div
+                                className={`text-xs mt-0.5 ${
+                                  writingStyle === option.value
+                                    ? "text-button-text/80"
+                                    : "text-foreground/60"
+                                }`}
+                              >
                                 {option.description}
                               </div>
                             </button>
@@ -717,10 +733,14 @@ export default function HomePage() {
                         className="flex items-center gap-2 px-3 py-1.5 text-xs font-medium text-foreground/70 bg-foreground/5 hover:bg-foreground/10 hover:text-foreground border-0 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed transition-colors min-w-[160px]"
                         disabled={isLoading}
                       >
-                        <span className="flex-1 text-left">{getModelById(model)?.name || 'Select Model'}</span>
-                        <ChevronDown className={`w-3 h-3 transition-transform flex-shrink-0 ${isModelDropdownOpen ? 'rotate-180' : ''}`} />
+                        <span className="flex-1 text-left">
+                          {getModelById(model)?.name || "Select Model"}
+                        </span>
+                        <ChevronDown
+                          className={`w-3 h-3 transition-transform flex-shrink-0 ${isModelDropdownOpen ? "rotate-180" : ""}`}
+                        />
                       </button>
-                      
+
                       {isModelDropdownOpen && (
                         <div className="absolute top-full right-0 mt-1 w-max min-w-[150px] max-w-[300px] bg-card-bg border border-border rounded-lg shadow-lg z-10 max-h-[400px] overflow-y-auto">
                           {paidModels.length > 0 && (
@@ -735,20 +755,32 @@ export default function HomePage() {
                                   onClick={() => handleModelChange(modelInfo.id)}
                                   className={`w-full text-left px-3 py-2 text-xs font-medium transition-colors ${
                                     model === modelInfo.id
-                                      ? 'bg-primary text-button-text'
-                                      : 'text-foreground hover:bg-foreground/5'
+                                      ? "bg-primary text-button-text"
+                                      : "text-foreground hover:bg-foreground/5"
                                   }`}
                                 >
                                   <div className="flex items-start justify-between gap-3">
                                     <span className="flex-1 min-w-0">{modelInfo.name}</span>
-                                    <span className={`text-[10px] uppercase flex-shrink-0 ${
-                                      model === modelInfo.id ? 'text-button-text/60' : 'text-foreground/40'
-                                    }`}>{modelInfo.provider}</span>
+                                    <span
+                                      className={`text-[10px] uppercase flex-shrink-0 ${
+                                        model === modelInfo.id
+                                          ? "text-button-text/60"
+                                          : "text-foreground/40"
+                                      }`}
+                                    >
+                                      {modelInfo.provider}
+                                    </span>
                                   </div>
                                   {modelInfo.description && (
-                                    <div className={`text-[10px] mt-0.5 ${
-                                      model === modelInfo.id ? 'text-button-text/70' : 'text-foreground/50'
-                                    }`}>{modelInfo.description}</div>
+                                    <div
+                                      className={`text-[10px] mt-0.5 ${
+                                        model === modelInfo.id
+                                          ? "text-button-text/70"
+                                          : "text-foreground/50"
+                                      }`}
+                                    >
+                                      {modelInfo.description}
+                                    </div>
                                   )}
                                 </button>
                               ))}
@@ -766,20 +798,32 @@ export default function HomePage() {
                                   onClick={() => handleModelChange(modelInfo.id)}
                                   className={`w-full text-left px-3 py-2 text-xs font-medium transition-colors last:rounded-b-lg ${
                                     model === modelInfo.id
-                                      ? 'bg-primary text-button-text'
-                                      : 'text-foreground hover:bg-foreground/5'
+                                      ? "bg-primary text-button-text"
+                                      : "text-foreground hover:bg-foreground/5"
                                   }`}
                                 >
                                   <div className="flex items-start justify-between gap-3">
                                     <span className="flex-1 min-w-0">{modelInfo.name}</span>
-                                    <span className={`text-[10px] uppercase flex-shrink-0 ${
-                                      model === modelInfo.id ? 'text-button-text/60' : 'text-foreground/40'
-                                    }`}>{modelInfo.provider}</span>
+                                    <span
+                                      className={`text-[10px] uppercase flex-shrink-0 ${
+                                        model === modelInfo.id
+                                          ? "text-button-text/60"
+                                          : "text-foreground/40"
+                                      }`}
+                                    >
+                                      {modelInfo.provider}
+                                    </span>
                                   </div>
                                   {modelInfo.description && (
-                                    <div className={`text-[10px] mt-0.5 ${
-                                      model === modelInfo.id ? 'text-button-text/70' : 'text-foreground/50'
-                                    }`}>{modelInfo.description}</div>
+                                    <div
+                                      className={`text-[10px] mt-0.5 ${
+                                        model === modelInfo.id
+                                          ? "text-button-text/70"
+                                          : "text-foreground/50"
+                                      }`}
+                                    >
+                                      {modelInfo.description}
+                                    </div>
                                   )}
                                 </button>
                               ))}
@@ -838,8 +882,19 @@ export default function HomePage() {
             <div className="mt-6 p-4 bg-error-bg border border-error-border rounded-lg">
               <div className="flex items-start gap-3">
                 <div className="flex-shrink-0">
-                  <svg className="w-5 h-5 text-error-icon" viewBox="0 0 20 20" fill="currentColor">
-                    <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+                  <svg
+                    className="w-5 h-5 text-error-icon"
+                    viewBox="0 0 20 20"
+                    fill="currentColor"
+                    role="img"
+                    aria-labelledby="errorIconTitle"
+                  >
+                    <title id="errorIconTitle">Error</title>
+                    <path
+                      fillRule="evenodd"
+                      d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
+                      clipRule="evenodd"
+                    />
                   </svg>
                 </div>
                 <div>
@@ -847,24 +902,27 @@ export default function HomePage() {
                     {messages.home.noApiKeyTitle}
                   </h3>
                   <p className="text-sm text-error-text mb-2">
-                    {messages.home.noApiKeyMessage}{' '}
+                    {messages.home.noApiKeyMessage}{" "}
                     <button
+                      type="button"
                       onClick={() => setIsSettingsModalOpen(true)}
                       className="font-semibold underline hover:no-underline"
                     >
                       {messages.home.noApiKeyClickHere}
-                    </button>
-                    {' '}{messages.home.noApiKeyOr}{' '}
+                    </button>{" "}
+                    {messages.home.noApiKeyOr}{" "}
                     <button
+                      type="button"
                       onClick={() => setIsHelpModalOpen(true)}
                       className="font-semibold underline hover:no-underline"
                     >
                       {messages.home.noApiKeyHelpGuide}
-                    </button>
-                    {' '}{messages.home.noApiKeyForInstructions}
+                    </button>{" "}
+                    {messages.home.noApiKeyForInstructions}
                   </p>
                   <p className="text-xs text-error-text/80 italic">
-                    💡 Tip: OpenRouter offers free models, but you still need to create a free account and get an API key (no credit card required).
+                    💡 Tip: OpenRouter offers free models, but you still need to create a free
+                    account and get an API key (no credit card required).
                   </p>
                 </div>
               </div>
@@ -872,32 +930,37 @@ export default function HomePage() {
           )}
 
           {showGlobalShortcutInfo && (
-            <div 
+            <div
               className={`mt-6 p-4 bg-info-bg border border-info-border rounded-lg transition-opacity duration-500 ${
-                isInfoFadingOut ? 'opacity-0' : 'opacity-100'
+                isInfoFadingOut ? "opacity-0" : "opacity-100"
               }`}
             >
               <h3 className="text-sm font-semibold text-info-text flex items-center gap-2 mb-2">
                 <Lightbulb />
                 {messages.home.quickCorrectionTitle}
               </h3>
-              
+
               {autoPasteEnabled ? (
                 <>
                   <p className="text-sm text-info-text mb-2">
-                    Auto copy/paste is <strong>enabled</strong>. Simply select text and press the shortcut:
+                    Auto copy/paste is <strong>enabled</strong>. Simply select text and press the
+                    shortcut:
                   </p>
                   <ol className="text-sm text-info-text space-y-1 ml-4 list-decimal">
+                    <li className="ml-3">Select text in any app (just highlight it)</li>
                     <li className="ml-3">
-                      Select text in any app (just highlight it)
+                      Press{" "}
+                      <kbd className="px-1.5 py-0.5 bg-foreground/10 rounded text-xs font-medium">
+                        Cmd+Shift+{shortcutKey}
+                      </kbd>{" "}
+                      {messages.home.shortcutOr}{" "}
+                      <kbd className="px-1.5 py-0.5 bg-foreground/10 rounded text-xs font-medium">
+                        Ctrl+Shift+{shortcutKey}
+                      </kbd>
                     </li>
                     <li className="ml-3">
-                      Press{' '}
-                      <kbd className="px-1.5 py-0.5 bg-foreground/10 rounded text-xs font-medium">Cmd+Shift+{shortcutKey}</kbd>
-                      {' '}{messages.home.shortcutOr}{' '}
-                      <kbd className="px-1.5 py-0.5 bg-foreground/10 rounded text-xs font-medium">Ctrl+Shift+{shortcutKey}</kbd>
+                      Wait for the notification - corrected text pastes automatically!
                     </li>
-                    <li className="ml-3">Wait for the notification - corrected text pastes automatically!</li>
                   </ol>
                 </>
               ) : (
@@ -908,27 +971,41 @@ export default function HomePage() {
                   <ol className="text-sm text-info-text space-y-1 ml-4 list-decimal">
                     <li className="ml-3">
                       {messages.home.quickCorrectionStep1}
-                      <kbd className="px-1.5 py-0.5 bg-foreground/10 rounded text-xs font-medium">Cmd+C</kbd>
-                      {' '}{messages.home.shortcutOr}{' '}
-                      <kbd className="px-1.5 py-0.5 bg-foreground/10 rounded text-xs font-medium">Ctrl+C</kbd>)
+                      <kbd className="px-1.5 py-0.5 bg-foreground/10 rounded text-xs font-medium">
+                        Cmd+C
+                      </kbd>{" "}
+                      {messages.home.shortcutOr}{" "}
+                      <kbd className="px-1.5 py-0.5 bg-foreground/10 rounded text-xs font-medium">
+                        Ctrl+C
+                      </kbd>
+                      )
                     </li>
                     <li className="ml-3">
-                      {messages.home.quickCorrectionStep2}{' '}
-                      <kbd className="px-1.5 py-0.5 bg-foreground/10 rounded text-xs font-medium">Cmd+Shift+{shortcutKey}</kbd>
-                      {' '}{messages.home.shortcutOr}{' '}
-                      <kbd className="px-1.5 py-0.5 bg-foreground/10 rounded text-xs font-medium">Ctrl+Shift+{shortcutKey}</kbd>
+                      {messages.home.quickCorrectionStep2}{" "}
+                      <kbd className="px-1.5 py-0.5 bg-foreground/10 rounded text-xs font-medium">
+                        Cmd+Shift+{shortcutKey}
+                      </kbd>{" "}
+                      {messages.home.shortcutOr}{" "}
+                      <kbd className="px-1.5 py-0.5 bg-foreground/10 rounded text-xs font-medium">
+                        Ctrl+Shift+{shortcutKey}
+                      </kbd>
                     </li>
                     <li className="ml-3">{messages.home.quickCorrectionStep3}</li>
                     <li className="ml-3">
                       {messages.home.quickCorrectionStep4}
-                      <kbd className="px-1.5 py-0.5 bg-foreground/10 rounded text-xs font-medium">Cmd+V</kbd>
-                      {' '}{messages.home.shortcutOr}{' '}
-                      <kbd className="px-1.5 py-0.5 bg-foreground/10 rounded text-xs font-medium">Ctrl+V</kbd>)
+                      <kbd className="px-1.5 py-0.5 bg-foreground/10 rounded text-xs font-medium">
+                        Cmd+V
+                      </kbd>{" "}
+                      {messages.home.shortcutOr}{" "}
+                      <kbd className="px-1.5 py-0.5 bg-foreground/10 rounded text-xs font-medium">
+                        Ctrl+V
+                      </kbd>
+                      )
                     </li>
                   </ol>
                 </>
               )}
-              
+
               <p className="text-sm text-info-text mt-3 italic">
                 {messages.home.quickCorrectionCustomize}
               </p>
@@ -938,20 +1015,23 @@ export default function HomePage() {
           {error && (
             <div className="mt-6 p-4 bg-error-bg border border-error-border rounded-lg">
               <p className="text-sm text-error-text">{error}</p>
-              
+
               {showFallbackOption && fallbackModelId && (
                 <div className="mt-3 pt-3 border-t border-error-border">
                   <p className="text-sm text-error-text mb-2">
-                    Would you like to retry with <strong>{getModelById(fallbackModelId)?.name}</strong> (free model)?
+                    Would you like to retry with{" "}
+                    <strong>{getModelById(fallbackModelId)?.name}</strong> (free model)?
                   </p>
                   <div className="flex gap-2">
                     <button
+                      type="button"
                       onClick={handleRetryWithFallback}
                       className="px-4 py-2 text-sm font-medium bg-primary text-button-text rounded-lg hover:bg-primary-hover transition-colors"
                     >
                       Retry with Free Model
                     </button>
                     <button
+                      type="button"
                       onClick={() => setShowFallbackOption(false)}
                       className="px-4 py-2 text-sm font-medium text-foreground hover:bg-foreground/5 rounded-lg transition-colors"
                     >
@@ -967,10 +1047,11 @@ export default function HomePage() {
             <div className="mt-6 space-y-4 pb-6">
               <div className="space-y-2">
                 <div className="flex items-center justify-between">
-                  <label className="block text-sm font-medium text-foreground">
+                  <span className="block text-sm font-medium text-foreground">
                     {messages.home.outputLabel}
-                  </label>
+                  </span>
                   <button
+                    type="button"
                     onClick={handleCopy}
                     className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-foreground/70 hover:text-foreground bg-foreground/5 hover:bg-foreground/10 rounded-lg transition-colors"
                     aria-label="Copy to clipboard"
@@ -990,9 +1071,7 @@ export default function HomePage() {
                 </div>
                 <div className="p-4 pb-8 bg-card border border-border rounded-lg min-h-[12rem] transition-colors">
                   <div className="prose max-w-none">
-                    <ReactMarkdown remarkPlugins={[remarkGfm]}>
-                      {outputText}
-                    </ReactMarkdown>
+                    <ReactMarkdown remarkPlugins={[remarkGfm]}>{outputText}</ReactMarkdown>
                   </div>
                 </div>
               </div>
@@ -1003,7 +1082,9 @@ export default function HomePage() {
                     {messages.home.metaModel} {meta.model}
                   </span>
                   {meta.duration && (
-                    <span>{messages.home.metaDuration} {(meta.duration / 1000).toFixed(2)}s</span>
+                    <span>
+                      {messages.home.metaDuration} {(meta.duration / 1000).toFixed(2)}s
+                    </span>
                   )}
                 </div>
               )}

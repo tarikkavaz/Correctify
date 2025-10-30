@@ -1,5 +1,5 @@
-import { Provider } from './types';
-import { getModelById } from './models';
+import { getModelById } from "./models";
+import type { Provider } from "./types";
 
 export interface UsageEntry {
   timestamp: number;
@@ -18,15 +18,18 @@ export interface UsageStats {
   totalDuration: number; // milliseconds
   totalTokens: number;
   estimatedCost: number; // in USD
-  byProvider: Record<Provider, {
-    requests: number;
-    tokens: number;
-    duration: number;
-    cost: number;
-  }>;
+  byProvider: Record<
+    Provider,
+    {
+      requests: number;
+      tokens: number;
+      duration: number;
+      cost: number;
+    }
+  >;
 }
 
-const STORAGE_KEY = 'correctify_usage_history';
+const STORAGE_KEY = "correctify_usage_history";
 const MAX_ENTRIES = 1000; // Keep last 1000 entries
 
 /**
@@ -34,14 +37,14 @@ const MAX_ENTRIES = 1000; // Keep last 1000 entries
  */
 export function getUsageHistory(): UsageEntry[] {
   // Check if we're in the browser
-  if (typeof window === 'undefined') return [];
-  
+  if (typeof window === "undefined") return [];
+
   try {
     const data = localStorage.getItem(STORAGE_KEY);
     if (!data) return [];
     return JSON.parse(data);
   } catch (error) {
-    console.error('Failed to load usage history:', error);
+    console.error("Failed to load usage history:", error);
     return [];
   }
 }
@@ -51,18 +54,18 @@ export function getUsageHistory(): UsageEntry[] {
  */
 export function trackUsage(entry: UsageEntry): void {
   // Check if we're in the browser
-  if (typeof window === 'undefined') return;
-  
+  if (typeof window === "undefined") return;
+
   try {
     const history = getUsageHistory();
     history.push(entry);
-    
+
     // Keep only the last MAX_ENTRIES
     const trimmed = history.slice(-MAX_ENTRIES);
-    
+
     localStorage.setItem(STORAGE_KEY, JSON.stringify(trimmed));
   } catch (error) {
-    console.error('Failed to track usage:', error);
+    console.error("Failed to track usage:", error);
   }
 }
 
@@ -71,12 +74,12 @@ export function trackUsage(entry: UsageEntry): void {
  */
 export function clearUsageHistory(): void {
   // Check if we're in the browser
-  if (typeof window === 'undefined') return;
-  
+  if (typeof window === "undefined") return;
+
   try {
     localStorage.removeItem(STORAGE_KEY);
   } catch (error) {
-    console.error('Failed to clear usage history:', error);
+    console.error("Failed to clear usage history:", error);
   }
 }
 
@@ -86,8 +89,8 @@ export function clearUsageHistory(): void {
 export function calculateUsageStats(entries: UsageEntry[] = getUsageHistory()): UsageStats {
   const stats: UsageStats = {
     totalRequests: entries.length,
-    successfulRequests: entries.filter(e => e.success).length,
-    failedRequests: entries.filter(e => !e.success).length,
+    successfulRequests: entries.filter((e) => e.success).length,
+    failedRequests: entries.filter((e) => !e.success).length,
     totalDuration: 0,
     totalTokens: 0,
     estimatedCost: 0,
@@ -99,25 +102,25 @@ export function calculateUsageStats(entries: UsageEntry[] = getUsageHistory()): 
     },
   };
 
-  entries.forEach(entry => {
+  for (const entry of entries) {
     stats.totalDuration += entry.duration;
     stats.totalTokens += entry.tokens || 0;
-    
+
     // Calculate cost based on model
     const modelInfo = getModelById(entry.model);
-    if (modelInfo && modelInfo.costPer1kTokens && entry.tokens) {
+    if (modelInfo?.costPer1kTokens && entry.tokens) {
       // Estimate cost (assuming 50/50 split between input/output for simplicity)
       const avgCost = (modelInfo.costPer1kTokens.input + modelInfo.costPer1kTokens.output) / 2;
       const cost = (entry.tokens / 1000) * avgCost;
       stats.estimatedCost += cost;
       stats.byProvider[entry.provider].cost += cost;
     }
-    
+
     // Provider stats
     stats.byProvider[entry.provider].requests++;
     stats.byProvider[entry.provider].tokens += entry.tokens || 0;
     stats.byProvider[entry.provider].duration += entry.duration;
-  });
+  }
 
   return stats;
 }
@@ -127,9 +130,9 @@ export function calculateUsageStats(entries: UsageEntry[] = getUsageHistory()): 
  */
 export function getUsageStatsForPeriod(days: number): UsageStats {
   const now = Date.now();
-  const cutoff = now - (days * 24 * 60 * 60 * 1000);
-  
-  const entries = getUsageHistory().filter(e => e.timestamp >= cutoff);
+  const cutoff = now - days * 24 * 60 * 60 * 1000;
+
+  const entries = getUsageHistory().filter((e) => e.timestamp >= cutoff);
   return calculateUsageStats(entries);
 }
 

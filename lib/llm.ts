@@ -1,9 +1,9 @@
-import { createOpenAI } from '@ai-sdk/openai';
-import { createAnthropic } from '@ai-sdk/anthropic';
-import { createMistral } from '@ai-sdk/mistral';
-import { generateText } from 'ai';
-import { Corrector, CorrectionInput, CorrectionResult, Provider } from './types';
-import { getSystemPrompt } from './prompts';
+import { createAnthropic } from "@ai-sdk/anthropic";
+import { createMistral } from "@ai-sdk/mistral";
+import { createOpenAI } from "@ai-sdk/openai";
+import { generateText } from "ai";
+import { getSystemPrompt } from "./prompts";
+import type { CorrectionInput, CorrectionResult, Corrector, Provider } from "./types";
 
 /**
  * Unified LLM Corrector using Vercel AI SDK
@@ -20,20 +20,20 @@ export class UnifiedCorrector implements Corrector {
     }
     this.provider = provider;
     this.apiKey = apiKey;
-    
+
     // Set default models per provider
     switch (provider) {
-      case 'openai':
-        this.defaultModel = defaultModel || 'gpt-4o-mini';
+      case "openai":
+        this.defaultModel = defaultModel || "gpt-4o-mini";
         break;
       default:
-        this.defaultModel = defaultModel || 'gpt-4o-mini';
+        this.defaultModel = defaultModel || "gpt-4o-mini";
     }
   }
 
   async correct(input: CorrectionInput): Promise<CorrectionResult> {
     const model = input.model ?? this.defaultModel;
-    const writingStyle = input.writingStyle ?? 'grammar';
+    const writingStyle = input.writingStyle ?? "grammar";
     const systemPrompt = getSystemPrompt(writingStyle);
 
     try {
@@ -50,15 +50,13 @@ export class UnifiedCorrector implements Corrector {
       });
 
       if (!text || text.trim().length === 0) {
-        throw new Error('Empty response from LLM');
+        throw new Error("Empty response from LLM");
       }
 
       return { result: text.trim() };
     } catch (error) {
-      console.error('Correction failed:', error);
-      throw new Error(
-        error instanceof Error ? error.message : 'Failed to correct text'
-      );
+      console.error("Correction failed:", error);
+      throw new Error(error instanceof Error ? error.message : "Failed to correct text");
     }
   }
 
@@ -67,23 +65,23 @@ export class UnifiedCorrector implements Corrector {
    */
   private getAIProvider() {
     switch (this.provider) {
-      case 'openai':
+      case "openai":
         return createOpenAI({
           apiKey: this.apiKey,
         });
-      case 'anthropic':
+      case "anthropic":
         return createAnthropic({
           apiKey: this.apiKey,
         });
-      case 'mistral':
+      case "mistral":
         return createMistral({
           apiKey: this.apiKey,
         });
-      case 'openrouter':
+      case "openrouter":
         // OpenRouter uses OpenAI-compatible API
         return createOpenAI({
           apiKey: this.apiKey,
-          baseURL: 'https://openrouter.ai/api/v1',
+          baseURL: "https://openrouter.ai/api/v1",
         });
       default:
         throw new Error(`Unsupported provider: ${this.provider}`);
@@ -96,22 +94,22 @@ export class UnifiedCorrector implements Corrector {
  */
 export function getProviderForModel(modelId: string): Provider {
   // OpenRouter models have specific patterns
-  if (modelId.includes('/') && modelId.includes(':')) {
-    return 'openrouter';
+  if (modelId.includes("/") && modelId.includes(":")) {
+    return "openrouter";
   }
-  
+
   // Claude models
-  if (modelId.startsWith('claude-')) {
-    return 'anthropic';
+  if (modelId.startsWith("claude-")) {
+    return "anthropic";
   }
-  
+
   // Mistral models
-  if (modelId.startsWith('mistral-')) {
-    return 'mistral';
+  if (modelId.startsWith("mistral-")) {
+    return "mistral";
   }
-  
+
   // Default to OpenAI for GPT models
-  return 'openai';
+  return "openai";
 }
 
 /**
@@ -119,7 +117,7 @@ export function getProviderForModel(modelId: string): Provider {
  * This wraps the UnifiedCorrector with OpenAI-specific defaults
  */
 export class OpenAICorrector extends UnifiedCorrector {
-  constructor(apiKey: string, defaultModel: string = 'gpt-4o-mini') {
-    super('openai', apiKey, defaultModel);
+  constructor(apiKey: string, defaultModel = "gpt-4o-mini") {
+    super("openai", apiKey, defaultModel);
   }
 }
