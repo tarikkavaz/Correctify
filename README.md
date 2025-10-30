@@ -23,7 +23,6 @@ It's a minimal, distraction-free menubar app that works on macOS, Windows, and L
 - **Privacy-First** - All data stays on your device
 - **Cross-Platform** - macOS, Windows, and Linux support
 
-For detailed user documentation, visit the [landing page](https://tarikkavaz.github.io/Correctify/).
 
 ## Supported Models
 
