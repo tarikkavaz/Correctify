@@ -1,16 +1,16 @@
-import { invoke } from '@tauri-apps/api/core';
-import { isTauri } from './utils';
+import { invoke } from "@tauri-apps/api/core";
+import { isTauri } from "./utils";
 
 /**
  * Secure storage wrapper for API keys using OS-level secure storage
  * - macOS: Keychain
  * - Windows: DPAPI
  * - Linux: System keyring
- * 
+ *
  * In web mode (non-Tauri), falls back to localStorage
  */
 
-const KEY_PREFIX = 'correctify_';
+const KEY_PREFIX = "correctify_";
 
 /**
  * Get a key from secure storage (or localStorage in web mode)
@@ -23,7 +23,7 @@ export async function getKey(key: string): Promise<string | null> {
 
   try {
     const fullKey = `${KEY_PREFIX}${key}`;
-    const value = await invoke<string>('secure_storage_get', {
+    const value = await invoke<string>("secure_storage_get", {
       key: fullKey,
     });
     return value || null;
@@ -45,7 +45,7 @@ export async function setKey(key: string, value: string): Promise<void> {
 
   try {
     const fullKey = `${KEY_PREFIX}${key}`;
-    await invoke('secure_storage_set', {
+    await invoke("secure_storage_set", {
       key: fullKey,
       value,
     });
@@ -66,7 +66,7 @@ export async function deleteKey(key: string): Promise<void> {
   }
 
   try {
-    await invoke('secure_storage_remove', {
+    await invoke("secure_storage_remove", {
       key: `${KEY_PREFIX}${key}`,
     });
   } catch (error) {
@@ -93,18 +93,18 @@ export async function hasKey(key: string): Promise<boolean> {
  * This is a one-time migration that runs on app startup
  */
 export async function migrateFromLocalStorage(): Promise<void> {
-  const MIGRATION_FLAG = 'MIGRATION_COMPLETE_V1_1_0';
-  
+  const MIGRATION_FLAG = "MIGRATION_COMPLETE_V1_1_0";
+
   // Check if migration has already been completed
-  if (localStorage.getItem(MIGRATION_FLAG) === 'true') {
+  if (localStorage.getItem(MIGRATION_FLAG) === "true") {
     return;
   }
 
   const keysToMigrate = [
-    'openai-api-key',
-    'anthropic-api-key',
-    'openrouter-api-key',
-    'mistral-api-key',
+    "openai-api-key",
+    "anthropic-api-key",
+    "openrouter-api-key",
+    "mistral-api-key",
   ];
 
   for (const key of keysToMigrate) {
@@ -121,5 +121,5 @@ export async function migrateFromLocalStorage(): Promise<void> {
   }
 
   // Mark migration as complete
-  localStorage.setItem(MIGRATION_FLAG, 'true');
+  localStorage.setItem(MIGRATION_FLAG, "true");
 }

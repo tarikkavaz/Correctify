@@ -1,4 +1,4 @@
-export type WritingStyle = 'grammar' | 'formal' | 'informal' | 'collaborative' | 'concise';
+export type WritingStyle = "grammar" | "formal" | "informal" | "collaborative" | "concise";
 
 export interface CorrectionInput {
   text: string;
@@ -15,7 +15,7 @@ export interface Corrector {
   correct(input: CorrectionInput): Promise<CorrectionResult>;
 }
 
-export type Provider = 'openai' | 'anthropic' | 'mistral' | 'openrouter';
+export type Provider = "openai" | "anthropic" | "mistral" | "openrouter";
 
 export interface CorrectionRequest {
   text: string;

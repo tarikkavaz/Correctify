@@ -1,17 +1,23 @@
-'use client';
+"use client";
 
-import { useState, useEffect, FormEvent } from 'react';
-import { X, Settings } from 'lucide-react';
-import { open } from '@tauri-apps/plugin-shell';
-import { useLocale } from '@/lib/useLocale';
-import { isTauri } from '@/lib/utils';
-import { deleteKey } from '@/lib/secure-keys';
-import { Provider } from '@/lib/types';
+import { deleteKey } from "@/lib/secure-keys";
+import type { Provider } from "@/lib/types";
+import { useLocale } from "@/lib/useLocale";
+import { isTauri } from "@/lib/utils";
+import { open } from "@tauri-apps/plugin-shell";
+import { Settings, X } from "lucide-react";
+import { type FormEvent, useEffect, useState } from "react";
 
 interface SettingsModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onSave: (apiKeys: Record<Provider, string>, autostartEnabled: boolean, soundEnabled: boolean, shortcutKey: string, autoPasteEnabled: boolean) => void;
+  onSave: (
+    apiKeys: Record<Provider, string>,
+    autostartEnabled: boolean,
+    soundEnabled: boolean,
+    shortcutKey: string,
+    autoPasteEnabled: boolean,
+  ) => void;
   currentApiKeys: Record<Provider, string>;
   currentAutostartEnabled: boolean;
   currentSoundEnabled: boolean;
@@ -26,28 +32,28 @@ const API_KEY_CONFIG: Array<{
   description: string;
 }> = [
   {
-    provider: 'openai',
-    label: 'OpenAI API Key',
-    url: 'https://platform.openai.com/api-keys',
-    description: 'Get your API key from OpenAI Platform',
+    provider: "openai",
+    label: "OpenAI API Key",
+    url: "https://platform.openai.com/api-keys",
+    description: "Get your API key from OpenAI Platform",
   },
   {
-    provider: 'anthropic',
-    label: 'Anthropic API Key',
-    url: 'https://console.anthropic.com/settings/keys',
-    description: 'Get your API key from Anthropic Console',
+    provider: "anthropic",
+    label: "Anthropic API Key",
+    url: "https://console.anthropic.com/settings/keys",
+    description: "Get your API key from Anthropic Console",
   },
   {
-    provider: 'mistral',
-    label: 'Mistral API Key',
-    url: 'https://console.mistral.ai/api-keys/',
-    description: 'Get your API key from Mistral Console',
+    provider: "mistral",
+    label: "Mistral API Key",
+    url: "https://console.mistral.ai/api-keys/",
+    description: "Get your API key from Mistral Console",
   },
   {
-    provider: 'openrouter',
-    label: 'OpenRouter API Key',
-    url: 'https://openrouter.ai/keys',
-    description: 'Free account + API key unlock free models (no credit card)',
+    provider: "openrouter",
+    label: "OpenRouter API Key",
+    url: "https://openrouter.ai/keys",
+    description: "Free account + API key unlock free models (no credit card)",
   },
 ];
 
@@ -67,7 +73,7 @@ export default function SettingsModal({
   const [shortcutKey, setShortcutKey] = useState(currentShortcutKey);
   const [autoPasteEnabled, setAutoPasteEnabled] = useState(currentAutoPasteEnabled);
   const [isTauriApp, setIsTauriApp] = useState(false);
-  const [activeTab, setActiveTab] = useState<'api-keys' | 'app-settings'>('api-keys');
+  const [activeTab, setActiveTab] = useState<"api-keys" | "app-settings">("api-keys");
   const { messages } = useLocale();
 
   useEffect(() => {
@@ -80,7 +86,13 @@ export default function SettingsModal({
     setSoundEnabled(currentSoundEnabled);
     setShortcutKey(currentShortcutKey);
     setAutoPasteEnabled(currentAutoPasteEnabled);
-  }, [currentApiKeys, currentAutostartEnabled, currentSoundEnabled, currentShortcutKey, currentAutoPasteEnabled, isOpen]);
+  }, [
+    currentApiKeys,
+    currentAutostartEnabled,
+    currentSoundEnabled,
+    currentShortcutKey,
+    currentAutoPasteEnabled,
+  ]);
 
   const handleSubmit = (e: FormEvent) => {
     e.preventDefault();
@@ -89,24 +101,28 @@ export default function SettingsModal({
   };
 
   const handleApiKeyChange = (provider: Provider, value: string) => {
-    setApiKeys(prev => ({ ...prev, [provider]: value }));
+    setApiKeys((prev) => ({ ...prev, [provider]: value }));
   };
 
   const handleClearApiKey = (provider: Provider) => {
-    setApiKeys(prev => ({ ...prev, [provider]: '' }));
+    setApiKeys((prev) => ({ ...prev, [provider]: "" }));
   };
 
   const handleRemoveStoredKey = async (provider: Provider) => {
     if (!isTauri()) return;
-    
-    if (confirm(`Are you sure you want to remove the stored ${provider} API key? You will need to re-enter it.`)) {
+
+    if (
+      confirm(
+        `Are you sure you want to remove the stored ${provider} API key? You will need to re-enter it.`,
+      )
+    ) {
       try {
         await deleteKey(`${provider}-api-key`);
-        setApiKeys(prev => ({ ...prev, [provider]: '' }));
-        alert('API key removed successfully from secure storage.');
+        setApiKeys((prev) => ({ ...prev, [provider]: "" }));
+        alert("API key removed successfully from secure storage.");
       } catch (error) {
-        console.error('Failed to remove API key:', error);
-        alert('Failed to remove API key. Please try again.');
+        console.error("Failed to remove API key:", error);
+        alert("Failed to remove API key. Please try again.");
       }
     }
   };
@@ -115,14 +131,17 @@ export default function SettingsModal({
     try {
       await open(url);
     } catch (error) {
-      console.error('Failed to open API key URL:', error);
+      console.error("Failed to open API key URL:", error);
     }
   };
 
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center backdrop-blur-sm" style={{backgroundColor: 'var(--color-modal-backdrop)'}}>
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center backdrop-blur-sm"
+      style={{ backgroundColor: "var(--color-modal-backdrop)" }}
+    >
       <div className="relative w-full max-w-md mx-4 bg-card-bg rounded-lg shadow-xl transition-colors">
         {/* Header */}
         <div className="flex items-center justify-between p-6 border-b border-border">
@@ -133,6 +152,7 @@ export default function SettingsModal({
             <h2 className="text-xl font-semibold text-foreground">{messages.apiModal.title}</h2>
           </div>
           <button
+            type="button"
             onClick={onClose}
             className="p-1 hover:bg-foreground/5 rounded-lg transition-colors"
             aria-label="Close API settings"
@@ -145,22 +165,22 @@ export default function SettingsModal({
         <div className="flex border-b border-border">
           <button
             type="button"
-            onClick={() => setActiveTab('api-keys')}
+            onClick={() => setActiveTab("api-keys")}
             className={`flex-1 px-4 py-3 text-sm font-medium transition-colors ${
-              activeTab === 'api-keys'
-                ? 'text-primary border-b-2 border-primary'
-                : 'text-foreground/60 hover:text-foreground'
+              activeTab === "api-keys"
+                ? "text-primary border-b-2 border-primary"
+                : "text-foreground/60 hover:text-foreground"
             }`}
           >
             API Keys
           </button>
           <button
             type="button"
-            onClick={() => setActiveTab('app-settings')}
+            onClick={() => setActiveTab("app-settings")}
             className={`flex-1 px-4 py-3 text-sm font-medium transition-colors ${
-              activeTab === 'app-settings'
-                ? 'text-primary border-b-2 border-primary'
-                : 'text-foreground/60 hover:text-foreground'
+              activeTab === "app-settings"
+                ? "text-primary border-b-2 border-primary"
+                : "text-foreground/60 hover:text-foreground"
             }`}
           >
             App Settings
@@ -170,67 +190,71 @@ export default function SettingsModal({
         {/* Body */}
         <form onSubmit={handleSubmit} className="p-6 space-y-6 max-h-[60vh] overflow-y-auto">
           {/* API Keys Tab */}
-          {activeTab === 'api-keys' && (
+          {activeTab === "api-keys" && (
             <div className="space-y-4">
-            {API_KEY_CONFIG.map((config) => (
-              <div key={config.provider} className="space-y-2 pb-4 border-b border-border last:border-0">
-                <div className="flex items-center justify-between">
-                  <label htmlFor={`apiKey-${config.provider}`} className="block text-sm font-medium text-foreground">
-                    {config.label}
-                    {config.provider === 'openrouter' && (
-                      <span className="ml-2 text-xs text-success-text font-semibold">
-                        (FREE MODELS - KEY REQUIRED)
-                      </span>
+              {API_KEY_CONFIG.map((config) => (
+                <div
+                  key={config.provider}
+                  className="space-y-2 pb-4 border-b border-border last:border-0"
+                >
+                  <div className="flex items-center justify-between">
+                    <label
+                      htmlFor={`apiKey-${config.provider}`}
+                      className="block text-sm font-medium text-foreground"
+                    >
+                      {config.label}
+                      {config.provider === "openrouter" && (
+                        <span className="ml-2 text-xs text-success-text font-semibold">
+                          (FREE MODELS - KEY REQUIRED)
+                        </span>
+                      )}
+                    </label>
+                    {apiKeys[config.provider] && (
+                      <button
+                        type="button"
+                        onClick={() => handleClearApiKey(config.provider)}
+                        className="text-sm font-medium text-text-muted hover:text-foreground transition-colors"
+                      >
+                        Clear
+                      </button>
                     )}
-                  </label>
-                  {apiKeys[config.provider] && (
+                  </div>
+                  <input
+                    id={`apiKey-${config.provider}`}
+                    type="password"
+                    value={apiKeys[config.provider]}
+                    onChange={(e) => handleApiKeyChange(config.provider, e.target.value)}
+                    placeholder={`Enter your ${config.label}`}
+                    className="w-full px-4 py-2.5 bg-background border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary text-foreground transition-colors text-sm placeholder:text-muted-foreground"
+                  />
+                  <div className="flex items-center justify-between">
                     <button
                       type="button"
-                      onClick={() => handleClearApiKey(config.provider)}
-                      className="text-sm font-medium text-text-muted hover:text-foreground transition-colors"
+                      onClick={() => handleOpenAPIKey(config.url)}
+                      className="inline-flex items-center text-xs text-primary hover:underline cursor-pointer"
                     >
-                      Clear
+                      {config.description} →
                     </button>
-                  )}
+                    {isTauriApp && apiKeys[config.provider] && (
+                      <button
+                        type="button"
+                        onClick={() => handleRemoveStoredKey(config.provider)}
+                        className="inline-flex items-center text-xs text-error-text hover:text-error-text hover:underline cursor-pointer"
+                      >
+                        Remove from storage
+                      </button>
+                    )}
+                  </div>
                 </div>
-                <input
-                  id={`apiKey-${config.provider}`}
-                  type="password"
-                  value={apiKeys[config.provider]}
-                  onChange={(e) => handleApiKeyChange(config.provider, e.target.value)}
-                  placeholder={`Enter your ${config.label}`}
-                  className="w-full px-4 py-2.5 bg-background border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary text-foreground transition-colors text-sm placeholder:text-muted-foreground"
-                />
-                <div className="flex items-center justify-between">
-                  <button
-                    type="button"
-                    onClick={() => handleOpenAPIKey(config.url)}
-                    className="inline-flex items-center text-xs text-primary hover:underline cursor-pointer"
-                  >
-                    {config.description} →
-                  </button>
-                  {isTauriApp && apiKeys[config.provider] && (
-                    <button
-                      type="button"
-                      onClick={() => handleRemoveStoredKey(config.provider)}
-                      className="inline-flex items-center text-xs text-error-text hover:text-error-text hover:underline cursor-pointer"
-                    >
-                      Remove from storage
-                    </button>
-                  )}
-                </div>
-              </div>
-            ))}
+              ))}
               <div className="flex items-start gap-2 text-xs text-foreground/60 pt-2">
-                <p className="flex-1">
-                  {messages.apiModal.securityNote}
-                </p>
+                <p className="flex-1">{messages.apiModal.securityNote}</p>
               </div>
             </div>
           )}
 
           {/* App Settings Tab */}
-          {activeTab === 'app-settings' && (
+          {activeTab === "app-settings" && (
             <div className="space-y-6">
               {/* Autostart Option (Desktop Only) */}
               {isTauriApp && (
@@ -244,7 +268,10 @@ export default function SettingsModal({
                       className="mt-1 w-4 h-4 accent-primary bg-background border-border rounded focus:ring-2 focus:ring-primary"
                     />
                     <div className="flex-1">
-                      <label htmlFor="autostart" className="block text-sm font-medium text-foreground cursor-pointer">
+                      <label
+                        htmlFor="autostart"
+                        className="block text-sm font-medium text-foreground cursor-pointer"
+                      >
                         {messages.apiModal.autostartLabel}
                       </label>
                       <p className="text-xs text-foreground/60 mt-1">
@@ -267,7 +294,10 @@ export default function SettingsModal({
                       className="mt-1 w-4 h-4 accent-primary bg-background border-border rounded focus:ring-2 focus:ring-primary"
                     />
                     <div className="flex-1">
-                      <label htmlFor="soundEnabled" className="block text-sm font-medium text-foreground cursor-pointer">
+                      <label
+                        htmlFor="soundEnabled"
+                        className="block text-sm font-medium text-foreground cursor-pointer"
+                      >
                         {messages.apiModal.soundLabel}
                       </label>
                       <p className="text-xs text-foreground/60 mt-1">
@@ -281,13 +311,14 @@ export default function SettingsModal({
               {/* Global Shortcut Customization (Desktop Only) */}
               {isTauriApp && (
                 <div className="space-y-2">
-                  <label htmlFor="shortcutKey" className="block text-sm font-medium text-foreground">
+                  <label
+                    htmlFor="shortcutKey"
+                    className="block text-sm font-medium text-foreground"
+                  >
                     {messages.apiModal.globalShortcutLabel}
                   </label>
                   <div className="flex items-center gap-2">
-                    <div className="text-sm text-foreground/60">
-                      Cmd+Shift+
-                    </div>
+                    <div className="text-sm text-foreground/60">Cmd+Shift+</div>
                     <input
                       id="shortcutKey"
                       type="text"
@@ -316,7 +347,10 @@ export default function SettingsModal({
                       className="mt-1 w-4 h-4 accent-primary bg-background border-border rounded focus:ring-2 focus:ring-primary"
                     />
                     <div className="flex-1">
-                      <label htmlFor="autoPaste" className="block text-sm font-medium text-foreground cursor-pointer">
+                      <label
+                        htmlFor="autoPaste"
+                        className="block text-sm font-medium text-foreground cursor-pointer"
+                      >
                         {messages.apiModal.autoPasteLabel}
                       </label>
                       <p className="text-xs text-foreground/60 mt-1">

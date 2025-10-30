@@ -1,9 +1,9 @@
-'use client';
+"use client";
 
-import { X, ExternalLink } from 'lucide-react';
-import { open } from '@tauri-apps/plugin-shell';
-import { useLocale } from '@/lib/useLocale';
-import packageJson from '@/package.json';
+import { useLocale } from "@/lib/useLocale";
+import packageJson from "@/package.json";
+import { open } from "@tauri-apps/plugin-shell";
+import { ExternalLink, X } from "lucide-react";
 
 interface AboutModalProps {
   isOpen: boolean;
@@ -16,28 +16,28 @@ export default function AboutModal({ isOpen, onClose }: AboutModalProps) {
 
   const handleOpenHomepage = async () => {
     try {
-      await open('https://tarikkavaz.github.io/Correctify/');
+      await open("https://tarikkavaz.github.io/Correctify/");
     } catch (error) {
-      console.error('Failed to open homepage URL:', error);
+      console.error("Failed to open homepage URL:", error);
     }
   };
 
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center backdrop-blur-sm" style={{backgroundColor: 'var(--color-modal-backdrop)'}}>
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center backdrop-blur-sm"
+      style={{ backgroundColor: "var(--color-modal-backdrop)" }}
+    >
       <div className="relative w-full max-w-md mx-4 bg-card-bg rounded-lg shadow-xl transition-colors">
         {/* Header */}
         <div className="flex items-center justify-between p-6 border-b border-border">
           <div className="flex items-center gap-3">
-            <img 
-              src="/logo.png" 
-              alt="Correctify Logo" 
-              className="w-10 h-10"
-            />
+            <img src="/logo.png" alt="Correctify Logo" className="w-10 h-10" />
             <h2 className="text-xl font-semibold text-foreground">{messages.about.title}</h2>
           </div>
           <button
+            type="button"
             onClick={onClose}
             className="p-1 hover:bg-foreground/5 rounded-lg transition-colors"
             aria-label="Close about"
@@ -49,14 +49,13 @@ export default function AboutModal({ isOpen, onClose }: AboutModalProps) {
         {/* Body */}
         <div className="p-6 space-y-6">
           {/* Subtitle */}
-          <p className="text-center text-sm text-foreground/80">
-            {messages.about.subtitle}
-          </p>
+          <p className="text-center text-sm text-foreground/80">{messages.about.subtitle}</p>
 
           {/* Version Info */}
           <div className="text-center space-y-1">
             <p className="text-sm text-foreground/80">
-              {messages.about.version} <span className="font-semibold text-foreground">{version}</span>
+              {messages.about.version}{" "}
+              <span className="font-semibold text-foreground">{version}</span>
             </p>
           </div>
 
@@ -96,7 +95,8 @@ export default function AboutModal({ isOpen, onClose }: AboutModalProps) {
 
           {/* Homepage Link */}
           <div className="pt-4 border-t border-border">
-            <button 
+            <button
+              type="button"
               onClick={handleOpenHomepage}
               className="w-full flex items-center justify-center gap-2 px-4 py-2 text-sm font-medium text-primary hover:bg-primary/10 rounded-lg transition-colors"
             >

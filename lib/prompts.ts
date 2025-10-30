@@ -1,4 +1,4 @@
-import { WritingStyle } from './types';
+import type { WritingStyle } from "./types";
 
 /**
  * Base system prompt for all correction tasks
@@ -55,6 +55,6 @@ Additional Instructions for Concise Style:
 /**
  * Get the system prompt for a given writing style
  */
-export function getSystemPrompt(writingStyle: WritingStyle = 'grammar'): string {
+export function getSystemPrompt(writingStyle: WritingStyle = "grammar"): string {
   return WRITING_STYLE_PROMPTS[writingStyle];
 }
