@@ -12,6 +12,7 @@
   "home": {
     "inputLabel": "Düzeltilecek metin",
     "inputPlaceholder": "Düzeltilecek metni girin...",
+    "styleLabel": "Stil:",
     "modelLabel": "Model:",
     "correctButton": "Düzelt",
     "correctingButton": "Düzeltiliyor...",

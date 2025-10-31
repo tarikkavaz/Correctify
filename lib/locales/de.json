@@ -12,6 +12,7 @@
   "home": {
     "inputLabel": "Zu korrigierender Text",
     "inputPlaceholder": "Text zum Korrigieren eingeben...",
+    "styleLabel": "Stil:",
     "modelLabel": "Modell:",
     "correctButton": "Korrigieren",
     "correctingButton": "Wird korrigiert...",

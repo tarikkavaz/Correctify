@@ -12,6 +12,7 @@
   "home": {
     "inputLabel": "Text to correct",
     "inputPlaceholder": "Enter text to correct...",
+    "styleLabel": "Style:",
     "modelLabel": "Model:",
     "correctButton": "Correct",
     "correctingButton": "Correcting...",

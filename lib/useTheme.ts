@@ -10,10 +10,13 @@ export function useTheme() {
 
   useEffect(() => {
     // Load saved theme from localStorage
+    // Only load if a saved preference exists (for backward compatibility)
+    // If no saved theme exists, keep default "system" without saving it
     const savedTheme = localStorage.getItem("theme") as Theme;
     if (savedTheme && ["light", "dark", "system"].includes(savedTheme)) {
       setTheme(savedTheme);
     }
+    // If no saved theme, theme stays as "system" (default), but we don't save it
   }, []);
 
   useEffect(() => {
@@ -38,8 +41,11 @@ export function useTheme() {
     root.classList.add(effectiveTheme);
     setResolvedTheme(effectiveTheme);
 
-    // Save to localStorage
-    localStorage.setItem("theme", theme);
+    // Only save to localStorage when theme is explicitly "light" or "dark"
+    // Don't save "system" automatically - it's only the default for first-time users
+    if (theme === "light" || theme === "dark") {
+      localStorage.setItem("theme", theme);
+    }
   }, [theme]);
 
   // Listen for system theme changes when in system mode
@@ -61,9 +67,11 @@ export function useTheme() {
 
   const toggleTheme = () => {
     setTheme((prev) => {
+      // If currently on system (first-time user), switch to light
       if (prev === "system") return "light";
+      // Otherwise, toggle between light and dark only (skip system)
       if (prev === "light") return "dark";
-      return "system";
+      return "light";
     });
   };
 
