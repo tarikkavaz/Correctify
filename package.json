@@ -8,9 +8,6 @@
     "build:tauri": "cross-env TAURI_BUILD=1 next build",
     "start": "next start",
     "lint": "next lint",
-    "lint:fix": "eslint . --ext .ts,.tsx --fix",
-    "format": "prettier \"**/*.{js,ts,tsx,css,md,json}\" --write",
-    "format:check": "prettier \"**/*.{js,ts,tsx,css,md,json}\" --check",
     "test": "jest",
     "test:watch": "jest --watch",
     "tauri:dev": "tauri dev",
@@ -41,7 +38,6 @@
     "remark-gfm": "^4.0.1"
   },
   "devDependencies": {
-    "@biomejs/biome": "^1.9.4",
     "@tailwindcss/postcss": "^4.0.0",
     "@tauri-apps/cli": "^2.5.1",
     "@testing-library/jest-dom": "^6.6.3",
@@ -52,6 +48,8 @@
     "@types/react-dom": "^19.0.3",
     "cross-env": "^10.1.0",
     "dotenv-cli": "^10.0.0",
+    "eslint": "^8.57.1",
+    "eslint-config-next": "^15.1.8",
     "jest": "^29.7.0",
     "jest-environment-jsdom": "^29.7.0",
     "postcss": "^8.4.49",

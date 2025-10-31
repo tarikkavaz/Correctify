@@ -33,6 +33,7 @@ export default function AboutModal({ isOpen, onClose }: AboutModalProps) {
         {/* Header */}
         <div className="flex items-center justify-between p-6 border-b border-border">
           <div className="flex items-center gap-3">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
             <img src="/logo.png" alt="Correctify Logo" className="w-10 h-10" />
             <h2 className="text-xl font-semibold text-foreground">{messages.about.title}</h2>
           </div>

@@ -65,6 +65,7 @@ export default function DraggableHeader({
         data-tauri-drag-region
         className="flex items-center gap-3 absolute left-1/2 transform -translate-x-1/2 select-none cursor-default"
       >
+        {/* eslint-disable-next-line @next/next/no-img-element */}
         <img data-tauri-drag-region src="/logo.png" alt="Correctify Logo" className="w-10 h-10" />
         <div data-tauri-drag-region>
           <h1 data-tauri-drag-region className="text-xl font-bold text-foreground">

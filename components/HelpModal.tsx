@@ -131,7 +131,7 @@ export default function HelpModal({ isOpen, onClose, shortcutKey }: HelpModalPro
                 <div className="text-xs text-info-text">
                   <strong>Secure Storage (v1.1.0):</strong>
                   <p className="mt-1">
-                    API keys are now stored with OS-level encryption in your device's secure app
+                    API keys are now stored with OS-level encryption in your device&apos;s secure app
                     data directory. Keys are never sent to any server except directly to your chosen
                     LLM provider.
                   </p>
@@ -235,7 +235,7 @@ export default function HelpModal({ isOpen, onClose, shortcutKey }: HelpModalPro
                         </kbd>{" "}
                         (Windows/Linux)
                       </li>
-                      <li>Wait for the notification (you'll see "Processing...")</li>
+                      <li>Wait for the notification (you&apos;ll see &quot;Processing...&quot;)</li>
                       <li>
                         Paste the corrected text (
                         <kbd className="px-1.5 py-0.5 bg-foreground/10 rounded text-xs font-medium">
@@ -337,7 +337,7 @@ export default function HelpModal({ isOpen, onClose, shortcutKey }: HelpModalPro
                     <strong>Llama 3.2 3B</strong> - Fast, lightweight
                   </li>
                   <li>
-                    <strong>Gemma 2 9B</strong> - Google's open model
+                    <strong>Gemma 2 9B</strong> - Google&apos;s open model
                   </li>
                   <li>
                     <strong>Phi-3 Mini</strong> - Microsoft research
