@@ -1,8 +1,13 @@
-.next/
-out/
-dist/
-build/
-coverage/
-src-tauri/target/
-node_modules/
-_tools/
+# Dependencies
+node_modules
+
+# Build output
+.next
+out
+dist
+
+# Tools and documentation
+_tools
+
+# Tauri
+src-tauri/target
