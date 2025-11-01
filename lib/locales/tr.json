@@ -152,7 +152,7 @@
     "globalShortcutTip": "İpucu:",
     "globalShortcutTipText": "Genel kısayol, uygulama küçültülmüş veya arka planda olsa bile çalışır!",
     "globalShortcutCustomization": "Kısayolunuzu Özelleştirin:",
-    "globalShortcutCustomizationText": "Ayarlar'dan kısayol tuşunu değiştirebilirsiniz. Varsayılan nokta (.) karakteridir, ancak istediğiniz herhangi bir tuşu kullanabilirsiniz (A-Z, 0-9 veya özel tuşlar). Cmd+Shift (veya Ctrl+Shift) her zaman gerekli olacaktır.",
+    "globalShortcutCustomizationText": "Ayarlar'dan hem değiştirici kombinasyonunu hem de son tuşu değiştirebilirsiniz. Varsayılan Cmd+Shift+] (veya Windows/Linux'ta Ctrl+Shift+]) karakteridir. 4 değiştirici kombinasyonu arasından seçim yapabilir ve istediğiniz herhangi bir tuşu kullanabilirsiniz (A-Z, 0-9 veya özel tuşlar).",
     "modelSelection": "Model Seçimi",
     "modelSelectionDescription": "İhtiyaçlarınıza en uygun AI modelini seçin:",
     "model1Name": "GPT-4o Mini:",

@@ -22,6 +22,30 @@ interface HelpModalProps {
   isOpen: boolean;
   onClose: () => void;
   shortcutKey: string;
+  shortcutModifier: string;
+}
+
+// Helper function to parse modifier string into key array
+function parseModifierKeys(modifier: string, isMac: boolean): string[] {
+  // modifier comes in format like "CmdOrCtrl+Shift", "CmdOrCtrl+Alt", etc.
+  const parts = modifier.split("+");
+  const keys: string[] = [];
+
+  for (const part of parts) {
+    if (part === "CmdOrCtrl") {
+      keys.push(isMac ? "Cmd" : "Ctrl");
+    } else if (part === "AltOrOption") {
+      keys.push(isMac ? "Option" : "Alt");
+    } else if (part === "Shift") {
+      keys.push("Shift");
+    } else if (part === "Alt") {
+      keys.push(isMac ? "Option" : "Alt");
+    } else {
+      keys.push(part);
+    }
+  }
+
+  return keys;
 }
 
 // Helper component to render Mac shortcuts with icons
@@ -40,6 +64,10 @@ function MacShortcut({ keys }: { keys: string[] }) {
           keyElement = <span>⇧</span>;
         } else if (key === "Option") {
           keyElement = <span>⌥</span>;
+        } else if (key === "Ctrl") {
+          keyElement = <span>Ctrl</span>;
+        } else if (key === "Alt") {
+          keyElement = <span>Alt</span>;
         } else {
           keyElement = <span>{key}</span>;
         }
@@ -55,7 +83,7 @@ function MacShortcut({ keys }: { keys: string[] }) {
   );
 }
 
-export default function HelpModal({ isOpen, onClose, shortcutKey }: HelpModalProps) {
+export default function HelpModal({ isOpen, onClose, shortcutKey, shortcutModifier }: HelpModalProps) {
   const { messages } = useLocale();
   const version = packageJson.version;
   const [isMac, setIsMac] = useState(false); // Default to false to avoid hydration mismatch
@@ -219,7 +247,11 @@ export default function HelpModal({ isOpen, onClose, shortcutKey }: HelpModalPro
                       <li>
                         {messages.helpModal.autoCopyStep2}{" "}
                         <kbd className="px-1.5 py-0.5 bg-foreground/10 rounded text-xs font-medium inline-flex items-center gap-1">
-                          {isMac ? <MacShortcut keys={["Cmd", "Shift", shortcutKey]} /> : `Ctrl+Shift+${shortcutKey}`}
+                          {isMac ? (
+                            <MacShortcut keys={[...parseModifierKeys(shortcutModifier, isMac), shortcutKey]} />
+                          ) : (
+                            parseModifierKeys(shortcutModifier, false).join("+") + "+" + shortcutKey
+                          )}
                         </kbd>
                       </li>
                       <li>{messages.helpModal.autoCopyStep3}</li>
@@ -241,7 +273,11 @@ export default function HelpModal({ isOpen, onClose, shortcutKey }: HelpModalPro
                       <li>
                         {messages.helpModal.manualStep2}{" "}
                         <kbd className="px-1.5 py-0.5 bg-foreground/10 rounded text-xs font-medium inline-flex items-center gap-1">
-                          {isMac ? <MacShortcut keys={["Cmd", "Shift", shortcutKey]} /> : `Ctrl+Shift+${shortcutKey}`}
+                          {isMac ? (
+                            <MacShortcut keys={[...parseModifierKeys(shortcutModifier, isMac), shortcutKey]} />
+                          ) : (
+                            parseModifierKeys(shortcutModifier, false).join("+") + "+" + shortcutKey
+                          )}
                         </kbd>
                       </li>
                       <li>{messages.helpModal.manualStep3}</li>
@@ -443,7 +479,11 @@ export default function HelpModal({ isOpen, onClose, shortcutKey }: HelpModalPro
                     <span className="text-foreground/50 text-xs">{messages.helpModal.shortcutCustomizable}</span>
                   </span>
                   <kbd className="px-2 py-1 bg-foreground/10 rounded text-xs font-medium inline-flex items-center gap-1">
-                    {isMac ? <MacShortcut keys={["Cmd", "Shift", shortcutKey]} /> : `Ctrl+Shift+${shortcutKey}`}
+                    {isMac ? (
+                      <MacShortcut keys={[...parseModifierKeys(shortcutModifier, isMac), shortcutKey]} />
+                    ) : (
+                      parseModifierKeys(shortcutModifier, false).join("+") + "+" + shortcutKey
+                    )}
                   </kbd>
                 </div>
               )}

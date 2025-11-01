@@ -724,6 +724,7 @@ export default function HomePage() {
         isOpen={isHelpModalOpen}
         onClose={() => setIsHelpModalOpen(false)}
         shortcutKey={shortcutKey}
+        shortcutModifier={shortcutModifier}
       />
 
       <AboutModal isOpen={isAboutModalOpen} onClose={() => setIsAboutModalOpen(false)} />

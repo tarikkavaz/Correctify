@@ -152,7 +152,7 @@
     "globalShortcutTip": "Astuce:",
     "globalShortcutTipText": "Le raccourci global fonctionne même lorsque l'application est minimisée ou en arrière-plan!",
     "globalShortcutCustomization": "Personnalisez votre raccourci:",
-    "globalShortcutCustomizationText": "Vous pouvez modifier la touche de raccourci dans les Paramètres. La valeur par défaut est le point (.), mais vous pouvez utiliser n'importe quelle touche (A-Z, 0-9 ou touches spéciales). Cmd+Shift (ou Ctrl+Shift) sera toujours requis.",
+    "globalShortcutCustomizationText": "Vous pouvez modifier à la fois la combinaison de modificateurs et la touche finale dans les Paramètres. La valeur par défaut est Cmd+Shift+] (ou Ctrl+Shift+] sur Windows/Linux). Vous pouvez choisir parmi 4 combinaisons de modificateurs et utiliser n'importe quelle touche (A-Z, 0-9 ou touches spéciales).",
     "modelSelection": "Sélection du modèle",
     "modelSelectionDescription": "Choisissez le modèle d'IA qui correspond le mieux à vos besoins:",
     "model1Name": "GPT-4o Mini:",
