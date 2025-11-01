@@ -99,12 +99,11 @@ export default function HelpModal({ isOpen, onClose, shortcutKey }: HelpModalPro
             </h3>
             <div className="space-y-3 text-sm text-foreground/80">
               <p>
-                Correctify v{version} supports <strong>4 LLM providers</strong> with 14 total models (10
-                paid, 4 free). You can add API keys for any or all providers.
+                {messages.helpModal.providersIntro}
               </p>
 
               <div className="space-y-2">
-                <h4 className="font-semibold text-foreground">Supported Providers:</h4>
+                <h4 className="font-semibold text-foreground">{messages.helpModal.supportedProviders}</h4>
                 <ul className="space-y-2 ml-2">
                   <li>
                     <strong>OpenAI</strong> - GPT-4o, GPT-4o Mini{" "}
@@ -114,7 +113,7 @@ export default function HelpModal({ isOpen, onClose, shortcutKey }: HelpModalPro
                       rel="noopener noreferrer"
                       className="text-primary hover:underline text-xs"
                     >
-                      (Get API Key →)
+                      {messages.helpModal.getApiKey}
                     </a>
                   </li>
                   <li>
@@ -125,7 +124,7 @@ export default function HelpModal({ isOpen, onClose, shortcutKey }: HelpModalPro
                       rel="noopener noreferrer"
                       className="text-primary hover:underline text-xs"
                     >
-                      (Get API Key →)
+                      {messages.helpModal.getApiKey}
                     </a>
                   </li>
                   <li>
@@ -136,7 +135,7 @@ export default function HelpModal({ isOpen, onClose, shortcutKey }: HelpModalPro
                       rel="noopener noreferrer"
                       className="text-primary hover:underline text-xs"
                     >
-                      (Get API Key →)
+                      {messages.helpModal.getApiKey}
                     </a>
                   </li>
                   <li>
@@ -148,11 +147,8 @@ export default function HelpModal({ isOpen, onClose, shortcutKey }: HelpModalPro
                       rel="noopener noreferrer"
                       className="text-primary hover:underline text-xs"
                     >
-                      (Get FREE API Key →)
+                      {messages.helpModal.getFreeApiKey}
                     </a>
-                    <div className="text-xs text-foreground/70 mt-1">
-                      Free models available - No credit card required!
-                    </div>
                   </li>
                 </ul>
               </div>
@@ -160,10 +156,9 @@ export default function HelpModal({ isOpen, onClose, shortcutKey }: HelpModalPro
               <div className="p-3 bg-success-bg border border-success-border rounded-lg mt-3 flex gap-2">
                 <Lightbulb className="w-4 h-4 text-success-text flex-shrink-0 mt-0.5" />
                 <div className="text-xs text-success-text">
-                  <strong>Want to try for free?</strong>
+                  <strong>{messages.helpModal.tryForFreeTitle}</strong>
                   <p className="mt-1">
-                    Create a free OpenRouter account and get instant access to 4 free models without
-                    adding a credit card. Perfect for testing Correctify!
+                    {messages.helpModal.tryForFreeText}
                   </p>
                 </div>
               </div>
@@ -171,30 +166,21 @@ export default function HelpModal({ isOpen, onClose, shortcutKey }: HelpModalPro
               <div className="p-3 bg-info-bg border border-info-border rounded-lg mt-3 flex gap-2">
                 <KeyRound className="w-4 h-4 text-info-text flex-shrink-0 mt-0.5" />
                 <div className="text-xs text-info-text">
-                  <strong>Secure Storage (v{version}):</strong>
+                  <strong>{messages.helpModal.secureStorageTitle}</strong>
                   <p className="mt-1">
-                    API keys are now stored with OS-level encryption in your device&apos;s secure app
-                    data directory. Keys are never sent to any server except directly to your chosen
-                    LLM provider.
+                    {messages.helpModal.secureStorageText}
                   </p>
                   <p className="mt-1 font-mono text-[10px] opacity-70">
-                    Storage: ~/.Library/Application Support/com.correctify/.keys/ (macOS)
+                    {messages.helpModal.secureStoragePath}
                   </p>
                 </div>
               </div>
 
-              <div className="p-3 bg-warning-bg border border-warning-border rounded-lg mt-3 flex gap-2">
-                <AlertCircle className="w-4 h-4 text-warning-text flex-shrink-0 mt-0.5" />
-                <p className="text-xs text-warning-text">
-                  <strong>{messages.helpModal.apiKeyNote}</strong>{" "}
-                  {messages.helpModal.apiKeyNoteText}
-                </p>
-              </div>
             </div>
           </section>
 
           {/* How to Use Section */}
-          <section>
+          <section className="mt-12">
             <h3 className="text-lg font-semibold text-foreground mb-3 flex items-center gap-2">
               <FileText className="w-5 h-5" />
               {messages.helpModal.howToUse}
@@ -208,7 +194,7 @@ export default function HelpModal({ isOpen, onClose, shortcutKey }: HelpModalPro
                   <li>{messages.helpModal.inAppStep1}</li>
                   <li>
                     {messages.helpModal.inAppStep2}{" "}
-                    <kbd className="px-1.5 py-0.5 bg-foreground/10 rounded text-xs font-medium flex items-center gap-1">
+                    <kbd className="px-1.5 py-0.5 bg-foreground/10 rounded text-xs font-medium inline-flex items-center gap-1">
                       {isMac ? <MacShortcut keys={["Cmd", "Enter"]} /> : "Ctrl+Enter"}
                     </kbd>
                   </li>
@@ -226,42 +212,42 @@ export default function HelpModal({ isOpen, onClose, shortcutKey }: HelpModalPro
 
                   <div className="mb-3">
                     <p className="text-xs font-semibold text-foreground mb-1">
-                      With Auto Copy/Paste (Recommended):
+                      {messages.helpModal.withAutoCopyPaste}
                     </p>
                     <ol className="list-decimal list-inside space-y-1 ml-2 text-sm">
-                      <li>Select text in any app (just highlight, no copying needed)</li>
+                      <li>{messages.helpModal.autoCopyStep1}</li>
                       <li>
-                        Press{" "}
-                        <kbd className="px-1.5 py-0.5 bg-foreground/10 rounded text-xs font-medium flex items-center gap-1">
+                        {messages.helpModal.autoCopyStep2}{" "}
+                        <kbd className="px-1.5 py-0.5 bg-foreground/10 rounded text-xs font-medium inline-flex items-center gap-1">
                           {isMac ? <MacShortcut keys={["Cmd", "Shift", shortcutKey]} /> : `Ctrl+Shift+${shortcutKey}`}
                         </kbd>
                       </li>
-                      <li>Wait for the notification - corrected text pastes automatically!</li>
+                      <li>{messages.helpModal.autoCopyStep3}</li>
                     </ol>
                   </div>
 
                   <div className="mb-3">
                     <p className="text-xs font-semibold text-foreground mb-1">
-                      Without Auto Copy/Paste (Manual Mode):
+                      {messages.helpModal.withoutAutoCopyPaste}
                     </p>
                     <ol className="list-decimal list-inside space-y-1 ml-2 text-sm">
                       <li>
-                        Select and copy text in any app (
-                        <kbd className="px-1.5 py-0.5 bg-foreground/10 rounded text-xs font-medium flex items-center gap-1">
+                        {messages.helpModal.manualStep1}
+                        <kbd className="px-1.5 py-0.5 bg-foreground/10 rounded text-xs font-medium inline-flex items-center gap-1">
                           {isMac ? <MacShortcut keys={["Cmd", "C"]} /> : "Ctrl+C"}
                         </kbd>
                         )
                       </li>
                       <li>
-                        Press{" "}
-                        <kbd className="px-1.5 py-0.5 bg-foreground/10 rounded text-xs font-medium flex items-center gap-1">
+                        {messages.helpModal.manualStep2}{" "}
+                        <kbd className="px-1.5 py-0.5 bg-foreground/10 rounded text-xs font-medium inline-flex items-center gap-1">
                           {isMac ? <MacShortcut keys={["Cmd", "Shift", shortcutKey]} /> : `Ctrl+Shift+${shortcutKey}`}
                         </kbd>
                       </li>
-                      <li>Wait for the notification (you&apos;ll see &quot;Processing...&quot;)</li>
+                      <li>{messages.helpModal.manualStep3}</li>
                       <li>
-                        Paste the corrected text (
-                        <kbd className="px-1.5 py-0.5 bg-foreground/10 rounded text-xs font-medium flex items-center gap-1">
+                        {messages.helpModal.manualStep4}
+                        <kbd className="px-1.5 py-0.5 bg-foreground/10 rounded text-xs font-medium inline-flex items-center gap-1">
                           {isMac ? <MacShortcut keys={["Cmd", "V"]} /> : "Ctrl+V"}
                         </kbd>
                         )
@@ -286,10 +272,7 @@ export default function HelpModal({ isOpen, onClose, shortcutKey }: HelpModalPro
                   <div className="p-3 bg-warning-bg border border-warning-border rounded-lg mt-3 flex gap-2">
                     <AlertCircle className="w-4 h-4 text-warning-text flex-shrink-0 mt-0.5" />
                     <p className="text-xs text-warning-text">
-                      <strong>macOS Accessibility Permissions:</strong> If using Auto Copy/Paste,
-                      you must grant Accessibility permissions to Correctify. Go to System Settings
-                      &gt; Privacy &amp; Security &gt; Accessibility and enable Correctify. This
-                      allows the app to simulate keyboard input for seamless text correction.
+                      <strong>{messages.helpModal.macosAccessibilityTitle}</strong> {messages.helpModal.macosAccessibilityText}
                     </p>
                   </div>
                 </div>
@@ -298,71 +281,70 @@ export default function HelpModal({ isOpen, onClose, shortcutKey }: HelpModalPro
           </section>
 
           {/* Model Selection */}
-          <section>
+          <section className="mt-12">
             <h3 className="text-lg font-semibold text-foreground mb-3 flex items-center gap-2">
               <Bot className="w-5 h-5" />
               {messages.helpModal.modelSelection}
             </h3>
             <div className="space-y-3 text-sm text-foreground/80">
               <p>
-                Correctify now supports 14 models across 4 providers. Models are grouped by
-                category:
+                {messages.helpModal.modelsIntro}
               </p>
 
               <div>
                 <h4 className="font-semibold text-foreground mb-2">
-                  Paid Models (API key + usage costs):
+                  {messages.helpModal.paidModelsTitle}
                 </h4>
                 <ul className="space-y-1.5 ml-2">
                   <li>
-                    <strong>GPT-5</strong> - Most advanced reasoning
+                    <strong>GPT-5</strong> - {messages.helpModal.modelGpt5}
                   </li>
                   <li>
-                    <strong>GPT-5 Mini</strong> - Balanced performance
+                    <strong>GPT-5 Mini</strong> - {messages.helpModal.modelGpt5Mini}
                   </li>
                   <li>
-                    <strong>GPT-4o Mini</strong> - Fast, affordable, recommended for most users
+                    <strong>GPT-4o Mini</strong> - {messages.helpModal.modelGpt4oMini}
                   </li>
                   <li>
-                    <strong>GPT-4o</strong> - Most advanced OpenAI model
+                    <strong>GPT-4o</strong> - {messages.helpModal.modelGpt4o}
                   </li>
                   <li>
-                    <strong>GPT-4 Turbo</strong> - Powerful and versatile
+                    <strong>GPT-4 Turbo</strong> - {messages.helpModal.modelGpt4Turbo}
                   </li>
                   <li>
-                    <strong>GPT-3.5 Turbo</strong> - Very affordable and fast
+                    <strong>GPT-3.5 Turbo</strong> - {messages.helpModal.modelGpt35Turbo}
                   </li>
                   <li>
-                    <strong>Claude 3.5 Sonnet</strong> - Intelligent, balanced
+                    <strong>Claude 3.5 Sonnet</strong> - {messages.helpModal.modelClaude35Sonnet}
                   </li>
                   <li>
-                    <strong>Claude 3.5 Haiku</strong> - Fast, compact
+                    <strong>Claude 3.5 Haiku</strong> - {messages.helpModal.modelClaude35Haiku}
                   </li>
                   <li>
-                    <strong>Mistral Large</strong> - Most capable Mistral
+                    <strong>Mistral Large</strong> - {messages.helpModal.modelMistralLarge}
                   </li>
                   <li>
-                    <strong>Mistral Small</strong> - Optimized performance
+                    <strong>Mistral Small</strong> - {messages.helpModal.modelMistralSmall}
                   </li>
                 </ul>
               </div>
 
               <div>
                 <h4 className="font-semibold text-foreground mb-2">
-                  Free Models (OpenRouter key required, no usage costs):
+                  {messages.helpModal.freeModelsTitle}
                 </h4>
                 <ul className="space-y-1.5 ml-2">
                   <li>
-                    <strong>Llama 3.2 3B</strong> - Fast, lightweight
+                    <strong>Llama 3.2 3B</strong> - {messages.helpModal.modelLlama32}
                   </li>
                   <li>
-                    <strong>Gemma 2 9B</strong> - Google&apos;s open model
+                    <strong>Gemma 2 9B</strong> - {messages.helpModal.modelGemma2}
                   </li>
                   <li>
-                    <strong>Phi-3 Mini</strong> - Microsoft research
+                    <strong>Phi-3 Mini</strong> - {messages.helpModal.modelPhi3}
                   </li>
                   <li>
-                    <strong>Mistral 7B</strong> - Open source
+                    <strong>Mistral 7B</strong> - {messages.helpModal.modelMistral7b}
                   </li>
                 </ul>
               </div>
@@ -370,10 +352,9 @@ export default function HelpModal({ isOpen, onClose, shortcutKey }: HelpModalPro
               <div className="p-3 bg-info-bg border border-info-border rounded-lg flex gap-2">
                 <Lightbulb className="w-4 h-4 text-info-text flex-shrink-0 mt-0.5" />
                 <div className="text-xs text-info-text">
-                  <strong>Smart Fallback:</strong>
+                  <strong>{messages.helpModal.smartFallbackTitle}</strong>
                   <p className="mt-1">
-                    If a paid model fails (e.g., insufficient credits), Correctify will offer to
-                    retry with a free OpenRouter model automatically.
+                    {messages.helpModal.smartFallbackText}
                   </p>
                 </div>
               </div>
@@ -381,78 +362,69 @@ export default function HelpModal({ isOpen, onClose, shortcutKey }: HelpModalPro
           </section>
 
           {/* Writing Style Selection */}
-          <section>
+          <section className="mt-12">
             <h3 className="text-lg font-semibold text-foreground mb-3 flex items-center gap-2">
               <Palette className="w-5 h-5" />
-              Writing Style Selection
+              {messages.helpModal.writingStyleTitle}
             </h3>
             <div className="space-y-2 text-sm text-foreground/80">
               <p>
-                Choose from 5 different writing styles to customize how your text is corrected and
-                rewritten:
+                {messages.helpModal.writingStyleIntro}
               </p>
               <ul className="space-y-2 ml-2">
                 <li>
-                  <strong className="text-foreground">Grammar Only</strong> - Fixes grammar and
-                  typos only (default behavior)
+                  <strong className="text-foreground">{messages.helpModal.styleGrammarOnly}</strong> - {messages.helpModal.styleGrammarOnlyDesc}
                 </li>
                 <li>
-                  <strong className="text-foreground">Formal</strong> - Professional tone with no
-                  contractions, suitable for business or academic writing
+                  <strong className="text-foreground">{messages.helpModal.styleFormal}</strong> - {messages.helpModal.styleFormalDesc}
                 </li>
                 <li>
-                  <strong className="text-foreground">Informal</strong> - Conversational and
-                  friendly tone with natural phrasing
+                  <strong className="text-foreground">{messages.helpModal.styleInformal}</strong> - {messages.helpModal.styleInformalDesc}
                 </li>
                 <li>
-                  <strong className="text-foreground">Collaborative</strong> - Inclusive
-                  team-oriented language with cooperative phrasing
+                  <strong className="text-foreground">{messages.helpModal.styleCollaborative}</strong> - {messages.helpModal.styleCollaborativeDesc}
                 </li>
                 <li>
-                  <strong className="text-foreground">Concise</strong> - Brief and to the point,
-                  removing redundancy while maintaining meaning
+                  <strong className="text-foreground">{messages.helpModal.styleConcise}</strong> - {messages.helpModal.styleConciseDesc}
                 </li>
               </ul>
               <div className="p-3 bg-info-bg border border-info-border rounded-lg mt-3 flex gap-2">
                 <Lightbulb className="w-4 h-4 text-info-text flex-shrink-0 mt-0.5" />
                 <p className="text-xs text-info-text">
-                  <strong>Note:</strong> Your selected writing style persists across sessions and is
-                  used for both in-app corrections and global shortcut corrections.
+                  <strong>{messages.helpModal.writingStyleNote}</strong> {messages.helpModal.writingStyleNoteText}
                 </p>
               </div>
             </div>
           </section>
 
           {/* Usage Tracking */}
-          <section>
+          <section className="mt-12">
             <h3 className="text-lg font-semibold text-foreground mb-3 flex items-center gap-2">
               <Bot className="w-5 h-5" />
-              Usage Statistics (v{version})
+              {messages.helpModal.usageStatsTitle}
             </h3>
             <div className="space-y-2 text-sm text-foreground/80">
               <p>
-                Track your LLM usage with built-in analytics. Click the <strong>Usage Stats</strong>{" "}
-                button in the header menu to view:
+                {messages.helpModal.usageStatsIntro}
               </p>
               <ul className="space-y-1.5 ml-2">
-                <li>Total requests and success rate</li>
-                <li>Average response time per model</li>
-                <li>Estimated cost breakdown by provider</li>
-                <li>Token usage statistics</li>
-                <li>Filterable by time period (7/30/90 days, or all time)</li>
+                <li>{messages.helpModal.usageStatItem1}</li>
+                <li>{messages.helpModal.usageStatItem2}</li>
+                <li>{messages.helpModal.usageStatItem3}</li>
+                <li>{messages.helpModal.usageStatItem4}</li>
+                <li>{messages.helpModal.usageStatItem5}</li>
               </ul>
               <div className="p-3 bg-info-bg border border-info-border rounded-lg flex gap-2">
                 <Lightbulb className="w-4 h-4 text-info-text flex-shrink-0 mt-0.5" />
                 <div className="text-xs text-info-text">
-                  <strong>Privacy:</strong> All usage data is stored locally on your device and
-                  never shared with any server.
+                  <strong>{messages.helpModal.privacyTitle}</strong> {messages.helpModal.privacyText}
                 </div>
               </div>
             </div>
           </section>
 
           {/* Keyboard Shortcuts */}
-          <section>
+          <section className="mt-12">
             <h3 className="text-lg font-semibold text-foreground mb-3 flex items-center gap-2">
               <Keyboard className="w-5 h-5" />
               {messages.helpModal.keyboardShortcuts}
@@ -460,7 +432,7 @@ export default function HelpModal({ isOpen, onClose, shortcutKey }: HelpModalPro
             <div className="space-y-2 text-sm text-foreground/80">
               <div className="flex justify-between items-center p-2 bg-foreground/5 rounded">
                 <span>{messages.helpModal.shortcutSubmit}</span>
-                <kbd className="px-2 py-1 bg-foreground/10 rounded text-xs font-medium flex items-center gap-1">
+                <kbd className="px-2 py-1 bg-foreground/10 rounded text-xs font-medium inline-flex items-center gap-1">
                   {isMac ? <MacShortcut keys={["Cmd", "Enter"]} /> : "Ctrl+Enter"}
                 </kbd>
               </div>
@@ -468,9 +440,9 @@ export default function HelpModal({ isOpen, onClose, shortcutKey }: HelpModalPro
                 <div className="flex justify-between items-center p-2 bg-foreground/5 rounded">
                   <span>
                     {messages.helpModal.shortcutGlobal}{" "}
-                    <span className="text-foreground/50 text-xs">(customizable)</span>
+                    <span className="text-foreground/50 text-xs">{messages.helpModal.shortcutCustomizable}</span>
                   </span>
-                  <kbd className="px-2 py-1 bg-foreground/10 rounded text-xs font-medium flex items-center gap-1">
+                  <kbd className="px-2 py-1 bg-foreground/10 rounded text-xs font-medium inline-flex items-center gap-1">
                     {isMac ? <MacShortcut keys={["Cmd", "Shift", shortcutKey]} /> : `Ctrl+Shift+${shortcutKey}`}
                   </kbd>
                 </div>

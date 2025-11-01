@@ -149,7 +149,7 @@ export default function DraggableHeader({
           </div>
 
           {isMenuOpen && (
-            <div className="absolute top-full right-0 mt-2 w-48 bg-card-bg border border-border rounded-lg shadow-lg z-50">
+            <div className="absolute top-full right-0 mt-2 w-56 bg-card-bg border border-border rounded-lg shadow-lg z-50">
               <button
                 type="button"
                 onClick={() => {
