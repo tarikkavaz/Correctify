@@ -183,7 +183,7 @@ export default function DraggableHeader({
                 className="w-full flex items-center gap-3 px-4 py-3 text-sm text-foreground hover:bg-foreground/5 transition-colors"
               >
                 <BarChart3 className="w-4 h-4" />
-                <span>Usage Stats</span>
+                <span>{messages.header.usageStats}</span>
               </button>
 
               <div className="border-t border-border" />
