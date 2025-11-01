@@ -230,3 +230,9 @@ body {
 .prose a {
   color: var(--color-primary-link);
 }
+
+.prose strong,
+.prose b {
+  color: var(--color-prose-text);
+  font-weight: 600;
+}
