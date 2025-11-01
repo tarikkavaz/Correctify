@@ -7,7 +7,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
 
   try {
     const body: CorrectionRequest = await request.json();
-    const { text, provider, model, temperature = 0, writingStyle } = body;
+    const { text, provider, model, temperature = 0, writingStyle, customRules } = body;
 
     if (!text || typeof text !== "string" || text.trim().length === 0) {
       return NextResponse.json(
@@ -46,7 +46,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
 
     // Perform correction using unified corrector
     const corrector = new UnifiedCorrector(provider, apiKey, model);
-    const response = await corrector.correct({ text, model, temperature, writingStyle });
+    const response = await corrector.correct({ text, model, temperature, writingStyle, customRules });
     const result = response.result;
 
     const duration = Date.now() - startTime;

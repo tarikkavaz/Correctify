@@ -34,7 +34,7 @@ export class UnifiedCorrector implements Corrector {
   async correct(input: CorrectionInput): Promise<CorrectionResult> {
     const model = input.model ?? this.defaultModel;
     const writingStyle = input.writingStyle ?? "grammar";
-    const systemPrompt = getSystemPrompt(writingStyle);
+    const systemPrompt = getSystemPrompt(writingStyle, input.customRules);
 
     try {
       // Get the appropriate AI SDK provider

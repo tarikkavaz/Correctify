@@ -15,6 +15,7 @@ use base64::{Engine as _, engine::general_purpose};
 struct AppState {
     sound_enabled: Arc<Mutex<bool>>,
     shortcut_key: Arc<Mutex<String>>,
+    shortcut_modifier: Arc<Mutex<String>>,
     auto_paste_enabled: Arc<Mutex<bool>>,
 }
 
@@ -23,16 +24,16 @@ fn play_sound(sound_type: &str, sound_enabled: bool) {
     if !sound_enabled {
         return;
     }
-    
+
     let sound_bytes: &'static [u8] = match sound_type {
         "empty" => include_bytes!("../sounds/empty.wav"),
         "processing" => include_bytes!("../sounds/processing.wav"),
         "completed" => include_bytes!("../sounds/completed.wav"),
         _ => return,
     };
-    
+
     let bytes = sound_bytes.to_vec();
-    
+
     // Play sound in a separate thread to avoid blocking
     thread::spawn(move || {
         if let Err(e) = play_sound_blocking(&bytes) {
@@ -43,16 +44,16 @@ fn play_sound(sound_type: &str, sound_enabled: bool) {
 
 fn play_sound_blocking(bytes: &[u8]) -> Result<(), Box<dyn std::error::Error>> {
     use rodio::{Decoder, OutputStream, Sink};
-    
+
     let (_stream, stream_handle) = OutputStream::try_default()?;
     let sink = Sink::try_new(&stream_handle)?;
-    
+
     let cursor = Cursor::new(bytes.to_vec());
     let source = Decoder::new(cursor)?;
-    
+
     sink.append(source);
     sink.sleep_until_end();
-    
+
     Ok(())
 }
 
@@ -74,7 +75,7 @@ async fn handle_corrected_text(
 
     // Add a small delay to ensure the processing notification is visible
     thread::sleep(Duration::from_millis(500));
-    
+
     // Get settings state
     let state = app.state::<AppState>();
     let sound_enabled = *state.sound_enabled.lock().unwrap();
@@ -95,7 +96,7 @@ async fn handle_corrected_text(
         .title("Correctify")
         .body(&body)
         .show();
-    
+
     // Play completed sound
     play_sound("completed", sound_enabled);
 
@@ -103,12 +104,12 @@ async fn handle_corrected_text(
     if should_auto_paste {
         // Clone the text for the thread
         let text_to_paste = text.clone();
-        
+
         // Spawn a separate thread to avoid blocking
         thread::spawn(move || {
             // Wait longer to ensure notification is visible and user sees feedback
             thread::sleep(Duration::from_millis(800));
-            
+
             match Enigo::new(&Settings::default()) {
                 Ok(mut enigo) => {
                     // Directly type the corrected text instead of simulating Cmd+V
@@ -127,7 +128,7 @@ async fn handle_corrected_text(
                                 thread::sleep(Duration::from_millis(50));
                                 let _ = enigo.key(Key::Meta, enigo::Direction::Release);
                             }
-                            
+
                             #[cfg(not(target_os = "macos"))]
                             {
                                 let _ = enigo.key(Key::Control, enigo::Direction::Press);
@@ -164,31 +165,56 @@ fn get_sound_enabled(state: tauri::State<AppState>) -> Result<bool, String> {
     Ok(*sound_enabled)
 }
 
-// Tauri command to update shortcut key
+// Helper function to convert modifier string to platform-specific format
+// Tauri uses "Alt" for Option key on macOS, and "Alt" for Alt key on Windows/Linux
+fn convert_modifier_to_platform(modifier: &str) -> String {
+    #[cfg(target_os = "macos")]
+    {
+        modifier
+            .replace("CmdOrCtrl", "Cmd")
+            .replace("AltOrOption", "Alt")
+    }
+    #[cfg(not(target_os = "macos"))]
+    {
+        modifier
+            .replace("CmdOrCtrl", "Ctrl")
+            .replace("AltOrOption", "Alt")
+    }
+}
+
+// Tauri command to update shortcut key and modifier
 #[tauri::command]
 fn update_shortcut(
     new_key: String,
+    new_modifier: String,
     app: tauri::AppHandle,
     state: tauri::State<AppState>,
 ) -> Result<(), String> {
     use tauri_plugin_global_shortcut::{GlobalShortcutExt, Shortcut};
-    
-    // Get the current shortcut key
+
+    // Get the current shortcut key and modifier
     let mut shortcut_key = state.shortcut_key.lock().unwrap();
-    let old_shortcut_str = format!("CmdOrCtrl+Shift+{}", *shortcut_key);
-    let new_shortcut_str = format!("CmdOrCtrl+Shift+{}", new_key);
-    
+    let mut shortcut_modifier = state.shortcut_modifier.lock().unwrap();
+
+    // Convert modifiers to platform-specific format
+    let old_modifier_platform = convert_modifier_to_platform(&*shortcut_modifier);
+    let new_modifier_platform = convert_modifier_to_platform(&new_modifier);
+
+    let old_shortcut_str = format!("{}+{}", old_modifier_platform, *shortcut_key);
+    let new_shortcut_str = format!("{}+{}", new_modifier_platform, new_key);
+
     // Unregister old shortcut
     if let Ok(old_shortcut) = old_shortcut_str.parse::<Shortcut>() {
         let _ = app.global_shortcut().unregister(old_shortcut);
     }
-    
+
     // Register new shortcut
     match new_shortcut_str.parse::<Shortcut>() {
         Ok(new_shortcut) => {
             match app.global_shortcut().register(new_shortcut) {
                 Ok(_) => {
                     *shortcut_key = new_key.clone();
+                    *shortcut_modifier = new_modifier.clone();
                     Ok(())
                 }
                 Err(e) => {
@@ -209,6 +235,13 @@ fn update_shortcut(
 fn get_shortcut_key(state: tauri::State<AppState>) -> Result<String, String> {
     let shortcut_key = state.shortcut_key.lock().unwrap();
     Ok(shortcut_key.clone())
+}
+
+// Tauri command to get current shortcut modifier
+#[tauri::command]
+fn get_shortcut_modifier(state: tauri::State<AppState>) -> Result<String, String> {
+    let shortcut_modifier = state.shortcut_modifier.lock().unwrap();
+    Ok(shortcut_modifier.clone())
 }
 
 // Tauri command to play sound in app (respects sound_enabled setting)
@@ -238,13 +271,13 @@ fn get_auto_paste_enabled(state: tauri::State<AppState>) -> Result<bool, String>
 fn get_storage_path(app: &tauri::AppHandle) -> Result<PathBuf, String> {
     let app_data_dir = app.path().app_data_dir()
         .map_err(|e| format!("Failed to get app data dir: {}", e))?;
-    
+
     let keys_dir = app_data_dir.join(".keys");
-    
+
     // Create the .keys directory if it doesn't exist
     fs::create_dir_all(&keys_dir)
         .map_err(|e| format!("Failed to create keys directory: {}", e))?;
-    
+
     Ok(keys_dir)
 }
 
@@ -254,11 +287,11 @@ fn get_storage_path(app: &tauri::AppHandle) -> Result<PathBuf, String> {
 fn secure_storage_get(app: tauri::AppHandle, key: String) -> Result<String, String> {
     let storage_path = get_storage_path(&app)?;
     let key_file = storage_path.join(format!("{}.dat", key));
-    
+
     if !key_file.exists() {
         return Err(format!("Key '{}' not found", key));
     }
-    
+
     match fs::read_to_string(&key_file) {
         Ok(encoded) => {
             // Decode from base64
@@ -282,10 +315,10 @@ fn secure_storage_get(app: tauri::AppHandle, key: String) -> Result<String, Stri
 fn secure_storage_set(app: tauri::AppHandle, key: String, value: String) -> Result<(), String> {
     let storage_path = get_storage_path(&app)?;
     let key_file = storage_path.join(format!("{}.dat", key));
-    
+
     // Encode to base64
     let encoded = general_purpose::STANDARD.encode(value.as_bytes());
-    
+
     fs::write(&key_file, encoded)
         .map_err(|e| format!("Failed to write file: {}", e))
 }
@@ -294,11 +327,11 @@ fn secure_storage_set(app: tauri::AppHandle, key: String, value: String) -> Resu
 fn secure_storage_remove(app: tauri::AppHandle, key: String) -> Result<(), String> {
     let storage_path = get_storage_path(&app)?;
     let key_file = storage_path.join(format!("{}.dat", key));
-    
+
     if !key_file.exists() {
         return Ok(()); // Not an error if it doesn't exist
     }
-    
+
     fs::remove_file(&key_file)
         .map_err(|e| format!("Failed to delete file: {}", e))
 }
@@ -309,9 +342,10 @@ pub fn run() {
     let app_state = AppState {
         sound_enabled: Arc::new(Mutex::new(true)), // Default: sound enabled
         shortcut_key: Arc::new(Mutex::new("]".to_string())), // Default: closing bracket key
+        shortcut_modifier: Arc::new(Mutex::new("CmdOrCtrl+Shift".to_string())), // Default: Cmd+Shift on Mac, Ctrl+Shift on Win/Linux
         auto_paste_enabled: Arc::new(Mutex::new(false)), // Default: auto-paste disabled
     };
-    
+
     tauri::Builder::default()
         .manage(app_state)
         .plugin(tauri_plugin_shell::init())
@@ -340,7 +374,7 @@ pub fn run() {
 
                         // If auto-paste is enabled, simulate Cmd+C/Ctrl+C to copy selected text
                         if auto_paste_enabled {
-                            
+
                             #[cfg(target_os = "macos")]
                             {
                                 // Check if accessibility permissions are granted
@@ -349,12 +383,12 @@ pub fn run() {
                                     .arg("-e")
                                     .arg("tell application \"System Events\" to get name of first process")
                                     .output();
-                                
+
                                 let has_permission = match output {
                                     Ok(result) => result.status.success(),
                                     Err(_) => false,
                                 };
-                                
+
                                 if !has_permission {
                                     // Show notification to user
                                     let _ = app.notification()
@@ -362,11 +396,11 @@ pub fn run() {
                                         .title("Correctify - Permission Required")
                                         .body("Auto copy/paste requires Accessibility permission. Please enable it in System Settings > Privacy & Security > Accessibility, then restart the app.")
                                         .show();
-                                    
+
                                     return; // Don't try to use enigo without permission
                                 }
                             }
-                            
+
                             // Simulate copy shortcut
                             match Enigo::new(&Settings::default()) {
                                 Ok(mut enigo) => {
@@ -378,14 +412,14 @@ pub fn run() {
                                         let _ = enigo.key(Key::Unicode('c'), enigo::Direction::Click);
                                         let _ = enigo.key(Key::Meta, enigo::Direction::Release);
                                     }
-                                    
+
                                     #[cfg(not(target_os = "macos"))]
                                     {
                                         let _ = enigo.key(Key::Control, enigo::Direction::Press);
                                         let _ = enigo.key(Key::Unicode('c'), enigo::Direction::Click);
                                         let _ = enigo.key(Key::Control, enigo::Direction::Release);
                                     }
-                                    
+
                                     // Wait briefly for clipboard to populate
                                     thread::sleep(Duration::from_millis(100));
                                 }
@@ -399,31 +433,31 @@ pub fn run() {
                                 if text.is_empty() {
                                     #[cfg(target_os = "macos")]
                                     let copy_instruction = "Please copy text first (Cmd+C), then use Cmd+Shift+]";
-                                    
+
                                     #[cfg(not(target_os = "macos"))]
                                     let copy_instruction = "Please copy text first (Ctrl+C), then use Ctrl+Shift+]";
-                                    
+
                                     let _ = app.notification()
                                         .builder()
                                         .title("Correctify")
                                         .body(copy_instruction)
                                         .show();
-                                    
+
                                     // Play empty sound
                                     play_sound("empty", sound_enabled);
                                     return;
                                 }
-                                
+
                                 // Emit event to frontend with text to correct
                                 let _ = app.emit("correct-clipboard-text", text.clone());
-                                
+
                                 // Show notification that we're processing
                                 let _ = app.notification()
                                     .builder()
                                     .title("Correctify")
                                     .body("Processing text correction...")
                                     .show();
-                                
+
                                 // Play processing sound
                                 play_sound("processing", sound_enabled);
                             }
@@ -441,6 +475,7 @@ pub fn run() {
             get_sound_enabled,
             update_shortcut,
             get_shortcut_key,
+            get_shortcut_modifier,
             play_sound_in_app,
             set_auto_paste_enabled,
             get_auto_paste_enabled,
@@ -482,16 +517,21 @@ pub fn run() {
                 .expect("Failed to build tray icon");
 
 
-            // Register the global shortcut
+            // Register the global shortcut with configurable modifier
             use tauri_plugin_global_shortcut::{GlobalShortcutExt, Shortcut};
-            let shortcut = "CmdOrCtrl+Shift+]".parse::<Shortcut>().unwrap();
+            let state = app.state::<AppState>();
+            let shortcut_modifier = state.shortcut_modifier.lock().unwrap();
+            let shortcut_key = state.shortcut_key.lock().unwrap();
+            let modifier_platform = convert_modifier_to_platform(&*shortcut_modifier);
+            let shortcut_str = format!("{}+{}", modifier_platform, *shortcut_key);
+            let shortcut = shortcut_str.parse::<Shortcut>().unwrap();
             app.global_shortcut().register(shortcut)
                 .expect("Failed to register global shortcut");
-            println!("Global shortcut registered: CmdOrCtrl+Shift+]");
+            println!("Global shortcut registered: {}", shortcut_str);
 
             // Get window for all platforms
             let window = app.get_webview_window("main").unwrap();
-            
+
             #[cfg(debug_assertions)]
             {
                 window.open_devtools();
@@ -538,7 +578,7 @@ pub fn run() {
                         .build(app)?;
 
                     let close_window_item = PredefinedMenuItem::close_window(app, None)?;
-                    
+
                     let file_menu = SubmenuBuilder::new(app, "File")
                         .item(&new_window_item)
                         .item(&close_window_item)
@@ -565,7 +605,7 @@ pub fn run() {
 
                     // Window Menu
                     let minimize_item = PredefinedMenuItem::minimize(app, None)?;
-                    
+
                     let window_menu = SubmenuBuilder::new(app, "Window")
                         .item(&minimize_item)
                         .build()?;
@@ -581,7 +621,7 @@ pub fn run() {
                 {
                     // Windows/Linux: File, Edit, Help menus
                     let quit_item = PredefinedMenuItem::quit(app, None)?;
-                    
+
                     let file_menu = SubmenuBuilder::new(app, "File")
                         .item(&quit_item)
                         .build()?;
@@ -651,7 +691,7 @@ pub fn run() {
                     }
                 });
             }
-            
+
             Ok(())
         })
         .run(tauri::generate_context!())

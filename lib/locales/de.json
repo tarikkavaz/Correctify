@@ -7,7 +7,8 @@
     "theme": "Theme umschalten",
     "reload": "Neu laden",
     "menu": "Menü",
-    "subtitle": "KI-gestützte Grammatikkorrektur"
+    "subtitle": "KI-gestützte Grammatikkorrektur",
+    "usageStats": "Nutzungsstatistiken"
   },
   "home": {
     "inputLabel": "Zu korrigierender Text",
@@ -36,7 +37,48 @@
     "quickCorrectionStep4": "Korrigierten Text einfügen (",
     "quickCorrectionCustomize": "Sie können diese Tastenkombination in den Einstellungen anpassen.",
     "metaModel": "Modell:",
-    "metaDuration": "Dauer:"
+    "metaDuration": "Dauer:",
+    "selectModel": "Modell auswählen",
+    "paidModels": "Kostenpflichtige Modelle",
+    "freeModels": "Kostenlose Modelle",
+    "styleOptions": {
+      "grammar": {
+        "label": "Nur Grammatik",
+        "description": "Korrigiert nur Grammatik und Tippfehler"
+      },
+      "formal": {
+        "label": "Formell",
+        "description": "Gepflegter und professioneller Ton"
+      },
+      "informal": {
+        "label": "Informell",
+        "description": "Natürlicher und gesprächiger Ton"
+      },
+      "collaborative": {
+        "label": "Kooperativ",
+        "description": "Freundlicher, inklusiver Team-Ton"
+      },
+      "concise": {
+        "label": "Prägnant",
+        "description": "Klar und auf den Punkt"
+      }
+    },
+    "modelDescriptions": {
+      "gpt-4o-mini": "Schnell und kostengünstig",
+      "gpt-5": "Fortschrittlichste Denkfähigkeit",
+      "gpt-5-mini": "Ausgewogene Leistung",
+      "gpt-4o": "Leistungsstärkstes Modell",
+      "gpt-4-turbo": "Leistungsstark und vielseitig",
+      "gpt-3.5-turbo": "Sehr kostengünstig und schnell",
+      "claude-3-5-sonnet-20241022": "Ausgewogene Leistung",
+      "claude-3-5-haiku-20241022": "Schnell und effizient",
+      "mistral-small-latest": "Kosteneffektiv",
+      "mistral-large-latest": "Leistungsstärkstes Mistral",
+      "meta-llama/llama-3.2-3b-instruct:free": "Schnell, leichtgewichtig",
+      "google/gemma-2-9b-it:free": "Googles Open-Source-Modell",
+      "microsoft/phi-3-mini-128k-instruct:free": "Microsoft-Forschungsmodell",
+      "mistralai/mistral-7b-instruct:free": "Open-Source Mistral"
+    }
   },
   "apiModal": {
     "title": "Einstellungen",
@@ -48,14 +90,38 @@
     "cancel": "Abbrechen",
     "save": "Speichern",
     "clear": "Löschen",
+    "closeAriaLabel": "API-Einstellungen schließen",
     "autostartLabel": "Beim Start ausführen",
     "autostartDescription": "Correctify automatisch beim Systemstart starten",
     "soundLabel": "Tonbenachrichtigungen",
     "soundDescription": "Soundeffekte abspielen, wenn Benachrichtigungen erscheinen",
     "globalShortcutLabel": "Globale Tastenkombination",
-    "shortcutDescription": "Passen Sie die letzte Taste Ihrer Tastenkombination an (z. B. A-Z, 0-9 oder Sondertasten)",
+    "shortcutModifierLabel": "Modifikator",
+    "shortcutKeyLabel": "Taste",
+    "shortcutPreview": "Vorschau",
+    "shortcutModifierCmdShift": "Cmd+Shift / Strg+Shift",
+    "shortcutModifierCmdOption": "Cmd+Option / Strg+Alt",
+    "shortcutDescription": "Passen Sie die Modifikatorkombination und die letzte Taste Ihrer Tastenkombination an",
     "autoPasteLabel": "Automatisches Kopieren/Einfügen des korrigierten Textes",
-    "autoPasteDescription": "Korrigierten Text automatisch kopieren und einfügen (kein manuelles Cmd+C/Strg+C oder Cmd+V/Strg+V erforderlich)"
+    "autoPasteDescription": "Korrigierten Text automatisch kopieren und einfügen (kein manuelles Cmd+C/Strg+C oder Cmd+V/Strg+V erforderlich)",
+    "languageLabel": "Sprache",
+    "languageSystem": "Systemsprache",
+    "languageEn": "Englisch",
+    "languageDe": "Deutsch",
+    "languageFr": "Französisch",
+    "languageTr": "Türkisch",
+    "appSettingsTab": "App-Einstellungen",
+    "apiKeysTab": "API-Schlüssel",
+    "globalShortcutTab": "Globale Tastenkombination",
+    "rulesTab": {
+      "title": "Benutzerdefinierte Regeln",
+      "label": "Benutzerdefinierte Regeln",
+      "description": "Fügen Sie benutzerdefinierte Regeln hinzu, die in die Korrekturaufforderungen integriert werden. Diese Regeln werden auf alle Korrekturen angewendet.",
+      "sampleTitle": "Beispielregel:",
+      "sampleText": "Verwenden Sie keine Gedankenstriche",
+      "placeholder": "Geben Sie hier Ihre benutzerdefinierten Regeln ein...",
+      "info": "Ihre benutzerdefinierten Regeln werden an die Systemaufforderung angehängt und auf alle Korrekturen angewendet."
+    }
   },
   "helpModal": {
     "title": "Hilfe & Anleitung",
@@ -106,6 +172,44 @@
     "description": "Ein datenschutzorientiertes Grammatikkorrektur-Tool, das KI verwendet, um Ihr Schreiben zu verbessern und gleichzeitig Ihre Daten zu schützen.",
     "visitHomepage": "Startseite besuchen",
     "copyright": "© 2025 Correctify",
-    "builtWith": "Erstellt mit ❤️ mit Tauri, Next.js und OpenAI"
+    "builtWith": "Erstellt mit ❤️ mit Tauri, Next.js und OpenAI",
+    "features": {
+      "title": "Funktionen",
+      "secureStorage": "Sichere API-Schlüsselspeicherung (Verschlüsselung auf Betriebssystemebene)",
+      "multipleProviders": "Mehrere LLM-Anbieter (OpenAI, Anthropic, Mistral, OpenRouter)",
+      "freeModels": "Kostenlose Modelle über OpenRouter verfügbar",
+      "globalShortcut": "Globale Tastenkombination für sofortige Korrekturen",
+      "writingStyles": "Mehrere Schreibstile (Grammatik, Formal, Informal usw.)"
+    }
+  },
+  "usageModal": {
+    "title": "Nutzungsstatistiken",
+    "subtitle": "Verfolgen Sie Ihre API-Nutzung und Kosten",
+    "lastDays": "Letzte {days} Tage",
+    "totalRequests": "Gesamte Anfragen",
+    "successRate": "Erfolgsquote",
+    "avgDuration": "Durchschn. Dauer",
+    "estCost": "Geschätzte Kosten",
+    "byProvider": "Nach Anbieter",
+    "requests": "Anfragen",
+    "tokens": "Tokens",
+    "avgTime": "Durchschn. Zeit",
+    "cost": "Kosten",
+    "note": "Hinweis:",
+    "noteText": "Die Kosten werden basierend auf der Token-Nutzung geschätzt und spiegeln möglicherweise nicht die tatsächliche Abrechnung wider. Token-Zählungen sind Näherungswerte. Statistiken werden lokal gespeichert und niemals geteilt.",
+    "clearHistory": "Gesamten Nutzungsverlauf löschen",
+    "clearConfirm": "Sind Sie sicher, dass Sie den gesamten Nutzungsverlauf löschen möchten? Dies kann nicht rückgängig gemacht werden.",
+    "close": "Schließen",
+    "closeAriaLabel": "Nutzungsstatistiken schließen"
+  },
+  "updateModal": {
+    "title": "Update verfügbar",
+    "description": "Update auf {version} ist verfügbar!",
+    "releaseNotes": "Versionshinweise",
+    "installNow": "Jetzt installieren",
+    "later": "Später",
+    "downloading": "Update wird heruntergeladen...",
+    "installing": "Update wird installiert...",
+    "closeAriaLabel": "Update-Dialog schließen"
   }
 }

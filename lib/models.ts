@@ -58,7 +58,7 @@ export const MODELS: ModelInfo[] = [
     category: "paid",
     description: "Powerful and versatile",
     contextWindow: 128000,
-    costPer1kTokens: { input: 0.01, output: 0.03 },
+    costPer1kTokens: { input: 0.03, output: 0.06 },
   },
   {
     id: "gpt-3.5-turbo",
@@ -98,7 +98,7 @@ export const MODELS: ModelInfo[] = [
     category: "paid",
     description: "Cost-effective",
     contextWindow: 32000,
-    costPer1kTokens: { input: 0.0002, output: 0.0006 },
+    costPer1kTokens: { input: 0.0001, output: 0.0003 },
   },
   {
     id: "mistral-large-latest",
@@ -107,7 +107,7 @@ export const MODELS: ModelInfo[] = [
     category: "paid",
     description: "Most capable Mistral",
     contextWindow: 128000,
-    costPer1kTokens: { input: 0.002, output: 0.006 },
+    costPer1kTokens: { input: 0.004, output: 0.012 },
   },
 
   // OpenRouter Free Models (Key required, but no cost per token)

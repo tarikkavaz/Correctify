@@ -7,7 +7,8 @@
     "theme": "Toggle theme",
     "reload": "Reload",
     "menu": "Menu",
-    "subtitle": "AI-powered grammar correction"
+    "subtitle": "AI-powered grammar correction",
+    "usageStats": "Usage Stats"
   },
   "home": {
     "inputLabel": "Text to correct",
@@ -36,7 +37,48 @@
     "quickCorrectionStep4": "Paste the corrected text (",
     "quickCorrectionCustomize": "You can customize this shortcut in Settings.",
     "metaModel": "Model:",
-    "metaDuration": "Duration:"
+    "metaDuration": "Duration:",
+    "selectModel": "Select Model",
+    "paidModels": "Paid Models",
+    "freeModels": "Free Models",
+    "styleOptions": {
+      "grammar": {
+        "label": "Grammar Only",
+        "description": "Fixes grammar and typos only"
+      },
+      "formal": {
+        "label": "Formal",
+        "description": "Polished and professional tone"
+      },
+      "informal": {
+        "label": "Informal",
+        "description": "Natural and conversational tone"
+      },
+      "collaborative": {
+        "label": "Collaborative",
+        "description": "Friendly, inclusive team tone"
+      },
+      "concise": {
+        "label": "Concise",
+        "description": "Clear and to the point"
+      }
+    },
+    "modelDescriptions": {
+      "gpt-4o-mini": "Fast and affordable",
+      "gpt-5": "Most advanced reasoning",
+      "gpt-5-mini": "Balanced performance",
+      "gpt-4o": "Most capable model",
+      "gpt-4-turbo": "Powerful and versatile",
+      "gpt-3.5-turbo": "Very affordable and fast",
+      "claude-3-5-sonnet-20241022": "Balanced performance",
+      "claude-3-5-haiku-20241022": "Fast and efficient",
+      "mistral-small-latest": "Cost-effective",
+      "mistral-large-latest": "Most capable Mistral",
+      "meta-llama/llama-3.2-3b-instruct:free": "Fast, lightweight",
+      "google/gemma-2-9b-it:free": "Google's open model",
+      "microsoft/phi-3-mini-128k-instruct:free": "Microsoft research model",
+      "mistralai/mistral-7b-instruct:free": "Open source Mistral"
+    }
   },
   "apiModal": {
     "title": "Settings",
@@ -48,14 +90,38 @@
     "cancel": "Cancel",
     "save": "Save",
     "clear": "Clear",
+    "closeAriaLabel": "Close API settings",
     "autostartLabel": "Launch at startup",
     "autostartDescription": "Automatically start Correctify when your system boots",
     "soundLabel": "Sound notifications",
     "soundDescription": "Play sound effects when notifications appear",
     "globalShortcutLabel": "Global Shortcut",
-    "shortcutDescription": "Customize the last key of your shortcut (e.g., A-Z, 0-9, or special keys)",
+    "shortcutModifierLabel": "Modifier",
+    "shortcutKeyLabel": "Key",
+    "shortcutPreview": "Preview",
+    "shortcutModifierCmdShift": "Cmd+Shift / Ctrl+Shift",
+    "shortcutModifierCmdOption": "Cmd+Option / Ctrl+Alt",
+    "shortcutDescription": "Customize the modifier combination and final key of your shortcut",
     "autoPasteLabel": "Auto copy/paste corrected text",
-    "autoPasteDescription": "Automatically copy and paste corrected text (no manual Cmd+C/Ctrl+C or Cmd+V/Ctrl+V needed)"
+    "autoPasteDescription": "Automatically copy and paste corrected text (no manual Cmd+C/Ctrl+C or Cmd+V/Ctrl+V needed)",
+    "languageLabel": "Language",
+    "languageSystem": "System language",
+    "languageEn": "English",
+    "languageDe": "German",
+    "languageFr": "French",
+    "languageTr": "Turkish",
+    "appSettingsTab": "App Settings",
+    "apiKeysTab": "API Keys",
+    "globalShortcutTab": "Global Shortcut",
+    "rulesTab": {
+      "title": "Custom Rules",
+      "label": "Custom Rules",
+      "description": "Add custom rules that will be integrated with the correction prompts. These rules will be applied to all corrections.",
+      "sampleTitle": "Sample rule:",
+      "sampleText": "Don't use em dashes",
+      "placeholder": "Enter your custom rules here...",
+      "info": "Your custom rules will be appended to the system prompt and applied to all corrections."
+    }
   },
   "helpModal": {
     "title": "Help & Guide",
@@ -106,6 +172,44 @@
     "description": "A privacy-focused grammar correction tool that uses AI to improve your writing while keeping your data secure.",
     "visitHomepage": "Visit Homepage",
     "copyright": "© 2025 Correctify",
-    "builtWith": "Built with ❤️ using Tauri, Next.js, and OpenAI"
+    "builtWith": "Built with ❤️ using Tauri, Next.js, and OpenAI",
+    "features": {
+      "title": "Features",
+      "secureStorage": "Secure API key storage (OS-level encryption)",
+      "multipleProviders": "Multiple LLM providers (OpenAI, Anthropic, Mistral, OpenRouter)",
+      "freeModels": "Free models available via OpenRouter",
+      "globalShortcut": "Global keyboard shortcut for instant corrections",
+      "writingStyles": "Multiple writing styles (Grammar, Formal, Informal, etc.)"
+    }
+  },
+  "usageModal": {
+    "title": "Usage Statistics",
+    "subtitle": "Track your API usage and costs",
+    "lastDays": "Last {days} days",
+    "totalRequests": "Total Requests",
+    "successRate": "Success Rate",
+    "avgDuration": "Avg Duration",
+    "estCost": "Est. Cost",
+    "byProvider": "By Provider",
+    "requests": "requests",
+    "tokens": "Tokens",
+    "avgTime": "Avg Time",
+    "cost": "Cost",
+    "note": "Note:",
+    "noteText": "Costs are estimated based on token usage and may not reflect actual billing. Token counts are approximated. Statistics are stored locally and never shared.",
+    "clearHistory": "Clear All Usage History",
+    "clearConfirm": "Are you sure you want to clear all usage history? This cannot be undone.",
+    "close": "Close",
+    "closeAriaLabel": "Close usage stats"
+  },
+  "updateModal": {
+    "title": "Update Available",
+    "description": "Update to {version} is available!",
+    "releaseNotes": "Release Notes",
+    "installNow": "Install Now",
+    "later": "Later",
+    "downloading": "Downloading update...",
+    "installing": "Installing update...",
+    "closeAriaLabel": "Close update dialog"
   }
 }

@@ -14,3 +14,11 @@ export function isTauri(): boolean {
     "__TAURI_METADATA__" in (window as unknown as Record<string, unknown>)
   );
 }
+
+/**
+ * Detect if the app is running on macOS
+ */
+export function isMacOS(): boolean {
+  if (typeof window === "undefined" || typeof navigator === "undefined") return false;
+  return navigator.platform.toLowerCase().includes("mac");
+}

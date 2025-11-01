@@ -1,10 +1,14 @@
 "use client";
 
 import { useLocale } from "@/lib/useLocale";
-import { isTauri } from "@/lib/utils";
+import { isMacOS, isTauri } from "@/lib/utils";
+import packageJson from "@/package.json";
+import { useEffect, useState } from "react";
 import {
   AlertCircle,
   Bot,
+  Command,
+  CornerDownLeft,
   FileText,
   HelpCircle,
   KeyRound,
@@ -20,8 +24,46 @@ interface HelpModalProps {
   shortcutKey: string;
 }
 
+// Helper component to render Mac shortcuts with icons
+function MacShortcut({ keys }: { keys: string[] }) {
+  return (
+    <span className="flex items-center gap-0.5">
+      {keys.map((key, index) => {
+        const isLast = index === keys.length - 1;
+        let keyElement;
+
+        if (key === "Cmd") {
+          keyElement = <Command className="w-3 h-3" />;
+        } else if (key === "Enter") {
+          keyElement = <CornerDownLeft className="w-3 h-3" />;
+        } else if (key === "Shift") {
+          keyElement = <span>⇧</span>;
+        } else if (key === "Option") {
+          keyElement = <span>⌥</span>;
+        } else {
+          keyElement = <span>{key}</span>;
+        }
+
+        return (
+          <span key={index} className="flex items-center gap-0.5">
+            {keyElement}
+            {!isLast && <span className="text-xs">+</span>}
+          </span>
+        );
+      })}
+    </span>
+  );
+}
+
 export default function HelpModal({ isOpen, onClose, shortcutKey }: HelpModalProps) {
   const { messages } = useLocale();
+  const version = packageJson.version;
+  const [isMac, setIsMac] = useState(false); // Default to false to avoid hydration mismatch
+
+  useEffect(() => {
+    // Detect OS only on client side to avoid hydration mismatch
+    setIsMac(isMacOS());
+  }, []);
 
   if (!isOpen) return null;
 
@@ -57,7 +99,7 @@ export default function HelpModal({ isOpen, onClose, shortcutKey }: HelpModalPro
             </h3>
             <div className="space-y-3 text-sm text-foreground/80">
               <p>
-                Correctify v1.1.0 supports <strong>4 LLM providers</strong> with 14 total models (10
+                Correctify v{version} supports <strong>4 LLM providers</strong> with 14 total models (10
                 paid, 4 free). You can add API keys for any or all providers.
               </p>
 
@@ -129,7 +171,7 @@ export default function HelpModal({ isOpen, onClose, shortcutKey }: HelpModalPro
               <div className="p-3 bg-info-bg border border-info-border rounded-lg mt-3 flex gap-2">
                 <KeyRound className="w-4 h-4 text-info-text flex-shrink-0 mt-0.5" />
                 <div className="text-xs text-info-text">
-                  <strong>Secure Storage (v1.1.0):</strong>
+                  <strong>Secure Storage (v{version}):</strong>
                   <p className="mt-1">
                     API keys are now stored with OS-level encryption in your device&apos;s secure app
                     data directory. Keys are never sent to any server except directly to your chosen
@@ -166,14 +208,9 @@ export default function HelpModal({ isOpen, onClose, shortcutKey }: HelpModalPro
                   <li>{messages.helpModal.inAppStep1}</li>
                   <li>
                     {messages.helpModal.inAppStep2}{" "}
-                    <kbd className="px-1.5 py-0.5 bg-foreground/10 rounded text-xs font-medium">
-                      Cmd+Enter
-                    </kbd>{" "}
-                    (Mac) {messages.home.shortcutOr}{" "}
-                    <kbd className="px-1.5 py-0.5 bg-foreground/10 rounded text-xs font-medium">
-                      Ctrl+Enter
-                    </kbd>{" "}
-                    (Windows/Linux)
+                    <kbd className="px-1.5 py-0.5 bg-foreground/10 rounded text-xs font-medium flex items-center gap-1">
+                      {isMac ? <MacShortcut keys={["Cmd", "Enter"]} /> : "Ctrl+Enter"}
+                    </kbd>
                   </li>
                   <li>{messages.helpModal.inAppStep3}</li>
                   <li>{messages.helpModal.inAppStep4}</li>
@@ -195,14 +232,9 @@ export default function HelpModal({ isOpen, onClose, shortcutKey }: HelpModalPro
                       <li>Select text in any app (just highlight, no copying needed)</li>
                       <li>
                         Press{" "}
-                        <kbd className="px-1.5 py-0.5 bg-foreground/10 rounded text-xs font-medium">
-                          Cmd+Shift+{shortcutKey}
-                        </kbd>{" "}
-                        (Mac) or{" "}
-                        <kbd className="px-1.5 py-0.5 bg-foreground/10 rounded text-xs font-medium">
-                          Ctrl+Shift+{shortcutKey}
-                        </kbd>{" "}
-                        (Windows/Linux)
+                        <kbd className="px-1.5 py-0.5 bg-foreground/10 rounded text-xs font-medium flex items-center gap-1">
+                          {isMac ? <MacShortcut keys={["Cmd", "Shift", shortcutKey]} /> : `Ctrl+Shift+${shortcutKey}`}
+                        </kbd>
                       </li>
                       <li>Wait for the notification - corrected text pastes automatically!</li>
                     </ol>
@@ -215,35 +247,22 @@ export default function HelpModal({ isOpen, onClose, shortcutKey }: HelpModalPro
                     <ol className="list-decimal list-inside space-y-1 ml-2 text-sm">
                       <li>
                         Select and copy text in any app (
-                        <kbd className="px-1.5 py-0.5 bg-foreground/10 rounded text-xs font-medium">
-                          Cmd+C
-                        </kbd>{" "}
-                        or{" "}
-                        <kbd className="px-1.5 py-0.5 bg-foreground/10 rounded text-xs font-medium">
-                          Ctrl+C
+                        <kbd className="px-1.5 py-0.5 bg-foreground/10 rounded text-xs font-medium flex items-center gap-1">
+                          {isMac ? <MacShortcut keys={["Cmd", "C"]} /> : "Ctrl+C"}
                         </kbd>
                         )
                       </li>
                       <li>
                         Press{" "}
-                        <kbd className="px-1.5 py-0.5 bg-foreground/10 rounded text-xs font-medium">
-                          Cmd+Shift+{shortcutKey}
-                        </kbd>{" "}
-                        (Mac) or{" "}
-                        <kbd className="px-1.5 py-0.5 bg-foreground/10 rounded text-xs font-medium">
-                          Ctrl+Shift+{shortcutKey}
-                        </kbd>{" "}
-                        (Windows/Linux)
+                        <kbd className="px-1.5 py-0.5 bg-foreground/10 rounded text-xs font-medium flex items-center gap-1">
+                          {isMac ? <MacShortcut keys={["Cmd", "Shift", shortcutKey]} /> : `Ctrl+Shift+${shortcutKey}`}
+                        </kbd>
                       </li>
                       <li>Wait for the notification (you&apos;ll see &quot;Processing...&quot;)</li>
                       <li>
                         Paste the corrected text (
-                        <kbd className="px-1.5 py-0.5 bg-foreground/10 rounded text-xs font-medium">
-                          Cmd+V
-                        </kbd>{" "}
-                        or{" "}
-                        <kbd className="px-1.5 py-0.5 bg-foreground/10 rounded text-xs font-medium">
-                          Ctrl+V
+                        <kbd className="px-1.5 py-0.5 bg-foreground/10 rounded text-xs font-medium flex items-center gap-1">
+                          {isMac ? <MacShortcut keys={["Cmd", "V"]} /> : "Ctrl+V"}
                         </kbd>
                         )
                       </li>
@@ -408,7 +427,7 @@ export default function HelpModal({ isOpen, onClose, shortcutKey }: HelpModalPro
           <section>
             <h3 className="text-lg font-semibold text-foreground mb-3 flex items-center gap-2">
               <Bot className="w-5 h-5" />
-              Usage Statistics (v1.1.0)
+              Usage Statistics (v{version})
             </h3>
             <div className="space-y-2 text-sm text-foreground/80">
               <p>
@@ -441,15 +460,9 @@ export default function HelpModal({ isOpen, onClose, shortcutKey }: HelpModalPro
             <div className="space-y-2 text-sm text-foreground/80">
               <div className="flex justify-between items-center p-2 bg-foreground/5 rounded">
                 <span>{messages.helpModal.shortcutSubmit}</span>
-                <div className="flex gap-2">
-                  <kbd className="px-2 py-1 bg-foreground/10 rounded text-xs font-medium">
-                    Cmd+Enter
-                  </kbd>
-                  <span className="text-foreground/40">or</span>
-                  <kbd className="px-2 py-1 bg-foreground/10 rounded text-xs font-medium">
-                    Ctrl+Enter
-                  </kbd>
-                </div>
+                <kbd className="px-2 py-1 bg-foreground/10 rounded text-xs font-medium flex items-center gap-1">
+                  {isMac ? <MacShortcut keys={["Cmd", "Enter"]} /> : "Ctrl+Enter"}
+                </kbd>
               </div>
               {isTauri() && (
                 <div className="flex justify-between items-center p-2 bg-foreground/5 rounded">
@@ -457,15 +470,9 @@ export default function HelpModal({ isOpen, onClose, shortcutKey }: HelpModalPro
                     {messages.helpModal.shortcutGlobal}{" "}
                     <span className="text-foreground/50 text-xs">(customizable)</span>
                   </span>
-                  <div className="flex gap-2">
-                    <kbd className="px-2 py-1 bg-foreground/10 rounded text-xs font-medium">
-                      Cmd+Shift+{shortcutKey}
-                    </kbd>
-                    <span className="text-foreground/40">or</span>
-                    <kbd className="px-2 py-1 bg-foreground/10 rounded text-xs font-medium">
-                      Ctrl+Shift+{shortcutKey}
-                    </kbd>
-                  </div>
+                  <kbd className="px-2 py-1 bg-foreground/10 rounded text-xs font-medium flex items-center gap-1">
+                    {isMac ? <MacShortcut keys={["Cmd", "Shift", shortcutKey]} /> : `Ctrl+Shift+${shortcutKey}`}
+                  </kbd>
                 </div>
               )}
             </div>
