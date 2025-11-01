@@ -5,6 +5,7 @@ export interface CorrectionInput {
   model?: string;
   temperature?: number;
   writingStyle?: WritingStyle;
+  customRules?: string;
 }
 
 export interface CorrectionResult {
@@ -23,6 +24,7 @@ export interface CorrectionRequest {
   model?: string;
   temperature?: number;
   writingStyle?: WritingStyle;
+  customRules?: string;
 }
 
 export interface CorrectionResponse {

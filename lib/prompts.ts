@@ -53,8 +53,29 @@ Additional Instructions for Concise Style:
 };
 
 /**
- * Get the system prompt for a given writing style
+ * Get custom rules from localStorage (client-side only)
  */
-export function getSystemPrompt(writingStyle: WritingStyle = "grammar"): string {
-  return WRITING_STYLE_PROMPTS[writingStyle];
+function getCustomRules(): string {
+  if (typeof window === "undefined") return "";
+  const customRules = localStorage.getItem("custom-rules");
+  return customRules?.trim() || "";
+}
+
+/**
+ * Get the system prompt for a given writing style
+ * @param writingStyle - The writing style to use
+ * @param customRules - Optional custom rules to append (if not provided, will try to read from localStorage)
+ */
+export function getSystemPrompt(writingStyle: WritingStyle = "grammar", customRules?: string): string {
+  const basePrompt = WRITING_STYLE_PROMPTS[writingStyle];
+  const rules = customRules !== undefined ? customRules : getCustomRules();
+
+  if (rules && rules.trim()) {
+    return `${basePrompt}
+
+Additional Custom Rules:
+${rules.trim()}`;
+  }
+
+  return basePrompt;
 }

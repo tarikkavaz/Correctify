@@ -4,16 +4,17 @@ import AboutModal from "@/components/AboutModal";
 import DraggableHeader from "@/components/DraggableHeader";
 import HelpModal from "@/components/HelpModal";
 import SettingsModal from "@/components/SettingsModal";
+import UpdateModal from "@/components/UpdateModal";
 import UsageModal from "@/components/UsageModal";
 import { UnifiedCorrector, getProviderForModel } from "@/lib/llm";
 import { MODELS, type ModelInfo, getAvailableModels, getModelById } from "@/lib/models";
 import { deleteKey, getKey, migrateFromLocalStorage, setKey } from "@/lib/secure-keys";
 import type { CorrectionResponse, Provider, WritingStyle } from "@/lib/types";
-import { checkForUpdates } from "@/lib/updater";
+import { checkForUpdates, installUpdate, type UpdateInfo } from "@/lib/updater";
 import { estimateTokens, trackUsage } from "@/lib/usage-tracker";
 import { useLocale } from "@/lib/useLocale";
 import { useTheme } from "@/lib/useTheme";
-import { isTauri } from "@/lib/utils";
+import { isMacOS, isTauri } from "@/lib/utils";
 import { Check, ChevronDown, Command, Copy, CornerDownLeft, Lightbulb } from "lucide-react";
 import { type FormEvent, type KeyboardEvent, useEffect, useRef, useState } from "react";
 import ReactMarkdown from "react-markdown";
@@ -21,6 +22,13 @@ import remarkGfm from "remark-gfm";
 
 export default function HomePage() {
   const { messages } = useLocale();
+
+  // Helper function to get translated model description
+  const getModelDescription = (modelId: string, defaultDescription?: string): string => {
+    const translated = messages.home.modelDescriptions?.[modelId as keyof typeof messages.home.modelDescriptions];
+    return translated || defaultDescription || "";
+  };
+  const [isMac, setIsMac] = useState(false); // Default to false to avoid hydration mismatch
   const [inputText, setInputText] = useState("");
   const [outputText, setOutputText] = useState("");
   const [apiKey, setApiKey] = useState("");
@@ -32,7 +40,8 @@ export default function HomePage() {
   });
   const [autostartEnabled, setAutostartEnabled] = useState(false);
   const [soundEnabled, setSoundEnabled] = useState(true); // Default: enabled
-  const [shortcutKey, setShortcutKey] = useState("."); // Default: period
+  const [shortcutKey, setShortcutKey] = useState("]"); // Default: closing bracket
+  const [shortcutModifier, setShortcutModifier] = useState("CmdOrCtrl+Shift"); // Default: Cmd+Shift / Ctrl+Shift
   const [autoPasteEnabled, setAutoPasteEnabled] = useState(false); // Default: disabled
   const [model, setModel] = useState<string>("gpt-4o-mini");
   const [availableModels, setAvailableModels] = useState<ModelInfo[]>([]);
@@ -49,12 +58,21 @@ export default function HomePage() {
   const [isUsageModalOpen, setIsUsageModalOpen] = useState(false);
   const [isAboutModalOpen, setIsAboutModalOpen] = useState(false);
   const [isCopied, setIsCopied] = useState(false);
+  // Update modal state
+  const [isUpdateModalOpen, setIsUpdateModalOpen] = useState(false);
+  const [updateInfo, setUpdateInfo] = useState<UpdateInfo | null>(null);
+  const [updateProgress, setUpdateProgress] = useState<"downloading" | "installing" | null>(null);
   const [showGlobalShortcutInfo, setShowGlobalShortcutInfo] = useState(false);
   const [isInfoFadingOut, setIsInfoFadingOut] = useState(false);
   const { theme, toggleTheme } = useTheme();
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const modelDropdownRef = useRef<HTMLDivElement>(null);
   const styleDropdownRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    // Detect OS only on client side to avoid hydration mismatch
+    setIsMac(isMacOS());
+  }, []);
 
   useEffect(() => {
     const initializeApp = async () => {
@@ -116,6 +134,11 @@ export default function HomePage() {
         setShortcutKey(savedShortcutKey);
       }
 
+      const savedShortcutModifier = localStorage.getItem("shortcut-modifier");
+      if (savedShortcutModifier) {
+        setShortcutModifier(savedShortcutModifier);
+      }
+
       const savedAutoPasteEnabled = localStorage.getItem("auto-paste-enabled");
       if (savedAutoPasteEnabled !== null) {
         setAutoPasteEnabled(savedAutoPasteEnabled === "true");
@@ -136,7 +159,8 @@ export default function HomePage() {
 
         // Initialize Rust settings from localStorage
         const currentSoundEnabled = localStorage.getItem("sound-enabled") !== "false"; // Default: true
-        const currentShortcutKey = localStorage.getItem("shortcut-key") || ".";
+        const currentShortcutKey = localStorage.getItem("shortcut-key") || "]";
+        const currentShortcutModifier = localStorage.getItem("shortcut-modifier") || "CmdOrCtrl+Shift";
         const currentAutoPasteEnabled = localStorage.getItem("auto-paste-enabled") === "true"; // Default: false
 
         try {
@@ -146,10 +170,11 @@ export default function HomePage() {
           await invoke("set_auto_paste_enabled", { enabled: currentAutoPasteEnabled });
           console.log("Auto-paste enabled set to:", currentAutoPasteEnabled);
 
-          if (currentShortcutKey !== ".") {
-            await invoke("update_shortcut", { newKey: currentShortcutKey });
-            console.log("Shortcut key set to:", currentShortcutKey);
-          }
+          await invoke("update_shortcut", {
+            newKey: currentShortcutKey,
+            newModifier: currentShortcutModifier
+          });
+          console.log("Shortcut set to:", `${currentShortcutModifier}+${currentShortcutKey}`);
         } catch (err) {
           console.error("Failed to initialize settings:", err);
         }
@@ -228,10 +253,12 @@ export default function HomePage() {
               // Perform correction
               const currentStyle =
                 (localStorage.getItem("writing-style") as WritingStyle) || "grammar";
+              const customRules = localStorage.getItem("custom-rules") || "";
               const corrector = new UnifiedCorrector(provider, currentApiKey, currentModel);
               const result = await corrector.correct({
                 text: textToCorrect,
                 writingStyle: currentStyle,
+                customRules: customRules.trim() || undefined,
               });
 
               const correctionDuration = Date.now() - correctionStartTime;
@@ -276,7 +303,16 @@ export default function HomePage() {
 
     // Check for updates (Tauri only, silent check on startup)
     if (isTauri()) {
-      checkForUpdates(true).catch((err) => {
+      checkForUpdates(
+        true, // silent
+        (update) => {
+          // Show modal when update is available
+          if (update) {
+            setUpdateInfo(update);
+            setIsUpdateModalOpen(true);
+          }
+        },
+      ).catch((err) => {
         console.error("Update check failed:", err);
       });
     }
@@ -324,17 +360,33 @@ export default function HomePage() {
   const paidModels = availableModels.filter((m) => m.category === "paid");
   const freeModels = availableModels.filter((m) => m.category === "free");
 
-  const styleOptions = [
-    { value: "grammar", label: "Grammar Only", description: "Fixes grammar and typos only" },
-    { value: "formal", label: "Formal", description: "Polished and professional tone" },
-    { value: "informal", label: "Informal", description: "Natural and conversational tone" },
+  const styleOptions: Array<{ value: WritingStyle; label: string; description: string }> = [
+    {
+      value: "grammar",
+      label: messages.home.styleOptions.grammar.label,
+      description: messages.home.styleOptions.grammar.description
+    },
+    {
+      value: "formal",
+      label: messages.home.styleOptions.formal.label,
+      description: messages.home.styleOptions.formal.description
+    },
+    {
+      value: "informal",
+      label: messages.home.styleOptions.informal.label,
+      description: messages.home.styleOptions.informal.description
+    },
     {
       value: "collaborative",
-      label: "Collaborative",
-      description: "Friendly, inclusive team tone",
+      label: messages.home.styleOptions.collaborative.label,
+      description: messages.home.styleOptions.collaborative.description,
     },
-    { value: "concise", label: "Concise", description: "Clear and to the point" },
-  ] as const;
+    {
+      value: "concise",
+      label: messages.home.styleOptions.concise.label,
+      description: messages.home.styleOptions.concise.description
+    },
+  ];
 
   const handleOpenAbout = () => {
     setIsAboutModalOpen(true);
@@ -366,6 +418,7 @@ export default function HomePage() {
     newAutostartEnabled: boolean,
     newSoundEnabled: boolean,
     newShortcutKey: string,
+    newShortcutModifier: string,
     newAutoPasteEnabled: boolean,
   ) => {
     // Update state
@@ -374,6 +427,7 @@ export default function HomePage() {
     setAutostartEnabled(newAutostartEnabled);
     setSoundEnabled(newSoundEnabled);
     setShortcutKey(newShortcutKey);
+    setShortcutModifier(newShortcutModifier);
     setAutoPasteEnabled(newAutoPasteEnabled);
 
     // Save all API keys to secure storage
@@ -418,6 +472,7 @@ export default function HomePage() {
     localStorage.setItem("autostart-enabled", newAutostartEnabled.toString());
     localStorage.setItem("sound-enabled", newSoundEnabled.toString());
     localStorage.setItem("shortcut-key", newShortcutKey);
+    localStorage.setItem("shortcut-modifier", newShortcutModifier);
     localStorage.setItem("auto-paste-enabled", newAutoPasteEnabled.toString());
 
     // Handle settings via Tauri
@@ -434,9 +489,12 @@ export default function HomePage() {
         console.log("Auto-paste enabled updated to:", newAutoPasteEnabled);
 
         // Update shortcut if changed
-        if (newShortcutKey !== shortcutKey) {
-          await invoke("update_shortcut", { newKey: newShortcutKey });
-          console.log(`Shortcut updated to: Cmd+Shift+${newShortcutKey}`);
+        if (newShortcutKey !== shortcutKey || newShortcutModifier !== shortcutModifier) {
+          await invoke("update_shortcut", {
+            newKey: newShortcutKey,
+            newModifier: newShortcutModifier
+          });
+          console.log(`Shortcut updated to: ${newShortcutModifier}+${newShortcutKey}`);
         }
 
         // Handle autostart
@@ -508,10 +566,12 @@ export default function HomePage() {
           console.error("Failed to play processing sound:", err);
         }
 
+        const customRules = localStorage.getItem("custom-rules") || "";
         const corrector = new UnifiedCorrector(provider, modelApiKey, model);
         const result = await corrector.correct({
           text: inputText,
           writingStyle: writingStyle,
+          customRules: customRules.trim() || undefined,
         });
 
         const duration = Date.now() - startTime;
@@ -546,6 +606,7 @@ export default function HomePage() {
           [`x-${provider}-key`]: modelApiKey,
         };
 
+        const customRules = localStorage.getItem("custom-rules") || "";
         const response = await fetch("/api/correct", {
           method: "POST",
           headers,
@@ -554,6 +615,7 @@ export default function HomePage() {
             provider: provider,
             model: model,
             writingStyle: writingStyle,
+            customRules: customRules.trim() || undefined,
           }),
         });
 
@@ -654,6 +716,7 @@ export default function HomePage() {
         currentAutostartEnabled={autostartEnabled}
         currentSoundEnabled={soundEnabled}
         currentShortcutKey={shortcutKey}
+        currentShortcutModifier={shortcutModifier}
         currentAutoPasteEnabled={autoPasteEnabled}
       />
 
@@ -664,6 +727,37 @@ export default function HomePage() {
       />
 
       <AboutModal isOpen={isAboutModalOpen} onClose={() => setIsAboutModalOpen(false)} />
+
+      {/* Update Modal - shows when update is available */}
+      {updateInfo && (
+        <UpdateModal
+          isOpen={isUpdateModalOpen}
+          onClose={() => setIsUpdateModalOpen(false)}
+          onInstall={async () => {
+            if (updateInfo.update) {
+              setUpdateProgress("downloading");
+              try {
+                await installUpdate(
+                  updateInfo.update,
+                  (state) => setUpdateProgress(state),
+                  async () => {
+                    // Return true to restart, false to skip
+                    return window.confirm("Update installed! Restart now?");
+                  },
+                );
+              } catch (error) {
+                console.error("Update failed:", error);
+                setUpdateProgress(null);
+                alert(`Update failed: ${error instanceof Error ? error.message : "Unknown error"}`);
+              }
+            }
+          }}
+          version={updateInfo.version}
+          releaseNotes={updateInfo.body}
+          isDownloading={updateProgress === "downloading"}
+          isInstalling={updateProgress === "installing"}
+        />
+      )}
 
       <UsageModal isOpen={isUsageModalOpen} onClose={() => setIsUsageModalOpen(false)} />
 
@@ -734,7 +828,7 @@ export default function HomePage() {
                         disabled={isLoading}
                       >
                         <span className="flex-1 text-left">
-                          {getModelById(model)?.name || "Select Model"}
+                          {getModelById(model)?.name || messages.home.selectModel}
                         </span>
                         <ChevronDown
                           className={`w-3 h-3 transition-transform flex-shrink-0 ${isModelDropdownOpen ? "rotate-180" : ""}`}
@@ -746,7 +840,7 @@ export default function HomePage() {
                           {paidModels.length > 0 && (
                             <>
                               <div className="px-3 py-2 text-[10px] font-semibold text-foreground/40 uppercase tracking-wider border-b border-border">
-                                Paid Models
+                                {messages.home.paidModels}
                               </div>
                               {paidModels.map((modelInfo) => (
                                 <button
@@ -779,7 +873,7 @@ export default function HomePage() {
                                           : "text-foreground/50"
                                       }`}
                                     >
-                                      {modelInfo.description}
+                                      {getModelDescription(modelInfo.id, modelInfo.description)}
                                     </div>
                                   )}
                                 </button>
@@ -789,7 +883,7 @@ export default function HomePage() {
                           {freeModels.length > 0 && (
                             <>
                               <div className="px-3 py-2 text-[10px] font-semibold text-foreground/40 uppercase tracking-wider border-t border-border">
-                                Free Models
+                                {messages.home.freeModels}
                               </div>
                               {freeModels.map((modelInfo) => (
                                 <button
@@ -822,7 +916,7 @@ export default function HomePage() {
                                           : "text-foreground/50"
                                       }`}
                                     >
-                                      {modelInfo.description}
+                                      {getModelDescription(modelInfo.id, modelInfo.description)}
                                     </div>
                                   )}
                                 </button>
@@ -862,18 +956,22 @@ export default function HomePage() {
 
             <div className="flex items-center justify-center gap-4 text-sm text-foreground/60">
               <div className="flex items-center gap-1.5">
-                <kbd className="px-2 py-1 bg-foreground/5 border border-foreground/10 rounded text-xs font-medium flex items-center gap-1">
-                  <Command className="w-3 h-3" />
-                  <CornerDownLeft className="w-3 h-3" />
-                </kbd>
-                <span className="text-xs">{messages.home.shortcutMac}</span>
-              </div>
-              <span className="text-foreground/30">{messages.home.shortcutOr}</span>
-              <div className="flex items-center gap-1.5">
-                <kbd className="px-2 py-1 bg-foreground/5 border border-foreground/10 rounded text-xs font-medium">
-                  Ctrl+Enter
-                </kbd>
-                <span className="text-xs">{messages.home.shortcutWinLinux}</span>
+                {isMac ? (
+                  <>
+                    <kbd className="px-2 py-1 bg-foreground/5 border border-foreground/10 rounded text-xs font-medium flex items-center gap-1">
+                      <Command className="w-3 h-3" />
+                      <CornerDownLeft className="w-3 h-3" />
+                    </kbd>
+                    <span className="text-xs">{messages.home.shortcutMac}</span>
+                  </>
+                ) : (
+                  <>
+                    <kbd className="px-2 py-1 bg-foreground/5 border border-foreground/10 rounded text-xs font-medium">
+                      Ctrl+Enter
+                    </kbd>
+                    <span className="text-xs">{messages.home.shortcutWinLinux}</span>
+                  </>
+                )}
               </div>
             </div>
           </form>
@@ -951,11 +1049,7 @@ export default function HomePage() {
                     <li className="ml-3">
                       Press{" "}
                       <kbd className="px-1.5 py-0.5 bg-foreground/10 rounded text-xs font-medium">
-                        Cmd+Shift+{shortcutKey}
-                      </kbd>{" "}
-                      {messages.home.shortcutOr}{" "}
-                      <kbd className="px-1.5 py-0.5 bg-foreground/10 rounded text-xs font-medium">
-                        Ctrl+Shift+{shortcutKey}
+                        {isMac ? `Cmd+Shift+${shortcutKey}` : `Ctrl+Shift+${shortcutKey}`}
                       </kbd>
                     </li>
                     <li className="ml-3">
@@ -972,33 +1066,21 @@ export default function HomePage() {
                     <li className="ml-3">
                       {messages.home.quickCorrectionStep1}
                       <kbd className="px-1.5 py-0.5 bg-foreground/10 rounded text-xs font-medium">
-                        Cmd+C
-                      </kbd>{" "}
-                      {messages.home.shortcutOr}{" "}
-                      <kbd className="px-1.5 py-0.5 bg-foreground/10 rounded text-xs font-medium">
-                        Ctrl+C
+                        {isMac ? "Cmd+C" : "Ctrl+C"}
                       </kbd>
                       )
                     </li>
                     <li className="ml-3">
                       {messages.home.quickCorrectionStep2}{" "}
                       <kbd className="px-1.5 py-0.5 bg-foreground/10 rounded text-xs font-medium">
-                        Cmd+Shift+{shortcutKey}
-                      </kbd>{" "}
-                      {messages.home.shortcutOr}{" "}
-                      <kbd className="px-1.5 py-0.5 bg-foreground/10 rounded text-xs font-medium">
-                        Ctrl+Shift+{shortcutKey}
+                        {isMac ? `Cmd+Shift+${shortcutKey}` : `Ctrl+Shift+${shortcutKey}`}
                       </kbd>
                     </li>
                     <li className="ml-3">{messages.home.quickCorrectionStep3}</li>
                     <li className="ml-3">
                       {messages.home.quickCorrectionStep4}
                       <kbd className="px-1.5 py-0.5 bg-foreground/10 rounded text-xs font-medium">
-                        Cmd+V
-                      </kbd>{" "}
-                      {messages.home.shortcutOr}{" "}
-                      <kbd className="px-1.5 py-0.5 bg-foreground/10 rounded text-xs font-medium">
-                        Ctrl+V
+                        {isMac ? "Cmd+V" : "Ctrl+V"}
                       </kbd>
                       )
                     </li>

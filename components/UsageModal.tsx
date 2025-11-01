@@ -1,6 +1,7 @@
 "use client";
 
 import type { Provider } from "@/lib/types";
+import { useLocale } from "@/lib/useLocale";
 import { clearUsageHistory, getUsageStatsForPeriod } from "@/lib/usage-tracker";
 import { BarChart3, Clock, DollarSign, Trash2, TrendingUp, X } from "lucide-react";
 import { useState } from "react";
@@ -11,13 +12,14 @@ interface UsageModalProps {
 }
 
 export default function UsageModal({ isOpen, onClose }: UsageModalProps) {
+  const { messages } = useLocale();
   const [period, setPeriod] = useState<7 | 30 | 90>(7);
   const [refreshKey, setRefreshKey] = useState(0);
 
   const stats = getUsageStatsForPeriod(period);
 
   const handleClearHistory = () => {
-    if (confirm("Are you sure you want to clear all usage history? This cannot be undone.")) {
+    if (confirm(messages.usageModal.clearConfirm)) {
       clearUsageHistory();
       setRefreshKey((k) => k + 1); // Force refresh
     }
@@ -45,15 +47,15 @@ export default function UsageModal({ isOpen, onClose }: UsageModalProps) {
               <BarChart3 className="w-5 h-5 text-primary" />
             </div>
             <div>
-              <h2 className="text-xl font-semibold text-foreground">Usage Statistics</h2>
-              <p className="text-xs text-text-muted mt-0.5">Track your API usage and costs</p>
+              <h2 className="text-xl font-semibold text-foreground">{messages.usageModal.title}</h2>
+              <p className="text-xs text-text-muted mt-0.5">{messages.usageModal.subtitle}</p>
             </div>
           </div>
           <button
             type="button"
             onClick={onClose}
             className="p-1 hover:bg-foreground/5 rounded-lg transition-colors"
-            aria-label="Close usage stats"
+            aria-label={messages.usageModal.closeAriaLabel}
           >
             <X className="w-5 h-5 text-foreground" />
           </button>
@@ -72,7 +74,7 @@ export default function UsageModal({ isOpen, onClose }: UsageModalProps) {
                   : "bg-foreground/5 text-foreground/70 hover:bg-foreground/10"
               }`}
             >
-              Last {days} days
+              {messages.usageModal.lastDays.replace("{days}", days.toString())}
             </button>
           ))}
         </div>
@@ -84,7 +86,7 @@ export default function UsageModal({ isOpen, onClose }: UsageModalProps) {
             <div className="p-4 bg-foreground/5 rounded-lg">
               <div className="flex items-center gap-2 text-xs text-foreground/60 mb-1">
                 <TrendingUp className="w-3.5 h-3.5" />
-                <span>Total Requests</span>
+                <span>{messages.usageModal.totalRequests}</span>
               </div>
               <p className="text-2xl font-bold text-foreground">{stats.totalRequests}</p>
             </div>
@@ -92,7 +94,7 @@ export default function UsageModal({ isOpen, onClose }: UsageModalProps) {
             <div className="p-4 bg-foreground/5 rounded-lg">
               <div className="flex items-center gap-2 text-xs text-foreground/60 mb-1">
                 <BarChart3 className="w-3.5 h-3.5" />
-                <span>Success Rate</span>
+                <span>{messages.usageModal.successRate}</span>
               </div>
               <p className="text-2xl font-bold text-success-text">
                 {stats.totalRequests > 0
@@ -105,7 +107,7 @@ export default function UsageModal({ isOpen, onClose }: UsageModalProps) {
             <div className="p-4 bg-foreground/5 rounded-lg">
               <div className="flex items-center gap-2 text-xs text-foreground/60 mb-1">
                 <Clock className="w-3.5 h-3.5" />
-                <span>Avg Duration</span>
+                <span>{messages.usageModal.avgDuration}</span>
               </div>
               <p className="text-2xl font-bold text-foreground">
                 {stats.totalRequests > 0
@@ -118,7 +120,7 @@ export default function UsageModal({ isOpen, onClose }: UsageModalProps) {
             <div className="p-4 bg-foreground/5 rounded-lg">
               <div className="flex items-center gap-2 text-xs text-foreground/60 mb-1">
                 <DollarSign className="w-3.5 h-3.5" />
-                <span>Est. Cost</span>
+                <span>{messages.usageModal.estCost}</span>
               </div>
               <p className="text-2xl font-bold text-foreground">
                 ${stats.estimatedCost.toFixed(3)}
@@ -128,7 +130,7 @@ export default function UsageModal({ isOpen, onClose }: UsageModalProps) {
 
           {/* Provider Breakdown */}
           <div className="space-y-3">
-            <h3 className="text-sm font-semibold text-foreground">By Provider</h3>
+            <h3 className="text-sm font-semibold text-foreground">{messages.usageModal.byProvider}</h3>
             {(
               Object.entries(stats.byProvider) as [Provider, (typeof stats.byProvider)[Provider]][]
             ).map(([provider, data]) => {
@@ -140,23 +142,23 @@ export default function UsageModal({ isOpen, onClose }: UsageModalProps) {
                     <span className="text-sm font-medium text-foreground uppercase">
                       {providerLabels[provider]}
                     </span>
-                    <span className="text-xs text-foreground/60">{data.requests} requests</span>
+                    <span className="text-xs text-foreground/60">{data.requests} {messages.usageModal.requests}</span>
                   </div>
                   <div className="grid grid-cols-3 gap-4 text-xs">
                     <div>
-                      <div className="text-foreground/60">Tokens</div>
+                      <div className="text-foreground/60">{messages.usageModal.tokens}</div>
                       <div className="font-semibold text-foreground mt-0.5">
                         {data.tokens.toLocaleString()}
                       </div>
                     </div>
                     <div>
-                      <div className="text-foreground/60">Avg Time</div>
+                      <div className="text-foreground/60">{messages.usageModal.avgTime}</div>
                       <div className="font-semibold text-foreground mt-0.5">
                         {data.requests > 0 ? (data.duration / data.requests / 1000).toFixed(1) : 0}s
                       </div>
                     </div>
                     <div>
-                      <div className="text-foreground/60">Cost</div>
+                      <div className="text-foreground/60">{messages.usageModal.cost}</div>
                       <div className="font-semibold text-foreground mt-0.5">
                         ${data.cost.toFixed(3)}
                       </div>
@@ -170,9 +172,7 @@ export default function UsageModal({ isOpen, onClose }: UsageModalProps) {
           {/* Info Note */}
           <div className="p-4 bg-info-bg border border-info-border rounded-lg">
             <p className="text-xs text-info-text">
-              <strong>Note:</strong> Costs are estimated based on token usage and may not reflect
-              actual billing. Token counts are approximated. Statistics are stored locally and never
-              shared.
+              <strong>{messages.usageModal.note}</strong> {messages.usageModal.noteText}
             </p>
           </div>
 
@@ -184,7 +184,7 @@ export default function UsageModal({ isOpen, onClose }: UsageModalProps) {
               className="w-full flex items-center justify-center gap-2 px-4 py-2 text-sm font-medium text-error-text hover:bg-error-bg rounded-lg transition-colors"
             >
               <Trash2 className="w-4 h-4" />
-              Clear All Usage History
+              {messages.usageModal.clearHistory}
             </button>
           </div>
         </div>
@@ -196,7 +196,7 @@ export default function UsageModal({ isOpen, onClose }: UsageModalProps) {
             onClick={onClose}
             className="w-full px-4 py-2 text-sm font-medium bg-primary text-button-text rounded-lg hover:bg-primary-hover transition-colors"
           >
-            Close
+            {messages.usageModal.close}
           </button>
         </div>
       </div>
