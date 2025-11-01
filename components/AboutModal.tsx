@@ -69,27 +69,27 @@ export default function AboutModal({ isOpen, onClose }: AboutModalProps) {
 
           {/* Features */}
           <div className="space-y-3">
-            <h3 className="text-sm font-semibold text-foreground">Features</h3>
+            <h3 className="text-sm font-semibold text-foreground">{messages.about.features.title}</h3>
             <ul className="space-y-2 text-sm text-foreground/80">
               <li className="flex items-start gap-2">
                 <span className="text-primary">•</span>
-                <span>Secure API key storage (OS-level encryption)</span>
+                <span>{messages.about.features.secureStorage}</span>
               </li>
               <li className="flex items-start gap-2">
                 <span className="text-primary">•</span>
-                <span>Multiple LLM providers (OpenAI, Anthropic, Mistral, OpenRouter)</span>
+                <span>{messages.about.features.multipleProviders}</span>
               </li>
               <li className="flex items-start gap-2">
                 <span className="text-primary">•</span>
-                <span>Free models available via OpenRouter</span>
+                <span>{messages.about.features.freeModels}</span>
               </li>
               <li className="flex items-start gap-2">
                 <span className="text-primary">•</span>
-                <span>Global keyboard shortcut for instant corrections</span>
+                <span>{messages.about.features.globalShortcut}</span>
               </li>
               <li className="flex items-start gap-2">
                 <span className="text-primary">•</span>
-                <span>Multiple writing styles (Grammar, Formal, Informal, etc.)</span>
+                <span>{messages.about.features.writingStyles}</span>
               </li>
             </ul>
           </div>

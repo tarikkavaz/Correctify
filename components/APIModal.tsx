@@ -63,7 +63,7 @@ export default function SettingsModal({
             type="button"
             onClick={onClose}
             className="p-1 hover:bg-foreground/5 rounded-lg transition-colors"
-            aria-label="Close API settings"
+            aria-label={messages.apiModal.closeAriaLabel}
           >
             <X className="w-5 h-5 text-foreground" />
           </button>
@@ -103,7 +103,7 @@ export default function SettingsModal({
                 onClick={handleClear}
                 className="px-4 py-2 text-sm font-medium text-text-muted hover:text-foreground hover:bg-foreground/5 rounded-lg transition-colors"
               >
-                Clear
+                {messages.apiModal.clear}
               </button>
             )}
             <button

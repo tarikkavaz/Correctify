@@ -7,7 +7,8 @@
     "theme": "Temayı değiştir",
     "reload": "Yenile",
     "menu": "Menü",
-    "subtitle": "AI destekli dilbilgisi düzeltmesi"
+    "subtitle": "AI destekli dilbilgisi düzeltmesi",
+    "usageStats": "Kullanım İstatistikleri"
   },
   "home": {
     "inputLabel": "Düzeltilecek metin",
@@ -36,7 +37,48 @@
     "quickCorrectionStep4": "Düzeltilmiş metni yapıştırın (",
     "quickCorrectionCustomize": "Bu kısayolu Ayarlar'dan özelleştirebilirsiniz.",
     "metaModel": "Model:",
-    "metaDuration": "Süre:"
+    "metaDuration": "Süre:",
+    "selectModel": "Model Seç",
+    "paidModels": "Ücretli Modeller",
+    "freeModels": "Ücretsiz Modeller",
+    "styleOptions": {
+      "grammar": {
+        "label": "Sadece Dilbilgisi",
+        "description": "Sadece dilbilgisi ve yazım hatalarını düzeltir"
+      },
+      "formal": {
+        "label": "Resmi",
+        "description": "Kusursuz ve profesyonel ton"
+      },
+      "informal": {
+        "label": "Gayri resmi",
+        "description": "Doğal ve samimi ton"
+      },
+      "collaborative": {
+        "label": "İşbirlikçi",
+        "description": "Dostane, kapsayıcı ekip tonu"
+      },
+      "concise": {
+        "label": "Özlü",
+        "description": "Net ve öz"
+      }
+    },
+    "modelDescriptions": {
+      "gpt-4o-mini": "Hızlı ve uygun fiyatlı",
+      "gpt-5": "En gelişmiş akıl yürütme",
+      "gpt-5-mini": "Dengeli performans",
+      "gpt-4o": "En yetenekli model",
+      "gpt-4-turbo": "Güçlü ve çok yönlü",
+      "gpt-3.5-turbo": "Çok uygun fiyatlı ve hızlı",
+      "claude-3-5-sonnet-20241022": "Dengeli performans",
+      "claude-3-5-haiku-20241022": "Hızlı ve verimli",
+      "mistral-small-latest": "Uygun maliyetli",
+      "mistral-large-latest": "En yetenekli Mistral",
+      "meta-llama/llama-3.2-3b-instruct:free": "Hızlı, hafif",
+      "google/gemma-2-9b-it:free": "Google'ın açık modeli",
+      "microsoft/phi-3-mini-128k-instruct:free": "Microsoft araştırma modeli",
+      "mistralai/mistral-7b-instruct:free": "Açık kaynak Mistral"
+    }
   },
   "apiModal": {
     "title": "Ayarlar",
@@ -48,14 +90,38 @@
     "cancel": "İptal",
     "save": "Kaydet",
     "clear": "Temizle",
+    "closeAriaLabel": "API ayarlarını kapat",
     "autostartLabel": "Başlangıçta çalıştır",
     "autostartDescription": "Sistem başlatıldığında Correctify'ı otomatik olarak başlat",
     "soundLabel": "Ses bildirimleri",
     "soundDescription": "Bildirimler göründüğünde ses efektleri çal",
     "globalShortcutLabel": "Genel Kısayol",
-    "shortcutDescription": "Kısayolunuzun son tuşunu özelleştirin (örneğin, A-Z, 0-9 veya özel tuşlar)",
+    "shortcutModifierLabel": "Değiştirici",
+    "shortcutKeyLabel": "Tuş",
+    "shortcutPreview": "Önizleme",
+    "shortcutModifierCmdShift": "Cmd+Shift / Ctrl+Shift",
+    "shortcutModifierCmdOption": "Cmd+Option / Ctrl+Alt",
+    "shortcutDescription": "Kısayolunuzun değiştirici kombinasyonunu ve son tuşunu özelleştirin",
     "autoPasteLabel": "Düzeltilmiş metni otomatik kopyala/yapıştır",
-    "autoPasteDescription": "Düzeltilmiş metni otomatik olarak kopyala ve yapıştır (manuel Cmd+C/Ctrl+C veya Cmd+V/Ctrl+V gerekli değil)"
+    "autoPasteDescription": "Düzeltilmiş metni otomatik olarak kopyala ve yapıştır (manuel Cmd+C/Ctrl+C veya Cmd+V/Ctrl+V gerekli değil)",
+    "languageLabel": "Dil",
+    "languageSystem": "Sistem dili",
+    "languageEn": "İngilizce",
+    "languageDe": "Almanca",
+    "languageFr": "Fransızca",
+    "languageTr": "Türkçe",
+    "appSettingsTab": "Uygulama Ayarları",
+    "apiKeysTab": "API Anahtarları",
+    "globalShortcutTab": "Genel Kısayol",
+    "rulesTab": {
+      "title": "Özel Kurallar",
+      "label": "Özel Kurallar",
+      "description": "Düzeltme istemlerine entegre edilecek özel kurallar ekleyin. Bu kurallar tüm düzeltmelere uygulanacaktır.",
+      "sampleTitle": "Örnek kural:",
+      "sampleText": "Em tire kullanmayın",
+      "placeholder": "Özel kurallarınızı buraya girin...",
+      "info": "Özel kurallarınız sistem istemine eklenir ve tüm düzeltmelere uygulanır."
+    }
   },
   "helpModal": {
     "title": "Yardım & Kılavuz",
@@ -106,6 +172,44 @@
     "description": "Yazınızı geliştirmek için AI kullanan ve verilerinizi güvende tutan gizlilik odaklı bir dilbilgisi düzeltme aracı.",
     "visitHomepage": "Ana Sayfayı Ziyaret Et",
     "copyright": "© 2025 Correctify",
-    "builtWith": "Tauri, Next.js ve OpenAI ile ❤️ ile oluşturuldu"
+    "builtWith": "Tauri, Next.js ve OpenAI ile ❤️ ile oluşturuldu",
+    "features": {
+      "title": "Özellikler",
+      "secureStorage": "Güvenli API anahtarı depolama (işletim sistemi düzeyinde şifreleme)",
+      "multipleProviders": "Birden fazla LLM sağlayıcısı (OpenAI, Anthropic, Mistral, OpenRouter)",
+      "freeModels": "OpenRouter üzerinden ücretsiz modeller mevcut",
+      "globalShortcut": "Anında düzeltmeler için genel klavye kısayolu",
+      "writingStyles": "Birden fazla yazım stili (Dilbilgisi, Resmi, Günlük, vb.)"
+    }
+  },
+  "usageModal": {
+    "title": "Kullanım İstatistikleri",
+    "subtitle": "API kullanımınızı ve maliyetlerinizi takip edin",
+    "lastDays": "Son {days} gün",
+    "totalRequests": "Toplam İstek",
+    "successRate": "Başarı Oranı",
+    "avgDuration": "Ort. Süre",
+    "estCost": "Tahmini Maliyet",
+    "byProvider": "Sağlayıcıya Göre",
+    "requests": "istek",
+    "tokens": "Tokenler",
+    "avgTime": "Ort. Zaman",
+    "cost": "Maliyet",
+    "note": "Not:",
+    "noteText": "Maliyetler token kullanımına göre tahmin edilir ve gerçek faturalamayı yansıtmayabilir. Token sayıları yaklaşıktır. İstatistikler yerel olarak saklanır ve asla paylaşılmaz.",
+    "clearHistory": "Tüm Kullanım Geçmişini Temizle",
+    "clearConfirm": "Tüm kullanım geçmişini temizlemek istediğinizden emin misiniz? Bu işlem geri alınamaz.",
+    "close": "Kapat",
+    "closeAriaLabel": "Kullanım istatistiklerini kapat"
+  },
+  "updateModal": {
+    "title": "Güncelleme Mevcut",
+    "description": "{version} sürümüne güncelleme mevcut!",
+    "releaseNotes": "Sürüm Notları",
+    "installNow": "Şimdi Yükle",
+    "later": "Sonra",
+    "downloading": "Güncelleme indiriliyor...",
+    "installing": "Güncelleme yükleniyor...",
+    "closeAriaLabel": "Güncelleme iletişim kutusunu kapat"
   }
 }

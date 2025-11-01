@@ -5,6 +5,49 @@ All notable changes to Correctify will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.1.1] - 2025-01-XX
+
+### Added
+
+- **Custom Update Modal**: Beautiful in-app update notifications
+  - Replaced native OS dialogs with custom-styled modal matching app design
+  - Shows release notes with markdown formatting
+  - Download and install progress indicators
+  - Automatic check on app startup (silent, only shows when update available)
+  - Fully translated to all supported languages
+- **Complete Translation Coverage**: All modals and pages now fully translated
+  - Usage Statistics modal translated to all supported languages (English, German, French, Turkish)
+  - About modal features list translated
+  - Model descriptions translated (all 14 models)
+  - Style dropdown options and descriptions translated
+  - Model dropdown content translated (category labels, provider names)
+  - All text strings moved to locale files for consistency
+- **Enhanced Global Shortcut Configuration**: Expanded customization options
+  - Global Shortcut moved to dedicated tab in Settings modal
+  - Four modifier combinations available: CmdOrCtrl+Shift, CmdOrCtrl+Alt, AltOrOption+Shift, CmdOrCtrl+Alt+Shift
+  - OS-specific display with Mac icons (⌘, ⇧, ⌥) for Mac users, plain text for Windows/Linux
+  - Platform-aware preview showing correct symbols and formatting
+  - Separate input for final key (A-Z, 0-9, or special keys)
+  - Default remains Cmd+Shift+] / Ctrl+Shift+]
+- **Rules Panel**: Custom prompt rules integration
+  - New "Custom Rules" tab in Settings modal (renamed from "Rules")
+  - Textarea for user-defined correction rules
+  - Rules automatically integrated into all correction prompts
+  - Sample rule provided for inspiration
+  - Tab name translated to all supported languages
+
+### Changed
+
+- Version display in Help modal now uses dynamic version from package.json (like About modal)
+- Shortcut configuration UI improved with better organization and preview
+
+### Fixed
+
+- Cost estimates updated for accurate pricing:
+  - GPT-4 Turbo: input $0.03, output $0.06 per 1k tokens (was $0.01/$0.03)
+  - Mistral Small: input $0.0001, output $0.0003 per 1k tokens (was $0.0002/$0.0006)
+  - Mistral Large: input $0.004, output $0.012 per 1k tokens (was $0.002/$0.006)
+
 ## [1.1.0] - 2025-10-29
 
 ### Added
@@ -210,7 +253,7 @@ Choose from 5 different writing styles to customize your corrections:
 
 - **Tauri-Based Architecture**: Small bundle size and fast performance
 - **Modern Tech Stack**: Next.js 15, React 19, TypeScript, Tailwind CSS 4
-- **Efficient Plugins**: 
+- **Efficient Plugins**:
   - global-shortcut for system-wide keyboard shortcuts
   - clipboard-manager for clipboard operations
   - notification for system notifications
@@ -221,6 +264,7 @@ Choose from 5 different writing styles to customize your corrections:
 - **Dynamic Shortcut Registration**: Real-time shortcut updates without restart
 - **Cross-Platform Compatibility**: Verified on macOS, Windows, and Linux
 
+[1.1.1]: https://github.com/tarikkavaz/Correctify/releases/tag/v1.1.1
 [1.1.0]: https://github.com/tarikkavaz/Correctify/releases/tag/v1.1.0
 [1.0.1]: https://github.com/tarikkavaz/Correctify/releases/tag/v1.0.1
 [1.0.0]: https://github.com/tarikkavaz/Correctify/releases/tag/v1.0.0

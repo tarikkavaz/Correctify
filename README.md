@@ -1,13 +1,13 @@
 # Correctify
 
-A simple, cross-platform grammar correction app powered by multiple AI providers. 
+A simple, cross-platform grammar correction app powered by multiple AI providers.
 Bring your own API key, choose from 14 models (including free options), and keep your data private with secure local storage.
 
 ![Correctify Screenshot](public/screenshot.png)
 
 ## Overview
 
-Correctify corrects grammar, spelling, and punctuation while preserving your writing style and formatting. 
+Correctify corrects grammar, spelling, and punctuation while preserving your writing style and formatting.
 It's a minimal, distraction-free menubar app that works on macOS, Windows, and Linux.
 
 **Key Features**
@@ -16,9 +16,11 @@ It's a minimal, distraction-free menubar app that works on macOS, Windows, and L
 - **Free Models Available** - 4 free models via OpenRouter (no credit card needed)
 - **Usage Tracking** - Monitor token usage, costs, and performance locally
 - **Intelligent Fallback** - Auto-retry with free models on failure
-- **Global Shortcuts** - Correct text from anywhere with Cmd+Shift+]
+- **Global Shortcuts** - Correct text from anywhere with customizable shortcuts
 - **Auto Copy/Paste** - Seamless text correction in any app
 - **5 Writing Styles** - Grammar, Formal, Informal, Collaborative, Concise
+- **Custom Update Notifications** - Beautiful in-app update modal with release notes
+- **Full Localization** - Complete translation support (English, German, French, Turkish)
 - **Modern UI** - Clean interface with dark mode support
 - **Privacy-First** - All data stays on your device
 - **Cross-Platform** - macOS, Windows, and Linux support
@@ -162,7 +164,7 @@ Use the provided script for automated signing and notarization:
 chmod +x scripts/build-signed.sh
 ./scripts/build-signed.sh
 ```
-or use the `pnpm tauri:build:signed`. 
+or use the `pnpm tauri:build:signed`.
 
 This script will:
 1. Build the Tauri app
