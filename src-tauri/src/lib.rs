@@ -8,6 +8,7 @@ use std::sync::{Arc, Mutex};
 use std::io::Cursor;
 use std::fs;
 use std::path::PathBuf;
+use std::io::Write;
 use enigo::{Enigo, Key, Keyboard, Settings};
 use base64::{Engine as _, engine::general_purpose};
 
@@ -100,49 +101,194 @@ async fn handle_corrected_text(
     // Play completed sound
     play_sound("completed", sound_enabled);
 
-    // If auto-paste is enabled, directly type the corrected text
+    // If auto-paste is enabled, simulate paste using clipboard (Cmd+V/Ctrl+V)
+    // Since text is already copied to clipboard, this is more reliable than typing
     if should_auto_paste {
-        // Clone the text for the thread
-        let text_to_paste = text.clone();
+        let _ = app.emit("auto-paste-debug", "Auto-paste enabled, checking permissions...");
+        println!("[Auto-paste] Auto-paste enabled, checking permissions...");
+
+        // Check macOS accessibility permissions before attempting auto-paste
+        #[cfg(target_os = "macos")]
+        {
+            use std::process::Command;
+            let output = Command::new("osascript")
+                .arg("-e")
+                .arg("tell application \"System Events\" to get name of first process")
+                .output();
+
+            let has_permission = match output {
+                Ok(result) => result.status.success(),
+                Err(e) => {
+                    let error_msg = format!("Failed to check permissions: {:?}", e);
+                    let _ = app.emit("auto-paste-debug", &error_msg);
+                    eprintln!("[Auto-paste] {}", error_msg);
+                    false
+                }
+            };
+
+            if !has_permission {
+                let _ = app.emit("auto-paste-debug", "❌ Accessibility permission not granted");
+                eprintln!("[Auto-paste] Accessibility permission not granted");
+                let _ = app.notification()
+                    .builder()
+                    .title("Correctify - Permission Required")
+                    .body("Auto paste requires Accessibility permission. Please enable it in System Settings > Privacy & Security > Accessibility, then restart the app.")
+                    .show();
+                return Ok(()); // Don't try to use enigo without permission
+            }
+            let _ = app.emit("auto-paste-debug", "✅ Accessibility permission granted");
+            println!("[Auto-paste] Accessibility permission granted");
+        }
+
+        // Clone app handle for use in thread
+        let app_clone = app.clone();
 
         // Spawn a separate thread to avoid blocking
         thread::spawn(move || {
-            // Wait longer to ensure notification is visible and user sees feedback
-            thread::sleep(Duration::from_millis(800));
+            use tauri_plugin_notification::NotificationExt;
+            use std::panic;
 
-            match Enigo::new(&Settings::default()) {
-                Ok(mut enigo) => {
-                    // Directly type the corrected text instead of simulating Cmd+V
-                    // This is more reliable and doesn't depend on clipboard state
-                    match enigo.text(&text_to_paste) {
-                        Ok(_) => {
-                            println!("Auto-paste completed");
+            // Helper function to safely emit debug messages and write to file
+            let emit_debug = |msg: &str| {
+                println!("[Auto-paste] {}", msg);
+                write_log_file(&app_clone, msg);
+                let _ = app_clone.emit("auto-paste-debug", msg);
+            };
+
+            // Emit initial message
+            emit_debug("Thread spawned, waiting before paste...");
+            write_log_file(&app_clone, "CRITICAL: About to sleep for 1200ms");
+
+            // Simple sleep without catch_unwind first to see if that's the issue
+            thread::sleep(Duration::from_millis(1200));
+
+            write_log_file(&app_clone, "CRITICAL: Sleep completed, still alive");
+            emit_debug("Sleep completed, proceeding...");
+            emit_debug("Attempting to create Enigo instance...");
+
+            // Now wrap Enigo operations in catch_unwind
+            write_log_file(&app_clone, "CRITICAL: About to enter catch_unwind");
+            let result = panic::catch_unwind(panic::AssertUnwindSafe(|| {
+                // Use AppleScript for paste on macOS - it's more reliable and doesn't crash
+                #[cfg(target_os = "macos")]
+                {
+                    use std::process::Command;
+                    emit_debug("Pasting via AppleScript...");
+                    let applescript_result = Command::new("osascript")
+                        .arg("-e")
+                        .arg("tell application \"System Events\" to keystroke \"v\" using command down")
+                        .output();
+
+                    match applescript_result {
+                        Ok(output) => {
+                            if output.status.success() {
+                                emit_debug("✅ Auto-paste completed successfully");
+                                let _ = app_clone.notification()
+                                    .builder()
+                                    .title("Correctify")
+                                    .body("Text pasted successfully!")
+                                    .show();
+                            } else {
+                                let stderr = String::from_utf8_lossy(&output.stderr);
+                                let error_msg = format!("❌ AppleScript paste failed: {}", stderr);
+                                emit_debug(&error_msg);
+                                let _ = app_clone.notification()
+                                    .builder()
+                                    .title("Correctify - Auto-paste Failed")
+                                    .body("Failed to paste text. Please paste manually (Cmd+V).")
+                                    .show();
+                            }
                         }
-                        Err(_) => {
-                            // Fallback: try Cmd+V/Ctrl+V
-                            #[cfg(target_os = "macos")]
-                            {
-                                let _ = enigo.key(Key::Meta, enigo::Direction::Press);
-                                thread::sleep(Duration::from_millis(50));
-                                let _ = enigo.key(Key::Unicode('v'), enigo::Direction::Click);
-                                thread::sleep(Duration::from_millis(50));
-                                let _ = enigo.key(Key::Meta, enigo::Direction::Release);
-                            }
-
-                            #[cfg(not(target_os = "macos"))]
-                            {
-                                let _ = enigo.key(Key::Control, enigo::Direction::Press);
-                                thread::sleep(Duration::from_millis(50));
-                                let _ = enigo.key(Key::Unicode('v'), enigo::Direction::Click);
-                                thread::sleep(Duration::from_millis(50));
-                                let _ = enigo.key(Key::Control, enigo::Direction::Release);
-                            }
+                        Err(e) => {
+                            let error_msg = format!("❌ AppleScript command failed: {:?}", e);
+                            emit_debug(&error_msg);
+                            let _ = app_clone.notification()
+                                .builder()
+                                .title("Correctify - Auto-paste Failed")
+                                .body("Failed to paste text. Please paste manually (Cmd+V).")
+                                .show();
                         }
                     }
                 }
-                Err(e) => {
-                    eprintln!("Failed to create Enigo instance: {:?}", e);
+
+                #[cfg(not(target_os = "macos"))]
+                {
+                    // Create Enigo for non-macOS platforms
+                    write_log_file(&app_clone, "CRITICAL: Inside catch_unwind, about to create Enigo");
+                    let mut enigo = match Enigo::new(&Settings::default()) {
+                        Ok(enigo) => {
+                            write_log_file(&app_clone, "CRITICAL: Enigo created successfully");
+                            enigo
+                        },
+                        Err(e) => {
+                            let error_msg = format!("❌ Failed to create Enigo instance: {:?}", e);
+                            write_log_file(&app_clone, &format!("ERROR: {}", error_msg));
+                            println!("[Auto-paste] {}", error_msg);
+                            let _ = app_clone.emit("auto-paste-debug", &error_msg);
+                            let _ = app_clone.notification()
+                                .builder()
+                                .title("Correctify - Auto-paste Failed")
+                                .body("Failed to initialize keyboard automation. Please check Accessibility permissions.")
+                                .show();
+                            return;
+                        }
+                    };
+
+                    // Use Enigo for non-macOS platforms
+                    emit_debug("Pressing Ctrl key...");
+                    match enigo.key(Key::Control, enigo::Direction::Press) {
+                        Ok(_) => {
+                            thread::sleep(Duration::from_millis(100));
+                            emit_debug("Pressing 'v' key...");
+                            match enigo.key(Key::Unicode('v'), enigo::Direction::Click) {
+                                Ok(_) => {
+                                    thread::sleep(Duration::from_millis(100));
+                                    emit_debug("Releasing Ctrl key...");
+                                    match enigo.key(Key::Control, enigo::Direction::Release) {
+                                        Ok(_) => {
+                                            emit_debug("✅ Auto-paste completed successfully");
+                                            let _ = app_clone.notification()
+                                                .builder()
+                                                .title("Correctify")
+                                                .body("Text pasted successfully!")
+                                                .show();
+                                        }
+                                        Err(e) => {
+                                            let error_msg = format!("❌ Failed to release Control key: {:?}", e);
+                                            emit_debug(&error_msg);
+                                        }
+                                    }
+                                }
+                                Err(e) => {
+                                    let error_msg = format!("❌ Failed to press 'v' key: {:?}", e);
+                                    emit_debug(&error_msg);
+                                    let _ = enigo.key(Key::Control, enigo::Direction::Release);
+                                }
+                            }
+                        }
+                        Err(e) => {
+                            let error_msg = format!("❌ Failed to press Control key: {:?}", e);
+                            emit_debug(&error_msg);
+                        }
+                    }
                 }
+            }));
+
+            // Handle panic result
+            if let Err(panic_payload) = result {
+                let error_msg = format!("❌ Thread panicked: {:?}", panic_payload);
+                eprintln!("[Auto-paste] {}", error_msg);
+                // Try to emit and show notification, but don't panic if it fails
+                let _ = std::panic::catch_unwind(panic::AssertUnwindSafe(|| {
+                    let _ = app_clone.emit("auto-paste-debug", &error_msg);
+                    let _ = app_clone.notification()
+                        .builder()
+                        .title("Correctify - Auto-paste Failed")
+                        .body("Auto-paste encountered an error. The app did not crash, but paste may have failed.")
+                        .show();
+                }));
+            } else {
+                emit_debug("✅ Thread completed without panicking");
             }
         });
     }
@@ -279,6 +425,28 @@ fn get_storage_path(app: &tauri::AppHandle) -> Result<PathBuf, String> {
         .map_err(|e| format!("Failed to create keys directory: {}", e))?;
 
     Ok(keys_dir)
+}
+
+// Helper function to write debug logs to file
+fn write_log_file(app: &tauri::AppHandle, message: &str) {
+    if let Ok(app_data_dir) = app.path().app_data_dir() {
+        let log_file = app_data_dir.join("auto-paste-debug.log");
+        let timestamp = std::time::SystemTime::now()
+            .duration_since(std::time::UNIX_EPOCH)
+            .map(|d| d.as_secs_f64())
+            .unwrap_or(0.0);
+        let log_line = format!("[{:.3}] {}\n", timestamp, message);
+
+        // Try to append to log file, ignore errors - use sync write for immediate flush
+        if let Ok(mut file) = fs::OpenOptions::new()
+            .create(true)
+            .append(true)
+            .open(&log_file)
+        {
+            let _ = file.write_all(log_line.as_bytes());
+            let _ = file.sync_all(); // Force write to disk immediately
+        }
+    }
 }
 
 // Secure storage commands using file-based storage
