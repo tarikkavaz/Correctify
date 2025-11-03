@@ -3,7 +3,7 @@
 A simple, cross-platform grammar correction app powered by multiple AI providers.
 Bring your own API key, choose from 14 models (including free options), and keep your data private with secure local storage.
 
-![Correctify Screenshot](public/screenshot.png)
+![Correctify Screenshot](public/screenshot.jpg)
 
 ## Overview
 
@@ -21,7 +21,7 @@ It's a minimal, distraction-free menubar app that works on macOS, Windows, and L
 - **5 Writing Styles** - Grammar, Formal, Informal, Collaborative, Concise
 - **Custom Update Notifications** - Beautiful in-app update modal with release notes
 - **Full Localization** - Complete translation support (English, German, French, Turkish)
-- **Modern UI** - Clean interface with dark mode support
+- **Modern UI** - Clean interface
 - **Privacy-First** - All data stays on your device
 - **Cross-Platform** - macOS, Windows, and Linux support
 

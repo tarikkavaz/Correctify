@@ -6,12 +6,9 @@ import {
   BarChart3,
   HelpCircle,
   Info,
-  Monitor,
-  Moon,
   MoreVertical,
   RefreshCcw,
   Settings,
-  Sun,
   X,
 } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
@@ -39,7 +36,6 @@ export default function DraggableHeader({
 }: DraggableHeaderProps) {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
-  const ThemeIcon = theme === "system" ? Monitor : theme === "dark" ? Moon : Sun;
   const { messages } = useLocale();
 
   useEffect(() => {
@@ -58,7 +54,7 @@ export default function DraggableHeader({
   return (
     <div
       data-tauri-drag-region
-      className="fixed top-0 left-0 right-0 flex items-center justify-between px-4 py-4 bg-background/80 backdrop-blur-sm border-b border-border z-40 transition-colors"
+      className="fixed top-0 left-0 right-0 flex items-center justify-between px-4 py-4 bg-background/50 backdrop-blur-md border-b border-border z-40 transition-colors"
     >
       <div data-tauri-drag-region className="flex-1" />
       <div
@@ -68,17 +64,17 @@ export default function DraggableHeader({
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img data-tauri-drag-region src="/logo.png" alt="Correctify Logo" className="w-10 h-10" />
         <div data-tauri-drag-region>
-          <h1 data-tauri-drag-region className="text-xl font-bold text-foreground">
+          <h1 data-tauri-drag-region className="text-xl font-bold text-foreground/90">
             Correctify
           </h1>
-          <p data-tauri-drag-region className="text-xs text-text-muted">
+          <p data-tauri-drag-region className="text-xs text-foreground/70">
             {messages.header.subtitle}
           </p>
         </div>
       </div>
       <div className="flex items-center gap-2">
-        {/* Theme Toggle */}
-        <div className="relative flex flex-col items-center group">
+        {/* Theme Toggle - DISABLED */}
+        {/* <div className="relative flex flex-col items-center group">
           <button
             type="button"
             onClick={onThemeToggle}
@@ -93,7 +89,7 @@ export default function DraggableHeader({
               {messages.header.theme}
             </span>
           </div>
-        </div>
+        </div> */}
 
         {/* Reload */}
         <div className="relative flex flex-col items-center group">
@@ -103,7 +99,7 @@ export default function DraggableHeader({
             className="p-2 hover:bg-foreground/5 rounded-lg transition-colors"
             aria-label={messages.header.reload}
           >
-            <RefreshCcw className="w-5 h-5 text-text-muted hover:text-foreground transition-colors" />
+            <RefreshCcw className="w-5 h-5 text-foreground/70 hover:text-foreground/90 transition-colors" />
           </button>
           <div className="absolute top-0 hidden items-center mt-10 group-hover:flex group-hover:flex-col">
             <div className="w-3 h-3 -mb-2 rotate-45 bg-tooltip-bg" />
@@ -121,7 +117,7 @@ export default function DraggableHeader({
             className="p-2 hover:bg-foreground/5 rounded-lg transition-colors"
             aria-label={messages.header.settings}
           >
-            <Settings className="w-5 h-5 text-text-muted hover:text-foreground transition-colors" />
+            <Settings className="w-5 h-5 text-foreground/70 hover:text-foreground/90 transition-colors" />
           </button>
           <div className="absolute top-0 hidden items-center mt-10 group-hover:flex group-hover:flex-col">
             <div className="w-3 h-3 -mb-2 rotate-45 bg-tooltip-bg" />
@@ -139,7 +135,7 @@ export default function DraggableHeader({
             className="p-2 hover:bg-foreground/5 rounded-lg transition-colors"
             aria-label={messages.header.menu}
           >
-            <MoreVertical className="w-5 h-5 text-text-muted hover:text-foreground transition-colors" />
+            <MoreVertical className="w-5 h-5 text-foreground/70 hover:text-foreground/90 transition-colors" />
           </button>
           <div className="absolute top-0 hidden items-center mt-10 group-hover:flex group-hover:flex-col">
             <div className="w-3 h-3 -mb-2 rotate-45 bg-tooltip-bg" />
@@ -149,7 +145,7 @@ export default function DraggableHeader({
           </div>
 
           {isMenuOpen && (
-            <div className="absolute top-full right-0 mt-2 w-56 bg-card-bg border border-border rounded-lg shadow-lg z-50">
+            <div className="absolute top-full right-0 mt-2 w-56 bg-card-bg border border-border rounded-lg shadow-lg z-50" style={{ backgroundColor: "var(--card-bg-solid)" }}>
               <button
                 type="button"
                 onClick={() => {

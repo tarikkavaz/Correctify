@@ -762,7 +762,7 @@ export default function HomePage() {
 
       <UsageModal isOpen={isUsageModalOpen} onClose={() => setIsUsageModalOpen(false)} />
 
-      <main className="h-screen flex justify-center p-6 bg-background pt-24 transition-colors overflow-auto">
+      <main className="h-screen flex justify-center p-6 bg-transparent pt-24 transition-colors overflow-auto">
         <div className="w-full max-w-4xl">
           <form onSubmit={handleSubmit} className="space-y-6">
             <div className="space-y-2">
@@ -789,7 +789,7 @@ export default function HomePage() {
                       </button>
 
                       {isStyleDropdownOpen && (
-                        <div className="absolute top-full right-0 mt-1 w-64 bg-card-bg border border-border rounded-lg shadow-lg z-10">
+                        <div className="absolute top-full right-0 mt-1 w-64 bg-card-bg border border-border rounded-lg shadow-lg z-10" style={{ backgroundColor: "var(--card-bg-solid)" }}>
                           {styleOptions.map((option) => (
                             <button
                               key={option.value}
@@ -837,7 +837,7 @@ export default function HomePage() {
                       </button>
 
                       {isModelDropdownOpen && (
-                        <div className="absolute top-full right-0 mt-1 w-max min-w-[150px] max-w-[300px] bg-card-bg border border-border rounded-lg shadow-lg z-10 max-h-[400px] overflow-y-auto">
+                        <div className="absolute top-full right-0 mt-1 w-max min-w-[150px] max-w-[300px] bg-card-bg border border-border rounded-lg shadow-lg z-10 max-h-[400px] overflow-y-auto" style={{ backgroundColor: "var(--card-bg-solid)" }}>
                           {paidModels.length > 0 && (
                             <>
                               <div className="px-3 py-2 text-[10px] font-semibold text-foreground/40 uppercase tracking-wider border-b border-border">

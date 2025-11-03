@@ -11,6 +11,11 @@ use std::path::PathBuf;
 use std::io::Write;
 use enigo::{Enigo, Key, Keyboard, Settings};
 use base64::{Engine as _, engine::general_purpose};
+#[cfg(target_os = "macos")]
+use window_vibrancy::{apply_vibrancy, NSVisualEffectMaterial};
+
+#[cfg(target_os = "windows")]
+use window_vibrancy::apply_blur;
 
 // Application state for settings
 struct AppState {
@@ -699,6 +704,21 @@ pub fn run() {
 
             // Get window for all platforms
             let window = app.get_webview_window("main").unwrap();
+
+            // Apply window vibrancy effects based on platform
+            #[cfg(target_os = "macos")]
+            {
+                apply_vibrancy(&window, NSVisualEffectMaterial::HudWindow, None, None)
+                    .expect("Failed to apply vibrancy on macOS");
+                println!("Applied macOS vibrancy effect");
+            }
+
+            #[cfg(target_os = "windows")]
+            {
+                apply_blur(&window, Some((18, 18, 18, 125)))
+                    .expect("Failed to apply blur on Windows");
+                println!("Applied Windows blur effect");
+            }
 
             #[cfg(debug_assertions)]
             {

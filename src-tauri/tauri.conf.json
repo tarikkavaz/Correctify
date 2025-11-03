@@ -9,6 +9,7 @@
     "frontendDist": "../out"
   },
   "app": {
+    "macOSPrivateApi": true,
     "windows": [
       {
         "title": "Correctify",
@@ -19,7 +20,8 @@
         "titleBarStyle": "Overlay",
         "hiddenTitle": true,
         "visible": false,
-        "center": true
+        "center": true,
+        "transparent": true
       }
     ],
     "security": {

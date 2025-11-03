@@ -100,7 +100,7 @@ export default function HelpModal({ isOpen, onClose, shortcutKey, shortcutModifi
       className="fixed inset-0 z-50 flex items-center justify-center p-4 backdrop-blur-sm"
       style={{ backgroundColor: "var(--color-modal-backdrop)" }}
     >
-      <div className="bg-card-bg rounded-lg shadow-xl w-full max-w-2xl max-h-[80vh] overflow-y-auto">
+      <div className="bg-card-bg rounded-lg shadow-xl w-full max-w-2xl max-h-[80vh] overflow-y-auto" style={{ backgroundColor: "var(--card-bg-solid)" }}>
         <div className="flex items-center justify-between p-6 border-b border-border">
           <div className="flex items-center gap-3">
             <div className="p-2 bg-primary/10 rounded-lg">

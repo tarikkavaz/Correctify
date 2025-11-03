@@ -29,7 +29,7 @@ export default function AboutModal({ isOpen, onClose }: AboutModalProps) {
       className="fixed inset-0 z-50 flex items-center justify-center backdrop-blur-sm"
       style={{ backgroundColor: "var(--color-modal-backdrop)" }}
     >
-      <div className="relative w-full max-w-md mx-4 bg-card-bg rounded-lg shadow-xl transition-colors">
+      <div className="relative w-full max-w-md mx-4 bg-card-bg rounded-lg shadow-xl transition-colors" style={{ backgroundColor: "var(--card-bg-solid)" }}>
         {/* Header */}
         <div className="flex items-center justify-between p-6 border-b border-border">
           <div className="flex items-center gap-3">
