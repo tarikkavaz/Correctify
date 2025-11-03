@@ -772,12 +772,12 @@ export default function HomePage() {
                 </label>
                 <div className="flex items-center gap-4">
                   <div className="flex items-center gap-2">
-                    <span className="text-xs font-medium text-foreground/60">{messages.home.styleLabel}</span>
+                    <span className="text-xs font-medium text-foreground">{messages.home.styleLabel}</span>
                     <div className="relative" ref={styleDropdownRef}>
                       <button
                         type="button"
                         onClick={() => setIsStyleDropdownOpen(!isStyleDropdownOpen)}
-                        className="flex items-center gap-2 px-3 py-1.5 text-xs font-medium text-foreground bg-foreground/10 hover:bg-foreground/15 hover:text-foreground border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed transition-colors min-w-[140px]"
+                        className="flex items-center gap-2 px-3 py-1.5 text-xs font-medium text-foreground bg-background/40 hover:bg-background/80 hover:text-foreground  rounded-lg focus:outline-none focus:ring-2 focus:ring-primary cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed transition-colors min-w-[140px]"
                         disabled={isLoading}
                       >
                         <span className="flex-1 text-left">
@@ -818,14 +818,14 @@ export default function HomePage() {
                     </div>
                   </div>
                   <div className="flex items-center gap-2">
-                    <label htmlFor="model" className="text-xs font-medium text-foreground/60">
+                    <label htmlFor="model" className="text-xs font-medium text-foreground">
                       {messages.home.modelLabel}
                     </label>
                     <div className="relative" ref={modelDropdownRef}>
                       <button
                         type="button"
                         onClick={() => setIsModelDropdownOpen(!isModelDropdownOpen)}
-                        className="flex items-center gap-2 px-3 py-1.5 text-xs font-medium text-foreground bg-foreground/10 hover:bg-foreground/15 hover:text-foreground border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed transition-colors min-w-[160px]"
+                        className="flex items-center gap-2 px-3 py-1.5 text-xs font-medium text-foreground bg-background/40 hover:bg-background/80 hover:text-foreground rounded-lg focus:outline-none focus:ring-2 focus:ring-primary cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed transition-colors min-w-[160px]"
                         disabled={isLoading}
                       >
                         <span className="flex-1 text-left">

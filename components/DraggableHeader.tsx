@@ -54,7 +54,7 @@ export default function DraggableHeader({
   return (
     <div
       data-tauri-drag-region
-      className="fixed top-0 left-0 right-0 flex items-center justify-between px-4 py-4 bg-background/50 backdrop-blur-md border-b border-border z-40 transition-colors"
+      className="fixed top-0 left-0 right-0 flex items-center justify-between px-4 py-4 bg-background/20 backdrop-blur-md z-40 transition-colors"
     >
       <div data-tauri-drag-region className="flex-1" />
       <div
@@ -64,10 +64,10 @@ export default function DraggableHeader({
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img data-tauri-drag-region src="/logo.png" alt="Correctify Logo" className="w-10 h-10" />
         <div data-tauri-drag-region>
-          <h1 data-tauri-drag-region className="text-xl font-bold text-foreground/90">
+          <h1 data-tauri-drag-region className="text-xl font-bold text-foreground">
             Correctify
           </h1>
-          <p data-tauri-drag-region className="text-xs text-foreground/70">
+          <p data-tauri-drag-region className="text-xs text-foreground">
             {messages.header.subtitle}
           </p>
         </div>
@@ -99,7 +99,7 @@ export default function DraggableHeader({
             className="p-2 hover:bg-foreground/5 rounded-lg transition-colors"
             aria-label={messages.header.reload}
           >
-            <RefreshCcw className="w-5 h-5 text-foreground/70 hover:text-foreground/90 transition-colors" />
+            <RefreshCcw className="w-5 h-5 text-foreground hover:text-foreground/90 transition-colors" />
           </button>
           <div className="absolute top-0 hidden items-center mt-10 group-hover:flex group-hover:flex-col">
             <div className="w-3 h-3 -mb-2 rotate-45 bg-tooltip-bg" />
@@ -117,7 +117,7 @@ export default function DraggableHeader({
             className="p-2 hover:bg-foreground/5 rounded-lg transition-colors"
             aria-label={messages.header.settings}
           >
-            <Settings className="w-5 h-5 text-foreground/70 hover:text-foreground/90 transition-colors" />
+            <Settings className="w-5 h-5 text-foreground hover:text-foreground/90 transition-colors" />
           </button>
           <div className="absolute top-0 hidden items-center mt-10 group-hover:flex group-hover:flex-col">
             <div className="w-3 h-3 -mb-2 rotate-45 bg-tooltip-bg" />
@@ -135,7 +135,7 @@ export default function DraggableHeader({
             className="p-2 hover:bg-foreground/5 rounded-lg transition-colors"
             aria-label={messages.header.menu}
           >
-            <MoreVertical className="w-5 h-5 text-foreground/70 hover:text-foreground/90 transition-colors" />
+            <MoreVertical className="w-5 h-5 text-foreground hover:text-foreground/90 transition-colors" />
           </button>
           <div className="absolute top-0 hidden items-center mt-10 group-hover:flex group-hover:flex-col">
             <div className="w-3 h-3 -mb-2 rotate-45 bg-tooltip-bg" />
