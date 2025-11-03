@@ -38,16 +38,16 @@ jobs:
         if: steps.extract.outputs.version != ''
         run: |
           VERSION="${{ steps.extract.outputs.version }}"
-          
+
           # Extract the section for this version from CHANGELOG.md
           # This gets everything between [VERSION] and the next version header
           CHANGELOG=$(awk "/## \[${VERSION#v}\]/{flag=1; next} /## \[[0-9]/{flag=0} flag" CHANGELOG.md)
-          
+
           if [ -z "$CHANGELOG" ]; then
             echo "⚠️ No changelog found for $VERSION, using default message"
             CHANGELOG="See [CHANGELOG.md](https://github.com/tarikkavaz/Correctify/blob/master/CHANGELOG.md) for details."
           fi
-          
+
           # Save to output using heredoc to handle multiline content
           echo "content<<EOF" >> $GITHUB_OUTPUT
           echo "$CHANGELOG" >> $GITHUB_OUTPUT
@@ -152,7 +152,7 @@ jobs:
           security unlock-keychain -p "$MACOS_KEYCHAIN_PASSWORD" $KEYCHAIN_PATH
           security set-key-partition-list -S apple-tool:,apple: -s -k "$MACOS_KEYCHAIN_PASSWORD" $KEYCHAIN_PATH
           pnpm tauri build ${{ matrix.args }} --config "{\"bundle\":{\"macOS\":{\"signingIdentity\":\"$MACOS_SIGNING_IDENTITY\"}}}"
-          
+
           # Notarize the DMG
           cd src-tauri/target/${{ matrix.target }}/release/bundle/dmg
           for dmg in *.dmg; do
@@ -228,7 +228,7 @@ jobs:
         run: |
           VERSION="${{ needs.check-release.outputs.version }}"
           NOTES="See release notes at: https://github.com/tarikkavaz/Correctify/releases/tag/${VERSION}"
-          
+
           jq -n \
             --arg version "${VERSION#v}" \
             --arg notes "$NOTES" \
@@ -260,7 +260,7 @@ jobs:
                 }
               }
             }' > installers/latest.json
-          
+
           cat installers/latest.json
 
       - name: Create GitHub Release
@@ -270,7 +270,7 @@ jobs:
           name: "Correctify ${{ needs.check-release.outputs.version }}"
           body: |
             ## Changelog
-            
+
             ${{ needs.check-release.outputs.changelog }}
 
             ## Downloads
