@@ -1,197 +1,39 @@
-# Correctify
+# GitHub Pages - Correctify Landing Page
 
-A simple, cross-platform grammar correction app powered by multiple AI providers.
-Bring your own API key, choose from 14 models (including free options), and keep your data private with secure local storage.
+This directory contains the static files for the Correctify landing page, deployed to GitHub Pages.
 
-![Correctify Screenshot](public/screenshot.jpg)
+## Files
 
-## Overview
+- `index.html` - Main landing page
+- `logo.png` - App logo
+- `screenshot.png` - App screenshot
 
-Correctify corrects grammar, spelling, and punctuation while preserving your writing style and formatting.
-It's a minimal, distraction-free menubar app that works on macOS, Windows, and Linux.
+## Deployment
 
-**Key Features**
-- **Secure API Key Storage** - OS-level encrypted storage
-- **Multiple LLM Providers** - OpenAI, Anthropic, Mistral, and OpenRouter
-- **Free Models Available** - 4 free models via OpenRouter (no credit card needed)
-- **Usage Tracking** - Monitor token usage, costs, and performance locally
-- **Intelligent Fallback** - Auto-retry with free models on failure
-- **Global Shortcuts** - Correct text from anywhere with customizable shortcuts
-- **Auto Copy/Paste** - Seamless text correction in any app
-- **5 Writing Styles** - Grammar, Formal, Informal, Collaborative, Concise
-- **Custom Update Notifications** - Beautiful in-app update modal with release notes
-- **Full Localization** - Complete translation support (English, German, French, Turkish)
-- **Modern UI** - Clean interface
-- **Privacy-First** - All data stays on your device
-- **Cross-Platform** - macOS, Windows, and Linux support
+See the main [DEPLOYMENT.md](../DEPLOYMENT.md) file in the project root for complete deployment instructions.
 
+## Important: Verify Download Links
 
-## Supported Models
+Before deploying, verify that the download link filenames in `index.html` match your actual GitHub release assets:
 
-### Paid Models (API Key Required)
-- **OpenAI**: GPT-5, GPT-5 Mini, GPT-4o, GPT-4o Mini, GPT-4 Turbo, GPT-3.5 Turbo
-- **Anthropic**: Claude 3.5 Sonnet, Claude 3.5 Haiku
-- **Mistral**: Mistral Large, Mistral Small
+1. Visit https://github.com/tarikkavaz/Correctify/releases/latest
+2. Check the actual filenames
+3. Update the download links in `index.html` if they don't match
 
-### Free Models (OpenRouter API Key Required)
-- **Meta Llama**: Llama 3.2 3B
-- **Google Gemma**: Gemma 2 9B
-- **Microsoft Phi**: Phi-3 Mini
-- **Mistral**: Mistral 7B
+Current links point to:
+- macOS: `Correctify_universal.dmg`
+- Windows: `Correctify_x64_en-US.msi`
+- Linux: `correctify_amd64.AppImage`
 
-> [!NOTE]
-> OpenRouter free models require a free account and API key (no credit card needed).
+## Local Preview
 
-## API Key Configuration & Security
+To preview the page locally, simply open `index.html` in your browser. All styles are loaded from CDN, so no build process is needed.
 
-- **File-Based Encryption** - Keys stored in OS-protected app data directory
-- **Automatic Migration** - Seamlessly migrates from localStorage to secure storage
-- **Per-Provider Keys** - Configure keys for each provider independently
-- **Local Storage Only** - Keys never leave your device or sent to any server
-- **Base64 Encoding** - Additional obfuscation layer for stored keys
+## Updates
 
-**Storage Location:**
-- **macOS**: `~/Library/Application Support/com.correctify/.keys/`
-- **Windows**: `%APPDATA%\com.correctify\.keys\`
-- **Linux**: `~/.config/com.correctify/.keys/`
+To update the landing page:
+1. Edit the files in this `docs/` directory
+2. Copy the updated files to the `gh-pages` branch
+3. Push to GitHub
 
-All API requests are made directly from your device to the LLM provider. No intermediary servers, no data collection.
-
-
-
-
-
-## Development Setup
-
-### Prerequisites
-
-- **Node.js** (v18 or later)
-- **pnpm** package manager
-- **Rust** (latest stable version)
-- **Tauri CLI** (installed via `cargo install tauri-cli`)
-
-### Installation
-
-1. Clone the repository:
-```bash
-git clone https://github.com/tarikkavaz/Correctify.git
-cd Correctify
-```
-
-2. Install dependencies:
-```bash
-pnpm install
-```
-
-### Development
-
-Start the development server:
-
-```bash
-# Web development server
-pnpm dev
-
-# Tauri development (recommended)
-pnpm tauri:dev
-```
-
-The Tauri development command will:
-- Start the Next.js development server
-- Launch the Tauri app with hot reload
-- Enable debugging and development tools
-
-### Building
-
-Build the application for production:
-
-```bash
-# Web build only
-pnpm build
-
-# Tauri build (cross-platform)
-pnpm tauri:build
-```
-
-The Tauri build will create platform-specific installers in `src-tauri/target/release/bundle/`.
-
-### Project Structure
-
-```
-Correctify/
-├── app/                 # Next.js app directory
-│   ├── api/             # API routes
-│   ├── globals.css      # Global styles
-│   └── layout.tsx       # Root layout
-├── components/          # React components
-├── lib/                 # Utilities and types
-├── public/              # Static assets
-├── src-tauri/           # Tauri backend (Rust)
-│   ├── src/             # Rust source code
-│   ├── Cargo.toml       # Rust dependencies
-│   └── tauri.conf.json  # Tauri configuration
-├── docs/                # Documentation
-└── scripts/             # Build scripts
-```
-
-## macOS Code Signing & Notarization
-
-To distribute signed and notarized macOS apps, you'll need Apple Developer credentials.
-
-### Setup
-
-1. Copy the environment template:
-```bash
-cp .env.example .env
-```
-
-2. Fill in your Apple Developer credentials in `.env`:
-```env
-APPLE_ID=your-apple-id@example.com
-APPLE_PASSWORD=xxxx-xxxx-xxxx-xxxx
-APPLE_TEAM_ID=XXXXXXXXXX
-```
-
-**Getting your credentials:**
-- **Apple ID**: Your Apple Developer account email
-- **Apple Password**: Generate an app-specific password at [appleid.apple.com/account/manage](https://appleid.apple.com/account/manage)
-- **Team ID**: Find in your Apple Developer account settings
-
-### Building Signed Apps
-
-Use the provided script for automated signing and notarization:
-
-```bash
-chmod +x scripts/build-signed.sh
-./scripts/build-signed.sh
-```
-or use the `pnpm tauri:build:signed`.
-
-This script will:
-1. Build the Tauri app
-2. Code sign the application
-3. Create a DMG installer
-4. Notarize with Apple
-5. Staple the notarization ticket
-
-### Manual Process
-
-For manual signing, refer to:
-- [Apple's official notarization guide](https://developer.apple.com/documentation/security/notarizing_macos_software_before_distribution)
-- [Tauri's code signing documentation](https://tauri.app/distribute/sign/macos/)
-
-## Contributing
-
-1. Fork the repository
-2. Create a feature branch: `git checkout -b feature-name`
-3. Make your changes
-4. Test thoroughly
-5. Submit a pull request
-
-## License
-
-MIT License
-
-## Support
-
-- **Issues**: [GitHub Issues](https://github.com/tarikkavaz/Correctify/issues)
-- **Releases**: [GitHub Releases](https://github.com/tarikkavaz/Correctify/releases)
+See [DEPLOYMENT.md](../DEPLOYMENT.md) for detailed update instructions.
