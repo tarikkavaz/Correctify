@@ -58,6 +58,10 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
+          # Delete tag if it exists locally
+          git tag -d ${{ steps.extract.outputs.version }} || true
+          # Delete tag if it exists remotely, then create and push
+          git push origin :refs/tags/${{ steps.extract.outputs.version }} || true
           git tag ${{ steps.extract.outputs.version }}
           git push origin ${{ steps.extract.outputs.version }}
 
