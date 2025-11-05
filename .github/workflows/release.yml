@@ -41,13 +41,16 @@ jobs:
         run: |
           VERSION="${{ steps.extract.outputs.version }}"
 
-          # Extract the section for this version from CHANGELOG.md
-          # This gets everything between [VERSION] and the next version header
-          CHANGELOG=$(awk "/## \[${VERSION#v}\]/{flag=1; next} /## \[[0-9]/{flag=0} flag" CHANGELOG.md)
+          # Check if CHANGELOG.md exists and extract the section for this version
+          if [ -f CHANGELOG.md ]; then
+            # Extract the section for this version from CHANGELOG.md
+            # This gets everything between [VERSION] and the next version header
+            CHANGELOG=$(awk "/## \[${VERSION#v}\]/{flag=1; next} /## \[[0-9]/{flag=0} flag" CHANGELOG.md)
+          fi
 
           if [ -z "$CHANGELOG" ]; then
             echo "⚠️ No changelog found for $VERSION, using default message"
-            CHANGELOG="See [CHANGELOG.md](https://github.com/tarikkavaz/Correctify/blob/master/CHANGELOG.md) for details."
+            CHANGELOG="New release"
           fi
 
           # Save to output using heredoc to handle multiline content
