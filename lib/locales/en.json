@@ -235,7 +235,7 @@
     "description": "A privacy-focused grammar correction tool that uses AI to improve your writing while keeping your data secure.",
     "visitHomepage": "Visit Homepage",
     "copyright": "© 2025 Correctify",
-    "builtWith": "Built with ❤️ using Tauri, Next.js, and OpenAI",
+    "builtWith": "Built with Tauri, Next.js, and OpenAI",
     "features": {
       "title": "Features",
       "secureStorage": "Secure API key storage (OS-level encryption)",
@@ -274,5 +274,23 @@
     "downloading": "Downloading update...",
     "installing": "Installing update...",
     "closeAriaLabel": "Close update dialog"
+  },
+  "notifications": {
+    "title": "Correctify",
+    "processing": "Processing text correction...",
+    "corrected": "Text corrected and copied to clipboard!",
+    "model": "Model",
+    "style": "Style",
+    "duration": "Duration",
+    "emptyClipboardMac": "Please copy text first (Cmd+C), then use Cmd+Shift+]",
+    "emptyClipboardWinLinux": "Please copy text first (Ctrl+C), then use Ctrl+Shift+]",
+    "permissionRequired": "Correctify - Permission Required",
+    "permissionRequiredBody": "Auto paste requires Accessibility permission. Please enable it in System Settings > Privacy & Security > Accessibility, then restart the app.",
+    "autoPastePermissionRequired": "Auto copy/paste requires Accessibility permission. Please enable it in System Settings > Privacy & Security > Accessibility, then restart the app.",
+    "pastedSuccessfully": "Text pasted successfully!",
+    "autoPasteFailed": "Correctify - Auto-paste Failed",
+    "autoPasteFailedBody": "Failed to paste text. Please paste manually (Cmd+V).",
+    "autoPasteFailedInit": "Failed to initialize keyboard automation. Please check Accessibility permissions.",
+    "autoPasteError": "Auto-paste encountered an error. The app did not crash, but paste may have failed."
   }
 }

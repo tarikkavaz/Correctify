@@ -235,7 +235,7 @@
     "description": "Ein datenschutzorientiertes Grammatikkorrektur-Tool, das KI verwendet, um Ihr Schreiben zu verbessern und gleichzeitig Ihre Daten zu schützen.",
     "visitHomepage": "Startseite besuchen",
     "copyright": "© 2025 Correctify",
-    "builtWith": "Erstellt mit ❤️ mit Tauri, Next.js und OpenAI",
+    "builtWith": "Erstellt mit Tauri, Next.js und OpenAI",
     "features": {
       "title": "Funktionen",
       "secureStorage": "Sichere API-Schlüsselspeicherung (Verschlüsselung auf Betriebssystemebene)",
@@ -274,5 +274,23 @@
     "downloading": "Update wird heruntergeladen...",
     "installing": "Update wird installiert...",
     "closeAriaLabel": "Update-Dialog schließen"
+  },
+  "notifications": {
+    "title": "Correctify",
+    "processing": "Textkorrektur wird verarbeitet...",
+    "corrected": "Text korrigiert und in die Zwischenablage kopiert!",
+    "model": "Modell",
+    "style": "Stil",
+    "duration": "Dauer",
+    "emptyClipboardMac": "Bitte kopieren Sie zuerst Text (Cmd+C), dann verwenden Sie Cmd+Shift+]",
+    "emptyClipboardWinLinux": "Bitte kopieren Sie zuerst Text (Strg+C), dann verwenden Sie Strg+Shift+]",
+    "permissionRequired": "Correctify - Berechtigung erforderlich",
+    "permissionRequiredBody": "Automatisches Einfügen erfordert Barrierefreiheitsberechtigung. Bitte aktivieren Sie diese in Systemeinstellungen > Datenschutz & Sicherheit > Barrierefreiheit und starten Sie die App neu.",
+    "autoPastePermissionRequired": "Automatisches Kopieren/Einfügen erfordert Barrierefreiheitsberechtigung. Bitte aktivieren Sie diese in Systemeinstellungen > Datenschutz & Sicherheit > Barrierefreiheit und starten Sie die App neu.",
+    "pastedSuccessfully": "Text erfolgreich eingefügt!",
+    "autoPasteFailed": "Correctify - Automatisches Einfügen fehlgeschlagen",
+    "autoPasteFailedBody": "Text konnte nicht eingefügt werden. Bitte fügen Sie manuell ein (Cmd+V).",
+    "autoPasteFailedInit": "Tastaturautomatisierung konnte nicht initialisiert werden. Bitte überprüfen Sie die Barrierefreiheitsberechtigungen.",
+    "autoPasteError": "Beim automatischen Einfügen ist ein Fehler aufgetreten. Die App ist nicht abgestürzt, aber das Einfügen könnte fehlgeschlagen sein."
   }
 }

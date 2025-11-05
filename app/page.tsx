@@ -105,18 +105,52 @@ export default function HomePage() {
 
       // Load saved model or default to first available
       const savedModel = localStorage.getItem("selected-model");
+      let modelToSet = savedModel;
       if (savedModel && available.some((m) => m.id === savedModel)) {
         setModel(savedModel);
       } else if (available.length > 0) {
-        setModel(available[0].id);
+        modelToSet = available[0].id;
+        setModel(modelToSet);
       }
 
       const savedStyle = localStorage.getItem("writing-style") as WritingStyle | null;
+      let styleToSet: WritingStyle = "grammar";
       if (
         savedStyle &&
         ["grammar", "formal", "informal", "collaborative", "concise"].includes(savedStyle)
       ) {
+        styleToSet = savedStyle;
         setWritingStyle(savedStyle);
+      }
+
+      // Sync model and style to Rust backend
+      if (isTauri() && (modelToSet || styleToSet)) {
+        try {
+          const { invoke } = await import("@tauri-apps/api/core");
+          await invoke("set_correction_settings", {
+            model: modelToSet || null,
+            style: styleToSet || null,
+          });
+        } catch (err) {
+          console.error("Failed to sync correction settings:", err);
+        }
+      }
+
+      // Sync locale to Rust backend
+      if (isTauri()) {
+        try {
+          const { invoke } = await import("@tauri-apps/api/core");
+          const savedLocale = localStorage.getItem("app-language") || "system";
+          // Map "system" to detected locale or default to "en"
+          const localeToSync = savedLocale === "system" ?
+            (navigator.language.toLowerCase().startsWith("de") ? "de" :
+             navigator.language.toLowerCase().startsWith("fr") ? "fr" :
+             navigator.language.toLowerCase().startsWith("tr") ? "tr" : "en") :
+            (savedLocale === "en" || savedLocale === "de" || savedLocale === "fr" || savedLocale === "tr" ? savedLocale : "en");
+          await invoke("set_locale", { locale: localeToSync });
+        } catch (err) {
+          console.error("Failed to sync locale:", err);
+        }
       }
 
       const savedAutostart = localStorage.getItem("autostart-enabled");
@@ -200,15 +234,15 @@ export default function HomePage() {
             const shortcutKey = platformName === "macos" ? "Cmd" : "Ctrl";
 
             await sendNotification({
-              title: "🚀 Correctify Ready",
+              title: "Correctify Ready",
               body: `Global shortcut ${shortcutKey}+Shift+] is active!`,
             });
-            console.log("✅ Test notification sent successfully");
+            console.log("Test notification sent successfully");
           } catch (err) {
-            console.error("❌ Failed to send test notification:", err);
+            console.error("Failed to send test notification:", err);
           }
         } else {
-          console.warn("⚠️ Notification permission not granted. Notifications will not work.");
+          console.warn("Notification permission not granted. Notifications will not work.");
           console.warn(
             "Please enable notifications in System Settings > Notifications > Correctify",
           );
@@ -230,18 +264,18 @@ export default function HomePage() {
             // Check if API key for this provider is configured
             const currentApiKey = await getKey(`${provider}-api-key`);
             if (!currentApiKey) {
-              console.error("❌ No API key available - please configure in settings");
+              console.error("No API key available - please configure in settings");
               // Send error notification
               try {
                 const { sendNotification } = await import("@tauri-apps/plugin-notification");
                 const providerName = provider.charAt(0).toUpperCase() + provider.slice(1);
                 await sendNotification({
-                  title: "❌ Correctify Error",
+                  title: "Correctify Error",
                   body: `Please configure your ${providerName} API key in settings first!`,
                 });
-                console.log("✅ Error notification sent for missing API key");
+                console.log("Error notification sent for missing API key");
               } catch (err) {
-                console.error("❌ Failed to send error notification:", err);
+                console.error("Failed to send error notification:", err);
               }
               return;
             }
@@ -277,17 +311,17 @@ export default function HomePage() {
               });
               console.log("=== Correction completed successfully ===");
             } catch (err) {
-              console.error("❌ Failed to correct text:", err);
+              console.error("Failed to correct text:", err);
               // Send error notification
               try {
                 const { sendNotification } = await import("@tauri-apps/plugin-notification");
                 await sendNotification({
-                  title: "❌ Correctify Error",
+                  title: "Correctify Error",
                   body: `Failed to correct text: ${err instanceof Error ? err.message : "Unknown error"}`,
                 });
-                console.log("✅ Error notification sent for correction failure");
+                console.log("Error notification sent for correction failure");
               } catch (notifErr) {
-                console.error("❌ Failed to send error notification:", notifErr);
+                console.error("Failed to send error notification:", notifErr);
               }
             }
           },
@@ -344,16 +378,42 @@ export default function HomePage() {
     }
   };
 
-  const handleModelChange = (newModelId: string) => {
+  const handleModelChange = async (newModelId: string) => {
     setModel(newModelId);
     localStorage.setItem("selected-model", newModelId);
     setIsModelDropdownOpen(false);
+
+    // Sync to Rust backend
+    if (isTauri()) {
+      try {
+        const { invoke } = await import("@tauri-apps/api/core");
+        await invoke("set_correction_settings", {
+          model: newModelId,
+          style: null,
+        });
+      } catch (err) {
+        console.error("Failed to sync model setting:", err);
+      }
+    }
   };
 
-  const handleStyleChange = (newStyle: WritingStyle) => {
+  const handleStyleChange = async (newStyle: WritingStyle) => {
     setWritingStyle(newStyle);
     localStorage.setItem("writing-style", newStyle);
     setIsStyleDropdownOpen(false);
+
+    // Sync to Rust backend
+    if (isTauri()) {
+      try {
+        const { invoke } = await import("@tauri-apps/api/core");
+        await invoke("set_correction_settings", {
+          model: null,
+          style: newStyle,
+        });
+      } catch (err) {
+        console.error("Failed to sync style setting:", err);
+      }
+    }
   };
 
   // Group available models by category
@@ -460,8 +520,22 @@ export default function HomePage() {
 
       // Reset model if current model is no longer available
       if (!available.some((m) => m.id === model) && available.length > 0) {
-        setModel(available[0].id);
-        localStorage.setItem("selected-model", available[0].id);
+        const newModel = available[0].id;
+        setModel(newModel);
+        localStorage.setItem("selected-model", newModel);
+
+        // Sync to Rust backend
+        if (isTauri()) {
+          try {
+            const { invoke } = await import("@tauri-apps/api/core");
+            await invoke("set_correction_settings", {
+              model: newModel,
+              style: null,
+            });
+          } catch (err) {
+            console.error("Failed to sync model setting:", err);
+          }
+        }
       }
     } catch (error) {
       console.error("Failed to save API keys:", error);
@@ -675,12 +749,26 @@ export default function HomePage() {
     }
   };
 
-  const handleRetryWithFallback = () => {
+  const handleRetryWithFallback = async () => {
     if (fallbackModelId) {
       setModel(fallbackModelId);
       localStorage.setItem("selected-model", fallbackModelId);
       setShowFallbackOption(false);
       setFallbackModelId(null);
+
+      // Sync to Rust backend
+      if (isTauri()) {
+        try {
+          const { invoke } = await import("@tauri-apps/api/core");
+          await invoke("set_correction_settings", {
+            model: fallbackModelId,
+            style: null,
+          });
+        } catch (err) {
+          console.error("Failed to sync model setting:", err);
+        }
+      }
+
       // Trigger correction with the fallback model
       setTimeout(() => {
         handleSubmit();
@@ -1020,7 +1108,7 @@ export default function HomePage() {
                     {messages.home.noApiKeyForInstructions}
                   </p>
                   <p className="text-xs text-error-text/80 italic">
-                    💡 Tip: OpenRouter offers free models, but you still need to create a free
+                    Tip: OpenRouter offers free models, but you still need to create a free
                     account and get an API key (no credit card required).
                   </p>
                 </div>

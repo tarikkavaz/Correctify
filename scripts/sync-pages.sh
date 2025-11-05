@@ -6,12 +6,12 @@
 
 set -e
 
-echo "🔄 Syncing docs/ to gh-pages branch..."
+echo "Syncing docs/ to gh-pages branch..."
 
 # Check if we're on master branch
 current_branch=$(git branch --show-current)
 if [ "$current_branch" != "master" ]; then
-    echo "⚠️  Warning: You're not on master branch (currently on $current_branch)"
+    echo "Warning: You're not on master branch (currently on $current_branch)"
     read -p "Continue anyway? (y/N) " -n 1 -r
     echo
     if [[ ! $REPLY =~ ^[Yy]$ ]]; then
@@ -22,7 +22,7 @@ fi
 
 # Check for uncommitted changes
 if ! git diff-index --quiet HEAD --; then
-    echo "⚠️  Warning: You have uncommitted changes"
+    echo "Warning: You have uncommitted changes"
     read -p "Continue anyway? (y/N) " -n 1 -r
     echo
     if [[ ! $REPLY =~ ^[Yy]$ ]]; then
@@ -33,7 +33,7 @@ fi
 
 # Check if docs/ directory exists
 if [ ! -d "docs" ]; then
-    echo "❌ Error: docs/ directory not found"
+    echo "Error: docs/ directory not found"
     exit 1
 fi
 
@@ -41,26 +41,26 @@ fi
 git stash push -m "sync-pages-temp-stash" || true
 
 # Checkout gh-pages branch
-echo "📦 Checking out gh-pages branch..."
+echo "Checking out gh-pages branch..."
 git checkout gh-pages
 
 # Remove old docs folder if it exists
 if [ -d "docs" ]; then
-    echo "🗑️  Removing old docs/ folder from gh-pages..."
+    echo "Removing old docs/ folder from gh-pages..."
     rm -rf docs
 fi
 
 # Copy contents from master's docs/ to current directory (gh-pages root)
-echo "📋 Copying docs/ contents to gh-pages root..."
+echo "Copying docs/ contents to gh-pages root..."
 git checkout master -- docs/
 
 # Move contents from docs/ to root
 if [ -d "docs" ]; then
     cp -r docs/* .
     rm -rf docs
-    echo "✅ Files copied successfully"
+    echo "Files copied successfully"
 else
-    echo "❌ Error: Could not checkout docs/ from master"
+    echo "Error: Could not checkout docs/ from master"
     git checkout master
     git stash pop || true
     exit 1
@@ -68,13 +68,13 @@ fi
 
 # Show what was copied
 echo ""
-echo "📁 Files in gh-pages root:"
+echo "Files in gh-pages root:"
 ls -la | grep -v "^d.*\.git$" | grep -v "^total"
 
 # Check if there are changes to commit
 if git diff --quiet && git diff --cached --quiet; then
     echo ""
-    echo "ℹ️  No changes to commit"
+    echo "No changes to commit"
     git checkout master
     git stash pop || true
     exit 0
@@ -88,16 +88,16 @@ if [[ $REPLY =~ ^[Yy]$ ]]; then
     git add -A
     git commit -m "Sync landing page from docs/"
     git push origin gh-pages
-    echo "✅ Successfully pushed to gh-pages"
+    echo "Successfully pushed to gh-pages"
 else
-    echo "ℹ️  Changes staged but not committed. Run 'git commit' manually if needed."
+    echo "Changes staged but not committed. Run 'git commit' manually if needed."
 fi
 
 # Switch back to master
-echo "🔄 Switching back to master branch..."
+echo "Switching back to master branch..."
 git checkout master
 
 # Restore stashed changes if any
 git stash pop || true
 
-echo "✅ Done!"
+echo "Done!"

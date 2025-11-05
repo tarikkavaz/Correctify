@@ -235,7 +235,7 @@
     "description": "Un outil de correction grammaticale axé sur la confidentialité qui utilise l'IA pour améliorer votre écriture tout en protégeant vos données.",
     "visitHomepage": "Visiter la page d'accueil",
     "copyright": "© 2025 Correctify",
-    "builtWith": "Créé avec ❤️ en utilisant Tauri, Next.js et OpenAI",
+    "builtWith": "Créé avec Tauri, Next.js et OpenAI",
     "features": {
       "title": "Fonctionnalités",
       "secureStorage": "Stockage sécurisé des clés API (chiffrement au niveau du système d'exploitation)",
@@ -274,5 +274,23 @@
     "downloading": "Téléchargement de la mise à jour...",
     "installing": "Installation de la mise à jour...",
     "closeAriaLabel": "Fermer la boîte de dialogue de mise à jour"
+  },
+  "notifications": {
+    "title": "Correctify",
+    "processing": "Traitement de la correction du texte...",
+    "corrected": "Texte corrigé et copié dans le presse-papiers !",
+    "model": "Modèle",
+    "style": "Style",
+    "duration": "Durée",
+    "emptyClipboardMac": "Veuillez d'abord copier le texte (Cmd+C), puis utilisez Cmd+Shift+]",
+    "emptyClipboardWinLinux": "Veuillez d'abord copier le texte (Ctrl+C), puis utilisez Ctrl+Shift+]",
+    "permissionRequired": "Correctify - Autorisation requise",
+    "permissionRequiredBody": "Le collage automatique nécessite une autorisation d'accessibilité. Veuillez l'activer dans Réglages système > Confidentialité et sécurité > Accessibilité, puis redémarrez l'application.",
+    "autoPastePermissionRequired": "La copie/colle automatique nécessite une autorisation d'accessibilité. Veuillez l'activer dans Réglages système > Confidentialité et sécurité > Accessibilité, puis redémarrez l'application.",
+    "pastedSuccessfully": "Texte collé avec succès !",
+    "autoPasteFailed": "Correctify - Échec du collage automatique",
+    "autoPasteFailedBody": "Échec du collage du texte. Veuillez coller manuellement (Cmd+V).",
+    "autoPasteFailedInit": "Échec de l'initialisation de l'automatisation du clavier. Veuillez vérifier les autorisations d'accessibilité.",
+    "autoPasteError": "Une erreur s'est produite lors du collage automatique. L'application n'a pas planté, mais le collage a peut-être échoué."
   }
 }

@@ -371,39 +371,54 @@ jobs:
 
           cat installers/latest.json
 
+      - name: Generate release body
+        id: release_body
+        run: |
+          CHANGELOG="${{ needs.check-release.outputs.changelog }}"
+          if [ "$CHANGELOG" != "New release" ] && [ -n "$CHANGELOG" ]; then
+            BODY="## Changelog
+
+          $CHANGELOG
+
+          ## Downloads"
+          else
+            BODY="## Downloads"
+          fi
+
+          BODY="$BODY
+
+          Choose the installer for your operating system:
+
+          **macOS:**
+          - Apple Silicon (M1/M2/M3/M4): \`Correctify_*_aarch64.dmg\`
+          - Intel Macs: \`Correctify_*_x64.dmg\`
+
+          **Windows:**
+          - Installer: \`Correctify_*_x64-setup.exe\`
+          - MSI Installer: \`Correctify_*_x64_en-US.msi\`
+
+          **Linux:**
+          - x86_64 (Intel/AMD):
+            - Debian/Ubuntu: \`correctify_*_amd64.deb\`
+            - AppImage (Universal): \`correctify_*_amd64.AppImage\`
+            - RPM: \`correctify_*_amd64.rpm\`
+          - ARM64 (Apple Silicon, Raspberry Pi 4+, etc.):
+            - Debian/Ubuntu: \`correctify_*_arm64.deb\`
+            - AppImage (Universal): \`correctify_*_arm64.AppImage\`
+            - RPM: \`correctify_*_arm64.rpm\`
+
+          Just download, run the installer, and you're ready to correct grammar!"
+
+          echo "body<<EOF" >> $GITHUB_OUTPUT
+          echo "$BODY" >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
+
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v1
         with:
           tag_name: ${{ needs.check-release.outputs.version }}
           name: "Correctify ${{ needs.check-release.outputs.version }}"
-          body: |
-            ## Changelog
-
-            ${{ needs.check-release.outputs.changelog }}
-
-            ## Downloads
-
-            Choose the installer for your operating system:
-
-            **macOS:**
-            - Apple Silicon (M1/M2/M3/M4): `Correctify_*_aarch64.dmg`
-            - Intel Macs: `Correctify_*_x64.dmg`
-
-            **Windows:**
-            - Installer: `Correctify_*_x64-setup.exe`
-            - MSI Installer: `Correctify_*_x64_en-US.msi`
-
-            **Linux:**
-            - x86_64 (Intel/AMD):
-              - Debian/Ubuntu: `correctify_*_amd64.deb`
-              - AppImage (Universal): `correctify_*_amd64.AppImage`
-              - RPM: `correctify_*_amd64.rpm`
-            - ARM64 (Apple Silicon, Raspberry Pi 4+, etc.):
-              - Debian/Ubuntu: `correctify_*_arm64.deb`
-              - AppImage (Universal): `correctify_*_arm64.AppImage`
-              - RPM: `correctify_*_arm64.rpm`
-
-            Just download, run the installer, and you're ready to correct grammar!
+          body: ${{ steps.release_body.outputs.body }}
           draft: false
           prerelease: false
           files: |

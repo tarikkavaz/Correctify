@@ -235,7 +235,7 @@
     "description": "Yazınızı geliştirmek için AI kullanan ve verilerinizi güvende tutan gizlilik odaklı bir dilbilgisi düzeltme aracı.",
     "visitHomepage": "Ana Sayfayı Ziyaret Et",
     "copyright": "© 2025 Correctify",
-    "builtWith": "Tauri, Next.js ve OpenAI ile ❤️ ile oluşturuldu",
+    "builtWith": "Tauri, Next.js ve OpenAI ile oluşturuldu",
     "features": {
       "title": "Özellikler",
       "secureStorage": "Güvenli API anahtarı depolama (işletim sistemi düzeyinde şifreleme)",
@@ -274,5 +274,23 @@
     "downloading": "Güncelleme indiriliyor...",
     "installing": "Güncelleme yükleniyor...",
     "closeAriaLabel": "Güncelleme iletişim kutusunu kapat"
+  },
+  "notifications": {
+    "title": "Correctify",
+    "processing": "Metin düzeltmesi işleniyor...",
+    "corrected": "Metin düzeltildi ve panoya kopyalandı!",
+    "model": "Model",
+    "style": "Stil",
+    "duration": "Süre",
+    "emptyClipboardMac": "Lütfen önce metni kopyalayın (Cmd+C), ardından Cmd+Shift+] kullanın",
+    "emptyClipboardWinLinux": "Lütfen önce metni kopyalayın (Ctrl+C), ardından Ctrl+Shift+] kullanın",
+    "permissionRequired": "Correctify - İzin Gerekli",
+    "permissionRequiredBody": "Otomatik yapıştırma Erişilebilirlik izni gerektirir. Lütfen Sistem Ayarları > Gizlilik ve Güvenlik > Erişilebilirlik'te etkinleştirin ve ardından uygulamayı yeniden başlatın.",
+    "autoPastePermissionRequired": "Otomatik kopyala/yapıştırma Erişilebilirlik izni gerektirir. Lütfen Sistem Ayarları > Gizlilik ve Güvenlik > Erişilebilirlik'te etkinleştirin ve ardından uygulamayı yeniden başlatın.",
+    "pastedSuccessfully": "Metin başarıyla yapıştırıldı!",
+    "autoPasteFailed": "Correctify - Otomatik Yapıştırma Başarısız",
+    "autoPasteFailedBody": "Metin yapıştırılamadı. Lütfen manuel olarak yapıştırın (Cmd+V).",
+    "autoPasteFailedInit": "Klavye otomasyonu başlatılamadı. Lütfen Erişilebilirlik izinlerini kontrol edin.",
+    "autoPasteError": "Otomatik yapıştırma sırasında bir hata oluştu. Uygulama çökmedi, ancak yapıştırma başarısız olmuş olabilir."
   }
 }

@@ -391,16 +391,41 @@ export default function SettingsModal({
                         <button
                           key={lang}
                           type="button"
-                          onClick={() => {
+                          onClick={async () => {
                             setSelectedLanguage(lang);
                             setIsLanguageDropdownOpen(false);
                             if (lang !== "system") {
                               changeLocale(lang);
                               localStorage.setItem("app-language", lang);
                               localStorage.removeItem("dev-locale"); // Remove old dev-locale if exists
+
+                              // Sync locale to Rust backend
+                              if (isTauriApp) {
+                                try {
+                                  const { invoke } = await import("@tauri-apps/api/core");
+                                  await invoke("set_locale", { locale: lang });
+                                } catch (err) {
+                                  console.error("Failed to sync locale:", err);
+                                }
+                              }
                             } else {
                               localStorage.setItem("app-language", "system");
                               localStorage.removeItem("dev-locale");
+
+                              // Sync system locale to Rust backend
+                              if (isTauriApp) {
+                                try {
+                                  const { invoke } = await import("@tauri-apps/api/core");
+                                  const systemLang = navigator.language.toLowerCase();
+                                  const systemLocale = systemLang.startsWith("de") ? "de" :
+                                                       systemLang.startsWith("fr") ? "fr" :
+                                                       systemLang.startsWith("tr") ? "tr" : "en";
+                                  await invoke("set_locale", { locale: systemLocale });
+                                } catch (err) {
+                                  console.error("Failed to sync locale:", err);
+                                }
+                              }
+
                               // Reload to use system language
                               window.location.reload();
                             }

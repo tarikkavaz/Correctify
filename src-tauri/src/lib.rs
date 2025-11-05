@@ -11,11 +11,18 @@ use std::path::PathBuf;
 use std::io::Write;
 use enigo::{Enigo, Key, Keyboard, Settings};
 use base64::{Engine as _, engine::general_purpose};
+use serde_json::Value;
 #[cfg(target_os = "macos")]
 use window_vibrancy::{apply_vibrancy, NSVisualEffectMaterial};
 
 #[cfg(target_os = "windows")]
 use window_vibrancy::apply_blur;
+
+// Locale JSON files loaded at compile time
+const LOCALE_EN: &str = include_str!("../../lib/locales/en.json");
+const LOCALE_DE: &str = include_str!("../../lib/locales/de.json");
+const LOCALE_FR: &str = include_str!("../../lib/locales/fr.json");
+const LOCALE_TR: &str = include_str!("../../lib/locales/tr.json");
 
 // Application state for settings
 struct AppState {
@@ -23,6 +30,9 @@ struct AppState {
     shortcut_key: Arc<Mutex<String>>,
     shortcut_modifier: Arc<Mutex<String>>,
     auto_paste_enabled: Arc<Mutex<bool>>,
+    current_model: Arc<Mutex<String>>,
+    current_style: Arc<Mutex<String>>,
+    locale: Arc<Mutex<String>>,
 }
 
 // Sound playback function (non-blocking)
@@ -86,20 +96,24 @@ async fn handle_corrected_text(
     let state = app.state::<AppState>();
     let sound_enabled = *state.sound_enabled.lock().unwrap();
     let should_auto_paste = auto_paste.unwrap_or(false);
+    let locale = state.locale.lock().unwrap().clone();
 
     // Build notification body with optional model and duration
-    let mut body = String::from("Text corrected and copied to clipboard!");
+    let mut body = get_translation(&locale, "notifications.corrected");
     if let Some(model_name) = model {
-        body.push_str(&format!("\nModel: {}", model_name));
+        let model_label = get_translation(&locale, "notifications.model");
+        body.push_str(&format!("\n{}: {}", model_label, model_name));
     }
     if let Some(dur) = duration {
-        body.push_str(&format!("\nDuration: {:.2}s", dur / 1000.0));
+        let duration_label = get_translation(&locale, "notifications.duration");
+        body.push_str(&format!("\n{}: {:.2}s", duration_label, dur / 1000.0));
     }
 
     // Show success notification and play sound
+    let title = get_translation(&locale, "notifications.title");
     let _ = app.notification()
         .builder()
-        .title("Correctify")
+        .title(&title)
         .body(&body)
         .show();
 
@@ -132,16 +146,20 @@ async fn handle_corrected_text(
             };
 
             if !has_permission {
-                let _ = app.emit("auto-paste-debug", "❌ Accessibility permission not granted");
+                let _ = app.emit("auto-paste-debug", "Accessibility permission not granted");
                 eprintln!("[Auto-paste] Accessibility permission not granted");
+                let state = app.state::<AppState>();
+                let locale = state.locale.lock().unwrap().clone();
+                let title = get_translation(&locale, "notifications.permissionRequired");
+                let body = get_translation(&locale, "notifications.permissionRequiredBody");
                 let _ = app.notification()
                     .builder()
-                    .title("Correctify - Permission Required")
-                    .body("Auto paste requires Accessibility permission. Please enable it in System Settings > Privacy & Security > Accessibility, then restart the app.")
+                    .title(&title)
+                    .body(&body)
                     .show();
                 return Ok(()); // Don't try to use enigo without permission
             }
-            let _ = app.emit("auto-paste-debug", "✅ Accessibility permission granted");
+            let _ = app.emit("auto-paste-debug", "Accessibility permission granted");
             println!("[Auto-paste] Accessibility permission granted");
         }
 
@@ -187,30 +205,42 @@ async fn handle_corrected_text(
                     match applescript_result {
                         Ok(output) => {
                             if output.status.success() {
-                                emit_debug("✅ Auto-paste completed successfully");
+                                emit_debug("Auto-paste completed successfully");
+                                let state = app_clone.state::<AppState>();
+                                let locale = state.locale.lock().unwrap().clone();
+                                let title = get_translation(&locale, "notifications.title");
+                                let body = get_translation(&locale, "notifications.pastedSuccessfully");
                                 let _ = app_clone.notification()
                                     .builder()
-                                    .title("Correctify")
-                                    .body("Text pasted successfully!")
+                                    .title(&title)
+                                    .body(&body)
                                     .show();
                             } else {
                                 let stderr = String::from_utf8_lossy(&output.stderr);
-                                let error_msg = format!("❌ AppleScript paste failed: {}", stderr);
+                                let error_msg = format!("AppleScript paste failed: {}", stderr);
                                 emit_debug(&error_msg);
+                                let state = app_clone.state::<AppState>();
+                                let locale = state.locale.lock().unwrap().clone();
+                                let title = get_translation(&locale, "notifications.autoPasteFailed");
+                                let body = get_translation(&locale, "notifications.autoPasteFailedBody");
                                 let _ = app_clone.notification()
                                     .builder()
-                                    .title("Correctify - Auto-paste Failed")
-                                    .body("Failed to paste text. Please paste manually (Cmd+V).")
+                                    .title(&title)
+                                    .body(&body)
                                     .show();
                             }
                         }
                         Err(e) => {
-                            let error_msg = format!("❌ AppleScript command failed: {:?}", e);
+                            let error_msg = format!("AppleScript command failed: {:?}", e);
                             emit_debug(&error_msg);
+                            let state = app_clone.state::<AppState>();
+                            let locale = state.locale.lock().unwrap().clone();
+                            let title = get_translation(&locale, "notifications.autoPasteFailed");
+                            let body = get_translation(&locale, "notifications.autoPasteFailedBody");
                             let _ = app_clone.notification()
                                 .builder()
-                                .title("Correctify - Auto-paste Failed")
-                                .body("Failed to paste text. Please paste manually (Cmd+V).")
+                                .title(&title)
+                                .body(&body)
                                 .show();
                         }
                     }
@@ -226,14 +256,18 @@ async fn handle_corrected_text(
                             enigo
                         },
                         Err(e) => {
-                            let error_msg = format!("❌ Failed to create Enigo instance: {:?}", e);
+                            let error_msg = format!("Failed to create Enigo instance: {:?}", e);
                             write_log_file(&app_clone, &format!("ERROR: {}", error_msg));
                             println!("[Auto-paste] {}", error_msg);
                             let _ = app_clone.emit("auto-paste-debug", &error_msg);
+                            let state = app_clone.state::<AppState>();
+                            let locale = state.locale.lock().unwrap().clone();
+                            let title = get_translation(&locale, "notifications.autoPasteFailed");
+                            let body = get_translation(&locale, "notifications.autoPasteFailedInit");
                             let _ = app_clone.notification()
                                 .builder()
-                                .title("Correctify - Auto-paste Failed")
-                                .body("Failed to initialize keyboard automation. Please check Accessibility permissions.")
+                                .title(&title)
+                                .body(&body)
                                 .show();
                             return;
                         }
@@ -251,28 +285,32 @@ async fn handle_corrected_text(
                                     emit_debug("Releasing Ctrl key...");
                                     match enigo.key(Key::Control, enigo::Direction::Release) {
                                         Ok(_) => {
-                                            emit_debug("✅ Auto-paste completed successfully");
+                                            emit_debug("Auto-paste completed successfully");
+                                            let state = app_clone.state::<AppState>();
+                                            let locale = state.locale.lock().unwrap().clone();
+                                            let title = get_translation(&locale, "notifications.title");
+                                            let body = get_translation(&locale, "notifications.pastedSuccessfully");
                                             let _ = app_clone.notification()
                                                 .builder()
-                                                .title("Correctify")
-                                                .body("Text pasted successfully!")
+                                                .title(&title)
+                                                .body(&body)
                                                 .show();
                                         }
                                         Err(e) => {
-                                            let error_msg = format!("❌ Failed to release Control key: {:?}", e);
+                                            let error_msg = format!("Failed to release Control key: {:?}", e);
                                             emit_debug(&error_msg);
                                         }
                                     }
                                 }
                                 Err(e) => {
-                                    let error_msg = format!("❌ Failed to press 'v' key: {:?}", e);
+                                    let error_msg = format!("Failed to press 'v' key: {:?}", e);
                                     emit_debug(&error_msg);
                                     let _ = enigo.key(Key::Control, enigo::Direction::Release);
                                 }
                             }
                         }
                         Err(e) => {
-                            let error_msg = format!("❌ Failed to press Control key: {:?}", e);
+                            let error_msg = format!("Failed to press Control key: {:?}", e);
                             emit_debug(&error_msg);
                         }
                     }
@@ -281,19 +319,23 @@ async fn handle_corrected_text(
 
             // Handle panic result
             if let Err(panic_payload) = result {
-                let error_msg = format!("❌ Thread panicked: {:?}", panic_payload);
+                let error_msg = format!("Thread panicked: {:?}", panic_payload);
                 eprintln!("[Auto-paste] {}", error_msg);
                 // Try to emit and show notification, but don't panic if it fails
                 let _ = std::panic::catch_unwind(panic::AssertUnwindSafe(|| {
                     let _ = app_clone.emit("auto-paste-debug", &error_msg);
+                    let state = app_clone.state::<AppState>();
+                    let locale = state.locale.lock().unwrap().clone();
+                    let title = get_translation(&locale, "notifications.autoPasteFailed");
+                    let body = get_translation(&locale, "notifications.autoPasteError");
                     let _ = app_clone.notification()
                         .builder()
-                        .title("Correctify - Auto-paste Failed")
-                        .body("Auto-paste encountered an error. The app did not crash, but paste may have failed.")
+                        .title(&title)
+                        .body(&body)
                         .show();
                 }));
             } else {
-                emit_debug("✅ Thread completed without panicking");
+                emit_debug("Thread completed without panicking");
             }
         });
     }
@@ -418,6 +460,120 @@ fn get_auto_paste_enabled(state: tauri::State<AppState>) -> Result<bool, String>
     Ok(*auto_paste_enabled)
 }
 
+// Helper function to get locale JSON string
+fn get_locale_json(locale: &str) -> &str {
+    match locale {
+        "de" => LOCALE_DE,
+        "fr" => LOCALE_FR,
+        "tr" => LOCALE_TR,
+        _ => LOCALE_EN, // Default to English
+    }
+}
+
+// Helper function to get translated string from locale JSON
+fn get_translation(locale: &str, key: &str) -> String {
+    let locale_json = get_locale_json(locale);
+    match serde_json::from_str::<Value>(locale_json) {
+        Ok(json) => {
+            // Navigate through nested keys (e.g., "notifications.processing")
+            let parts: Vec<&str> = key.split('.').collect();
+            let mut current = &json;
+
+            for part in parts {
+                if let Some(obj) = current.as_object() {
+                    if let Some(value) = obj.get(part) {
+                        current = value;
+                    } else {
+                        // Fallback to English if key not found
+                        return get_translation("en", key);
+                    }
+                } else {
+                    return get_translation("en", key);
+                }
+            }
+
+            if let Some(str_val) = current.as_str() {
+                str_val.to_string()
+            } else {
+                get_translation("en", key)
+            }
+        }
+        Err(_) => {
+            // If parsing fails, try English
+            if locale != "en" {
+                get_translation("en", key)
+            } else {
+                key.to_string() // Last resort: return key itself
+            }
+        }
+    }
+}
+
+// Helper function to convert style value to human-readable label (translated)
+fn style_to_label(style: &str, locale: &str) -> String {
+    let style_key = match style {
+        "grammar" => "home.styleOptions.grammar.label",
+        "formal" => "home.styleOptions.formal.label",
+        "informal" => "home.styleOptions.informal.label",
+        "collaborative" => "home.styleOptions.collaborative.label",
+        "concise" => "home.styleOptions.concise.label",
+        _ => "home.styleOptions.grammar.label",
+    };
+    get_translation(locale, style_key)
+}
+
+// Tauri command to update correction settings (model and style)
+#[tauri::command]
+fn set_correction_settings(
+    model: Option<String>,
+    style: Option<String>,
+    state: tauri::State<AppState>,
+) -> Result<(), String> {
+    if let Some(model_value) = model {
+        let mut current_model = state.current_model.lock().unwrap();
+        *current_model = model_value;
+    }
+    if let Some(style_value) = style {
+        let mut current_style = state.current_style.lock().unwrap();
+        *current_style = style_value;
+    }
+    Ok(())
+}
+
+// Tauri command to get current model
+#[tauri::command]
+fn get_current_model(state: tauri::State<AppState>) -> Result<String, String> {
+    let current_model = state.current_model.lock().unwrap();
+    Ok(current_model.clone())
+}
+
+// Tauri command to get current style
+#[tauri::command]
+fn get_current_style(state: tauri::State<AppState>) -> Result<String, String> {
+    let current_style = state.current_style.lock().unwrap();
+    Ok(current_style.clone())
+}
+
+// Tauri command to set locale
+#[tauri::command]
+fn set_locale(locale: String, state: tauri::State<AppState>) -> Result<(), String> {
+    let mut current_locale = state.locale.lock().unwrap();
+    // Validate locale
+    if ["en", "de", "fr", "tr"].contains(&locale.as_str()) {
+        *current_locale = locale;
+        Ok(())
+    } else {
+        Err(format!("Invalid locale: {}", locale))
+    }
+}
+
+// Tauri command to get current locale
+#[tauri::command]
+fn get_locale(state: tauri::State<AppState>) -> Result<String, String> {
+    let current_locale = state.locale.lock().unwrap();
+    Ok(current_locale.clone())
+}
+
 // Helper function to get storage file path
 fn get_storage_path(app: &tauri::AppHandle) -> Result<PathBuf, String> {
     let app_data_dir = app.path().app_data_dir()
@@ -517,6 +673,9 @@ pub fn run() {
         shortcut_key: Arc::new(Mutex::new("]".to_string())), // Default: closing bracket key
         shortcut_modifier: Arc::new(Mutex::new("CmdOrCtrl+Shift".to_string())), // Default: Cmd+Shift on Mac, Ctrl+Shift on Win/Linux
         auto_paste_enabled: Arc::new(Mutex::new(false)), // Default: auto-paste disabled
+        current_model: Arc::new(Mutex::new("gpt-4o-mini".to_string())), // Default model
+        current_style: Arc::new(Mutex::new("grammar".to_string())), // Default style
+        locale: Arc::new(Mutex::new("en".to_string())), // Default locale: English
     };
 
     tauri::Builder::default()
@@ -564,10 +723,14 @@ pub fn run() {
 
                                 if !has_permission {
                                     // Show notification to user
+                                    let state = app.state::<AppState>();
+                                    let locale = state.locale.lock().unwrap().clone();
+                                    let title = get_translation(&locale, "notifications.permissionRequired");
+                                    let body = get_translation(&locale, "notifications.autoPastePermissionRequired");
                                     let _ = app.notification()
                                         .builder()
-                                        .title("Correctify - Permission Required")
-                                        .body("Auto copy/paste requires Accessibility permission. Please enable it in System Settings > Privacy & Security > Accessibility, then restart the app.")
+                                        .title(&title)
+                                        .body(&body)
                                         .show();
 
                                     return; // Don't try to use enigo without permission
@@ -624,18 +787,32 @@ pub fn run() {
                                 // Emit event to frontend with text to correct
                                 let _ = app.emit("correct-clipboard-text", text.clone());
 
+                                // Get current model and style from state
+                                let current_model = state.current_model.lock().unwrap().clone();
+                                let current_style = state.current_style.lock().unwrap().clone();
+                                let locale = state.locale.lock().unwrap().clone();
+                                let style_label = style_to_label(&current_style, &locale);
+
+                                // Build notification body with model and style
+                                let mut notification_body = get_translation(&locale, "notifications.processing");
+                                let model_label = get_translation(&locale, "notifications.model");
+                                let style_label_key = get_translation(&locale, "notifications.style");
+                                notification_body.push_str(&format!("\n{}: {}", model_label, current_model));
+                                notification_body.push_str(&format!("\n{}: {}", style_label_key, style_label));
+
                                 // Show notification that we're processing
+                                let title = get_translation(&locale, "notifications.title");
                                 let _ = app.notification()
                                     .builder()
-                                    .title("Correctify")
-                                    .body("Processing text correction...")
+                                    .title(&title)
+                                    .body(&notification_body)
                                     .show();
 
                                 // Play processing sound
                                 play_sound("processing", sound_enabled);
                             }
                             Err(e) => {
-                                eprintln!("❌ Failed to read clipboard: {}", e);
+                                eprintln!("Failed to read clipboard: {}", e);
                             }
                         }
                     }
@@ -654,7 +831,12 @@ pub fn run() {
             get_auto_paste_enabled,
             secure_storage_get,
             secure_storage_set,
-            secure_storage_remove
+            secure_storage_remove,
+            set_correction_settings,
+            get_current_model,
+            get_current_style,
+            set_locale,
+            get_locale
         ])
         .setup(|app| {
             // Set activation policy to Accessory on macOS to hide dock icon
