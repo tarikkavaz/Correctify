@@ -1,0 +1,1 @@
+"use strict";exports.id=13,exports.ids=[13],exports.modules={2013:(a,b,c)=>{c.d(b,{disable:()=>g,enable:()=>f,isEnabled:()=>e});var d=c(3622);async function e(){return await (0,d.invoke)("plugin:autostart|is_enabled")}async function f(){await (0,d.invoke)("plugin:autostart|enable")}async function g(){await (0,d.invoke)("plugin:autostart|disable")}}};

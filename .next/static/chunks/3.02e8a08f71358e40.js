@@ -1,0 +1,1 @@
+"use strict";(self.webpackChunk_N_E=self.webpackChunk_N_E||[]).push([[3],{2003:(a,n,e)=>{e.d(n,{disable:()=>u,enable:()=>s,isEnabled:()=>i});var t=e(1249);async function i(){return await (0,t.invoke)("plugin:autostart|is_enabled")}async function s(){await (0,t.invoke)("plugin:autostart|enable")}async function u(){await (0,t.invoke)("plugin:autostart|disable")}}}]);
