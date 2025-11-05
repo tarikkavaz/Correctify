@@ -141,8 +141,8 @@ jobs:
           - platform: 'ubuntu-22.04'
             args: ''
             target: 'x86_64-unknown-linux-gnu'
-          - platform: 'ubuntu-22.04'
-            args: '--target aarch64-unknown-linux-gnu'
+          - platform: 'ubuntu-22.04-arm'
+            args: ''
             target: 'aarch64-unknown-linux-gnu'
           - platform: 'windows-latest'
             args: ''
@@ -165,16 +165,11 @@ jobs:
           node-version: 20
           cache: 'pnpm'
 
-      - name: Setup QEMU
-        if: matrix.target == 'aarch64-unknown-linux-gnu'
-        uses: docker/setup-qemu-action@v3
-        with:
-          platforms: arm64
 
       - name: Install Rust stable
         uses: dtolnay/rust-toolchain@stable
         with:
-          targets: ${{ matrix.platform == 'macos-latest' && 'aarch64-apple-darwin,x86_64-apple-darwin' || (matrix.target == 'aarch64-unknown-linux-gnu' && 'aarch64-unknown-linux-gnu' || '') }}
+          targets: ${{ matrix.platform == 'macos-latest' && 'aarch64-apple-darwin,x86_64-apple-darwin' || (matrix.platform == 'ubuntu-22.04-arm' && 'aarch64-unknown-linux-gnu' || '') }}
 
       - name: Install dependencies (Ubuntu x86_64)
         if: matrix.platform == 'ubuntu-22.04' && matrix.target == 'x86_64-unknown-linux-gnu'
@@ -183,77 +178,11 @@ jobs:
           sudo apt-get install -y libwebkit2gtk-4.1-dev libappindicator3-dev librsvg2-dev patchelf libasound2-dev
 
       - name: Install dependencies (Ubuntu ARM64)
-        if: matrix.platform == 'ubuntu-22.04' && matrix.target == 'aarch64-unknown-linux-gnu'
+        if: matrix.platform == 'ubuntu-22.04-arm'
         run: |
-          # Add arm64 architecture for cross-compilation
-          sudo dpkg --add-architecture arm64
-
-          # Disable problematic mirror file references in sources.list
-          # The mirror file causes 404s, so we need to remove those sources
-          if [ -f /etc/apt/sources.list ]; then
-            sudo sed -i 's|^deb mirror+file:/etc/apt/apt-mirrors.txt|# deb mirror+file:/etc/apt/apt-mirrors.txt|g' /etc/apt/sources.list
-            sudo sed -i 's|^deb-src mirror+file:/etc/apt/apt-mirrors.txt|# deb-src mirror+file:/etc/apt/apt-mirrors.txt|g' /etc/apt/sources.list
-          fi
-
-          # Also disable mirror sources in sources.list.d
-          if [ -d /etc/apt/sources.list.d ]; then
-            sudo find /etc/apt/sources.list.d -type f -name "*.list" -exec sed -i 's|^deb mirror+file:/etc/apt/apt-mirrors.txt|# deb mirror+file:/etc/apt/apt-mirrors.txt|g' {} \;
-            sudo find /etc/apt/sources.list.d -type f -name "*.list" -exec sed -i 's|^deb-src mirror+file:/etc/apt/apt-mirrors.txt|# deb-src mirror+file:/etc/apt/apt-mirrors.txt|g' {} \;
-          fi
-
-          # Update package lists - ignore errors from security repo for arm64
-          # The security repo doesn't host arm64 packages, but that's OK
-          set +e  # Don't exit on error
-          sudo apt-get update -o Acquire::Check-Valid-Until=false 2>&1 | tee /tmp/apt-update.log
-          UPDATE_EXIT=$?
-          set -e  # Re-enable exit on error
-
-          # Check if update succeeded (exit code 0) or only had expected errors
-          if [ $UPDATE_EXIT -ne 0 ]; then
-            # Count how many 404 errors we got (expected for arm64 security repo)
-            ERROR_COUNT=$(grep -c "404  Not Found" /tmp/apt-update.log || echo "0")
-            if [ "$ERROR_COUNT" -gt 0 ]; then
-              echo "apt-get update had $ERROR_COUNT expected 404 errors from security repo (arm64 packages not available)"
-            else
-              echo "apt-get update failed with unexpected errors, but continuing..."
-            fi
-          fi
-
-          # Verify arm64 architecture was added
-          if ! dpkg --print-foreign-architectures | grep -q arm64; then
-            echo "ERROR: arm64 architecture not added"
-            exit 1
-          fi
-
-          echo "Available architectures:"
-          dpkg --print-architecture
-          dpkg --print-foreign-architectures
-
-          # Install cross-compilation toolchain (amd64 packages that provide arm64 tools)
-          # Use --fix-missing to handle any package fetch failures
-          sudo apt-get install -y --fix-missing \
-            gcc-aarch64-linux-gnu \
-            g++-aarch64-linux-gnu \
-            binutils-aarch64-linux-gnu \
-            qemu-user-static \
-            binfmt-support || {
-            echo "Some packages failed, retrying without --fix-missing..."
-            sudo apt-get install -y \
-              gcc-aarch64-linux-gnu \
-              g++-aarch64-linux-gnu \
-              binutils-aarch64-linux-gnu \
-              qemu-user-static \
-              binfmt-support
-          }
-
-          # Note: We don't install ARM64 versions of GUI libraries (libwebkit2gtk, etc.)
-          # because:
-          # 1. They're not available in Ubuntu repos for cross-compilation
-          # 2. Tauri bundles these libraries or handles them at runtime
-          # 3. Cross-compilation only needs the toolchain, not runtime libraries
-
-          # Register QEMU with binfmt_misc for running ARM64 binaries
-          sudo update-binfmts --enable qemu-aarch64
+          # Native ARM64 build - install standard dependencies
+          sudo apt-get update
+          sudo apt-get install -y libwebkit2gtk-4.1-dev libappindicator3-dev librsvg2-dev patchelf libasound2-dev
 
       - name: Install frontend dependencies
         run: pnpm install
@@ -303,10 +232,12 @@ jobs:
             xcrun stapler staple "$dmg"
           done
 
-      - name: Build app (Linux)
+      - name: Build app (Linux x86_64)
         if: matrix.platform == 'ubuntu-22.04'
-        env:
-          CARGO_TARGET_AARCH64_UNKNOWN_LINUX_GNU_LINKER: ${{ matrix.target == 'aarch64-unknown-linux-gnu' && 'aarch64-linux-gnu-gcc' || '' }}
+        run: pnpm tauri build ${{ matrix.args }}
+
+      - name: Build app (Linux ARM64)
+        if: matrix.platform == 'ubuntu-22.04-arm'
         run: pnpm tauri build ${{ matrix.args }}
 
       - name: Build app (Windows)
@@ -333,7 +264,7 @@ jobs:
           retention-days: 1
 
       - name: Upload installers (Linux ARM64)
-        if: matrix.platform == 'ubuntu-22.04' && matrix.target == 'aarch64-unknown-linux-gnu'
+        if: matrix.platform == 'ubuntu-22.04-arm'
         uses: actions/upload-artifact@v4
         with:
           name: installers-${{ matrix.target }}
