@@ -188,10 +188,17 @@ jobs:
           # Add arm64 architecture for cross-compilation
           sudo dpkg --add-architecture arm64
 
-          # Configure apt to handle mirror failures gracefully
-          # Disable problematic mirror file that causes 404s
-          if [ -f /etc/apt/apt-mirrors.txt ]; then
-            sudo mv /etc/apt/apt-mirrors.txt /etc/apt/apt-mirrors.txt.disabled || true
+          # Disable problematic mirror file references in sources.list
+          # The mirror file causes 404s, so we need to remove those sources
+          if [ -f /etc/apt/sources.list ]; then
+            sudo sed -i 's|^deb mirror+file:/etc/apt/apt-mirrors.txt|# deb mirror+file:/etc/apt/apt-mirrors.txt|g' /etc/apt/sources.list
+            sudo sed -i 's|^deb-src mirror+file:/etc/apt/apt-mirrors.txt|# deb-src mirror+file:/etc/apt/apt-mirrors.txt|g' /etc/apt/sources.list
+          fi
+
+          # Also disable mirror sources in sources.list.d
+          if [ -d /etc/apt/sources.list.d ]; then
+            sudo find /etc/apt/sources.list.d -type f -name "*.list" -exec sed -i 's|^deb mirror+file:/etc/apt/apt-mirrors.txt|# deb mirror+file:/etc/apt/apt-mirrors.txt|g' {} \;
+            sudo find /etc/apt/sources.list.d -type f -name "*.list" -exec sed -i 's|^deb-src mirror+file:/etc/apt/apt-mirrors.txt|# deb-src mirror+file:/etc/apt/apt-mirrors.txt|g' {} \;
           fi
 
           # Update package lists - ignore errors from security repo for arm64
