@@ -185,9 +185,20 @@ jobs:
       - name: Install dependencies (Ubuntu ARM64)
         if: matrix.platform == 'ubuntu-22.04' && matrix.target == 'aarch64-unknown-linux-gnu'
         run: |
-          sudo apt-get update
+          set +e  # Don't exit on errors - we expect 404s from security repo for arm64
+
+          # Add arm64 architecture
           sudo dpkg --add-architecture arm64
+
+          # Update package lists - security.ubuntu.com doesn't host arm64 packages,
+          # so we'll get 404 errors but that's OK - we can ignore them
+          # The main archive repos should have what we need for arm64
           sudo apt-get update
+          echo "apt-get update completed (some 404 errors from security repo are expected for arm64)"
+
+          set -e  # Re-enable exit on error for the rest of the script
+
+          # Install dependencies - the main archive repos should have what we need
           sudo apt-get install -y \
             gcc-aarch64-linux-gnu \
             g++-aarch64-linux-gnu \
@@ -198,6 +209,7 @@ jobs:
             libasound2-dev:arm64 \
             qemu-user-static \
             binfmt-support
+
           # Register QEMU with binfmt_misc
           sudo update-binfmts --enable qemu-aarch64
 
