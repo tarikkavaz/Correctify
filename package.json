@@ -12,7 +12,8 @@
     "test:watch": "jest --watch",
     "tauri:dev": "tauri dev",
     "tauri:build": "tauri build",
-    "tauri:build:signed": "./scripts/build-signed.sh"
+    "tauri:build:signed": "./scripts/build-signed.sh",
+    "tauri:build:linux-arm64": "./scripts/build-linux-arm64.sh"
   },
   "dependencies": {
     "@ai-sdk/anthropic": "^2.0.38",

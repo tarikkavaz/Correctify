@@ -141,6 +141,9 @@ jobs:
           - platform: 'ubuntu-22.04'
             args: ''
             target: 'x86_64-unknown-linux-gnu'
+          - platform: 'ubuntu-22.04'
+            args: '--target aarch64-unknown-linux-gnu'
+            target: 'aarch64-unknown-linux-gnu'
           - platform: 'windows-latest'
             args: ''
             target: 'x86_64-pc-windows-msvc'
@@ -162,16 +165,41 @@ jobs:
           node-version: 20
           cache: 'pnpm'
 
+      - name: Setup QEMU
+        if: matrix.target == 'aarch64-unknown-linux-gnu'
+        uses: docker/setup-qemu-action@v3
+        with:
+          platforms: arm64
+
       - name: Install Rust stable
         uses: dtolnay/rust-toolchain@stable
         with:
-          targets: ${{ matrix.platform == 'macos-latest' && 'aarch64-apple-darwin,x86_64-apple-darwin' || '' }}
+          targets: ${{ matrix.platform == 'macos-latest' && 'aarch64-apple-darwin,x86_64-apple-darwin' || (matrix.target == 'aarch64-unknown-linux-gnu' && 'aarch64-unknown-linux-gnu' || '') }}
 
-      - name: Install dependencies (Ubuntu)
-        if: matrix.platform == 'ubuntu-22.04'
+      - name: Install dependencies (Ubuntu x86_64)
+        if: matrix.platform == 'ubuntu-22.04' && matrix.target == 'x86_64-unknown-linux-gnu'
         run: |
           sudo apt-get update
           sudo apt-get install -y libwebkit2gtk-4.1-dev libappindicator3-dev librsvg2-dev patchelf libasound2-dev
+
+      - name: Install dependencies (Ubuntu ARM64)
+        if: matrix.platform == 'ubuntu-22.04' && matrix.target == 'aarch64-unknown-linux-gnu'
+        run: |
+          sudo apt-get update
+          sudo dpkg --add-architecture arm64
+          sudo apt-get update
+          sudo apt-get install -y \
+            gcc-aarch64-linux-gnu \
+            g++-aarch64-linux-gnu \
+            libwebkit2gtk-4.1-dev:arm64 \
+            libappindicator3-dev:arm64 \
+            librsvg2-dev:arm64 \
+            patchelf:arm64 \
+            libasound2-dev:arm64 \
+            qemu-user-static \
+            binfmt-support
+          # Register QEMU with binfmt_misc
+          sudo update-binfmts --enable qemu-aarch64
 
       - name: Install frontend dependencies
         run: pnpm install
@@ -223,6 +251,8 @@ jobs:
 
       - name: Build app (Linux)
         if: matrix.platform == 'ubuntu-22.04'
+        env:
+          CARGO_TARGET_AARCH64_UNKNOWN_LINUX_GNU_LINKER: ${{ matrix.target == 'aarch64-unknown-linux-gnu' && 'aarch64-linux-gnu-gcc' || '' }}
         run: pnpm tauri build ${{ matrix.args }}
 
       - name: Build app (Windows)
@@ -237,8 +267,8 @@ jobs:
           path: src-tauri/target/${{ matrix.target }}/release/bundle/dmg/*.dmg
           retention-days: 1
 
-      - name: Upload installers (Linux)
-        if: matrix.platform == 'ubuntu-22.04'
+      - name: Upload installers (Linux x86_64)
+        if: matrix.platform == 'ubuntu-22.04' && matrix.target == 'x86_64-unknown-linux-gnu'
         uses: actions/upload-artifact@v4
         with:
           name: installers-${{ matrix.target }}
@@ -246,6 +276,17 @@ jobs:
             src-tauri/target/release/bundle/deb/*.deb
             src-tauri/target/release/bundle/rpm/*.rpm
             src-tauri/target/release/bundle/appimage/*.AppImage
+          retention-days: 1
+
+      - name: Upload installers (Linux ARM64)
+        if: matrix.platform == 'ubuntu-22.04' && matrix.target == 'aarch64-unknown-linux-gnu'
+        uses: actions/upload-artifact@v4
+        with:
+          name: installers-${{ matrix.target }}
+          path: |
+            src-tauri/target/aarch64-unknown-linux-gnu/release/bundle/deb/*.deb
+            src-tauri/target/aarch64-unknown-linux-gnu/release/bundle/rpm/*.rpm
+            src-tauri/target/aarch64-unknown-linux-gnu/release/bundle/appimage/*.AppImage
           retention-days: 1
 
       - name: Upload installers (Windows)
@@ -298,6 +339,7 @@ jobs:
             --arg darwin_aarch64_url "https://github.com/tarikkavaz/Correctify/releases/download/${VERSION}/Correctify_${VERSION#v}_aarch64.dmg" \
             --arg darwin_x64_url "https://github.com/tarikkavaz/Correctify/releases/download/${VERSION}/Correctify_${VERSION#v}_x64.dmg" \
             --arg linux_url "https://github.com/tarikkavaz/Correctify/releases/download/${VERSION}/correctify_${VERSION#v}_amd64.AppImage" \
+            --arg linux_arm64_url "https://github.com/tarikkavaz/Correctify/releases/download/${VERSION}/correctify_${VERSION#v}_arm64.AppImage" \
             --arg windows_url "https://github.com/tarikkavaz/Correctify/releases/download/${VERSION}/Correctify_${VERSION#v}_x64-setup.exe" \
             '{
               version: $version,
@@ -315,6 +357,10 @@ jobs:
                 "linux-x86_64": {
                   signature: "",
                   url: $linux_url
+                },
+                "linux-aarch64": {
+                  signature: "",
+                  url: $linux_arm64_url
                 },
                 "windows-x86_64": {
                   signature: "",
@@ -348,9 +394,14 @@ jobs:
             - MSI Installer: `Correctify_*_x64_en-US.msi`
 
             **Linux:**
-            - Debian/Ubuntu: `correctify_*_amd64.deb`
-            - AppImage (Universal): `correctify_*_amd64.AppImage`
-            - RPM: `correctify_*_amd64.rpm`
+            - x86_64 (Intel/AMD):
+              - Debian/Ubuntu: `correctify_*_amd64.deb`
+              - AppImage (Universal): `correctify_*_amd64.AppImage`
+              - RPM: `correctify_*_amd64.rpm`
+            - ARM64 (Apple Silicon, Raspberry Pi 4+, etc.):
+              - Debian/Ubuntu: `correctify_*_arm64.deb`
+              - AppImage (Universal): `correctify_*_arm64.AppImage`
+              - RPM: `correctify_*_arm64.rpm`
 
             Just download, run the installer, and you're ready to correct grammar!
           draft: false
