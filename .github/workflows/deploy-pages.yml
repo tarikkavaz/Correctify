@@ -30,14 +30,14 @@ jobs:
         run: |
           # Remove old docs folder from gh-pages if it exists
           rm -rf gh-pages/docs
-
+          
           # Copy all contents from docs/ to gh-pages root
-          # This copies index.html, media/, logo.png, and any other files
-          cp -r docs/* gh-pages/
-
+          # Exclude build artifacts and unnecessary files
+          rsync -av --exclude='.next' --exclude='node_modules' --exclude='.git' --exclude='.DS_Store' --exclude='*.log' docs/ gh-pages/
+          
           # Ensure we're in the gh-pages directory
           cd gh-pages
-
+          
           # Show what was copied
           echo "Files in gh-pages root:"
           ls -la
