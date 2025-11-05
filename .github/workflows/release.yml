@@ -16,6 +16,8 @@ jobs:
       changelog: ${{ steps.changelog.outputs.content }}
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # Fetch full history for proper tag handling
 
       - name: Extract version from commit message
         id: extract
@@ -58,12 +60,16 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
+          # Fetch all tags to ensure we have the latest state
+          git fetch --prune --prune-tags origin || true
           # Delete tag if it exists locally
           git tag -d ${{ steps.extract.outputs.version }} || true
           # Delete tag if it exists remotely, then create and push
           git push origin :refs/tags/${{ steps.extract.outputs.version }} || true
-          git tag ${{ steps.extract.outputs.version }}
-          git push origin ${{ steps.extract.outputs.version }}
+          # Create tag pointing to HEAD (the commit that triggered this workflow)
+          git tag -f ${{ steps.extract.outputs.version }} HEAD
+          # Force push the tag to overwrite any existing tag
+          git push -f origin ${{ steps.extract.outputs.version }}
 
   build-release:
     needs: check-release
@@ -90,6 +96,8 @@ jobs:
     runs-on: ${{ matrix.platform }}
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # Fetch full history including tags
 
       - name: Setup pnpm
         uses: pnpm/action-setup@v4
@@ -211,6 +219,8 @@ jobs:
       contents: write
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # Fetch full history including tags
 
       - name: Download all artifacts
         uses: actions/download-artifact@v4
