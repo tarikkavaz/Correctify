@@ -10,7 +10,39 @@ This directory contains the static files for the Correctify landing page, deploy
 
 ## Deployment
 
-See the main [DEPLOYMENT.md](../DEPLOYMENT.md) file in the project root for complete deployment instructions.
+**Automated Deployment**: The landing page is automatically deployed via GitHub Actions when you push changes to the `docs/` folder in the `master` branch. No manual steps required!
+
+### How to Update the Landing Page
+
+1. **Edit files in `docs/` folder** on `master` branch:
+   - Edit `docs/index.html`
+   - Update images in `docs/media/`
+   - Modify any other files in `docs/`
+
+2. **Commit and push to `master`**:
+   ```bash
+   git add docs/
+   git commit -m "Update landing page"
+   git push origin master
+   ```
+
+3. **GitHub Actions automatically deploys**:
+   - Workflow detects changes to `docs/**`
+   - Automatically copies contents to `gh-pages` root
+   - Commits and pushes to `gh-pages` branch
+   - GitHub Pages serves the updated content
+
+**No manual `gh-pages` branch operations needed!** Just edit `docs/` and push to `master`.
+
+### Manual Sync (Optional)
+
+If you need to manually sync the landing page, you can use the helper script:
+
+```bash
+./scripts/sync-pages.sh
+```
+
+This script safely copies `docs/` contents to `gh-pages` root without affecting gitignored files like `.env` or `_tools`.
 
 ## Important: Verify Download Links
 
@@ -21,19 +53,10 @@ Before deploying, verify that the download link filenames in `index.html` match 
 3. Update the download links in `index.html` if they don't match
 
 Current links point to:
-- macOS: `Correctify_universal.dmg`
-- Windows: `Correctify_x64_en-US.msi`
-- Linux: `correctify_amd64.AppImage`
+- macOS: `Correctify_1.0.0_aarch64.dmg`
+- Windows: `Correctify_1.0.0_x64-setup.exe`
+- Linux: `correctify_1.0.0_amd64.AppImage`
 
 ## Local Preview
 
 To preview the page locally, simply open `index.html` in your browser. All styles are loaded from CDN, so no build process is needed.
-
-## Updates
-
-To update the landing page:
-1. Edit the files in this `docs/` directory
-2. Copy the updated files to the `gh-pages` branch
-3. Push to GitHub
-
-See [DEPLOYMENT.md](../DEPLOYMENT.md) for detailed update instructions.
