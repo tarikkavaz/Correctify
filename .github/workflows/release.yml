@@ -197,13 +197,18 @@ jobs:
 
           if [ $UPDATE_EXIT -ne 0 ]; then
             echo "apt-get update completed with some errors (expected for arm64 security repo)"
-            # Verify arm64 architecture was added
-            if ! dpkg --print-architecture | grep -q arm64; then
+            # Verify arm64 architecture was added (check foreign architectures)
+            if ! dpkg --print-foreign-architectures | grep -q arm64; then
               echo "ERROR: arm64 architecture not added"
               exit 1
             fi
             echo "Continuing despite update errors..."
           fi
+
+          # Double-check arm64 is available
+          echo "Available architectures:"
+          dpkg --print-architecture
+          dpkg --print-foreign-architectures
 
           # Install cross-compilation toolchain (amd64 packages)
           sudo apt-get install -y \
