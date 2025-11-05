@@ -1,0 +1,59 @@
+name: Deploy Pages
+
+on:
+  push:
+    branches:
+      - master
+    paths:
+      - 'docs/**'
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout master branch
+        uses: actions/checkout@v4
+        with:
+          ref: master
+          fetch-depth: 0
+
+      - name: Checkout gh-pages branch
+        uses: actions/checkout@v4
+        with:
+          ref: gh-pages
+          path: gh-pages
+          fetch-depth: 0
+
+      - name: Copy docs contents to gh-pages root
+        run: |
+          # Remove old docs folder from gh-pages if it exists
+          rm -rf gh-pages/docs
+
+          # Copy all contents from docs/ to gh-pages root
+          # This copies index.html, media/, logo.png, and any other files
+          cp -r docs/* gh-pages/
+
+          # Ensure we're in the gh-pages directory
+          cd gh-pages
+
+          # Show what was copied
+          echo "Files in gh-pages root:"
+          ls -la
+
+      - name: Commit and push to gh-pages
+        run: |
+          cd gh-pages
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+          # Check if there are any changes
+          if git diff --quiet && git diff --cached --quiet; then
+            echo "No changes to deploy"
+          else
+            git add -A
+            git commit -m "Deploy landing page updates from docs/"
+            git push origin gh-pages
+            echo "Successfully deployed to gh-pages"
+          fi
