@@ -1015,13 +1015,10 @@ pub fn run() {
                         .item(&select_all_item)
                         .build()?;
 
-                    // Help Menu with About
-                    let help_menu = SubmenuBuilder::new(app, "Help")
-                        .item(&about_item)
-                        .build()?;
+                    // Help menu removed - About is available in the app's internal menu
 
                     let menu = MenuBuilder::new(app)
-                        .items(&[&file_menu, &edit_menu, &help_menu])
+                        .items(&[&file_menu, &edit_menu])
                         .build()?;
 
                     app.set_menu(menu)?;
