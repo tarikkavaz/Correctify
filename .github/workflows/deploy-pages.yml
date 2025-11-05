@@ -31,12 +31,20 @@ jobs:
           # Remove old docs folder from gh-pages if it exists
           rm -rf gh-pages/docs
 
-          # Copy all contents from docs/ to gh-pages root
-          # Exclude build artifacts and unnecessary files
-          rsync -av --exclude='.next' --exclude='node_modules' --exclude='.git' --exclude='.DS_Store' --exclude='*.log' docs/ gh-pages/
+          # Copy only specific files/directories from docs/ to gh-pages root
+          # Explicitly copy only what we need, avoiding build artifacts
+          cd docs
+          for item in *; do
+            # Skip hidden files/folders and build artifacts
+            if [[ "$item" != .* ]] && [[ "$item" != ".next" ]] && [[ "$item" != "node_modules" ]]; then
+              cp -r "$item" "../gh-pages/"
+            fi
+          done
+          cd ..
 
-          # Ensure we're in the gh-pages directory
+          # Clean up any accidentally copied build artifacts
           cd gh-pages
+          rm -rf .next node_modules src-tauri out .env _tools .DS_Store *.log 2>/dev/null || true
 
           # Show what was copied
           echo "Files in gh-pages root:"
