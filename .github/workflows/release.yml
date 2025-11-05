@@ -11,16 +11,64 @@ jobs:
     permissions:
       contents: write
     outputs:
-      is_release: ${{ steps.extract.outputs.version != '' }}
-      version: ${{ steps.extract.outputs.version }}
+      is_release: ${{ steps.precheck.outputs.version != '' || steps.precheck-git.outputs.version != '' || steps.extract.outputs.version != '' }}
+      version: ${{ steps.precheck.outputs.version != '' && steps.precheck.outputs.version || (steps.precheck-git.outputs.version != '' && steps.precheck-git.outputs.version) || steps.extract.outputs.version }}
       changelog: ${{ steps.changelog.outputs.content }}
     steps:
+      - name: Quick check for release commit
+        id: precheck
+        run: |
+          # Try to get commit message from GitHub event context first
+          msg="${{ github.event.head_commit.message }}"
+
+          # If not available, we'll need to do a minimal checkout (handled in next step)
+          if [ -z "$msg" ]; then
+            echo "⚠️ Commit message not in event context, will check via git"
+            exit 0
+          fi
+
+          echo "Commit message: $msg"
+
+          if [[ $msg =~ release:\ (v[0-9]+\.[0-9]+\.[0-9]+) ]]; then
+            echo "version=${BASH_REMATCH[1]}" >> $GITHUB_OUTPUT
+            echo "✅ Found version: ${BASH_REMATCH[1]}"
+          elif [[ $msg =~ release: ]]; then
+            echo "❌ Invalid release commit format. Use: release: vX.Y.Z"
+            exit 1
+          else
+            echo "ℹ️ No release commit. Skipping workflow."
+          fi
+
       - uses: actions/checkout@v4
+        if: steps.precheck.outputs.version == ''
+        with:
+          fetch-depth: 1  # Minimal checkout to get commit message
+
+      - name: Check commit message via git (fallback)
+        id: precheck-git
+        if: steps.precheck.outputs.version == ''
+        run: |
+          msg=$(git log -1 --pretty=%B)
+          echo "Commit message: $msg"
+
+          if [[ $msg =~ release:\ (v[0-9]+\.[0-9]+\.[0-9]+) ]]; then
+            echo "version=${BASH_REMATCH[1]}" >> $GITHUB_OUTPUT
+            echo "✅ Found version: ${BASH_REMATCH[1]}"
+          elif [[ $msg =~ release: ]]; then
+            echo "❌ Invalid release commit format. Use: release: vX.Y.Z"
+            exit 1
+          else
+            echo "ℹ️ No release commit. Skipping workflow."
+          fi
+
+      - uses: actions/checkout@v4
+        if: steps.precheck.outputs.version != '' || steps.precheck-git.outputs.version != ''
         with:
           fetch-depth: 0  # Fetch full history for proper tag handling
 
       - name: Extract version from commit message
         id: extract
+        if: steps.precheck.outputs.version != '' || steps.precheck-git.outputs.version != ''
         run: |
           msg=$(git log -1 --pretty=%B)
           echo "Commit message: $msg"
@@ -37,9 +85,9 @@ jobs:
 
       - name: Extract changelog from CHANGELOG.md
         id: changelog
-        if: steps.extract.outputs.version != ''
+        if: steps.precheck.outputs.version != '' || steps.precheck-git.outputs.version != '' || steps.extract.outputs.version != ''
         run: |
-          VERSION="${{ steps.extract.outputs.version }}"
+          VERSION="${{ steps.precheck.outputs.version != '' && steps.precheck.outputs.version || (steps.precheck-git.outputs.version != '' && steps.precheck-git.outputs.version) || steps.extract.outputs.version }}"
 
           # Check if CHANGELOG.md exists and extract the section for this version
           if [ -f CHANGELOG.md ]; then
@@ -59,20 +107,21 @@ jobs:
           echo "EOF" >> $GITHUB_OUTPUT
 
       - name: Create and push tag
-        if: steps.extract.outputs.version != ''
+        if: steps.precheck.outputs.version != '' || steps.precheck-git.outputs.version != '' || steps.extract.outputs.version != ''
         run: |
+          VERSION="${{ steps.precheck.outputs.version != '' && steps.precheck.outputs.version || (steps.precheck-git.outputs.version != '' && steps.precheck-git.outputs.version) || steps.extract.outputs.version }}"
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           # Fetch all tags to ensure we have the latest state
           git fetch --prune --prune-tags origin || true
           # Delete tag if it exists locally
-          git tag -d ${{ steps.extract.outputs.version }} || true
+          git tag -d $VERSION || true
           # Delete tag if it exists remotely, then create and push
-          git push origin :refs/tags/${{ steps.extract.outputs.version }} || true
+          git push origin :refs/tags/$VERSION || true
           # Create tag pointing to HEAD (the commit that triggered this workflow)
-          git tag -f ${{ steps.extract.outputs.version }} HEAD
+          git tag -f $VERSION HEAD
           # Force push the tag to overwrite any existing tag
-          git push -f origin ${{ steps.extract.outputs.version }}
+          git push -f origin $VERSION
 
   build-release:
     needs: check-release
