@@ -1,1 +1,0 @@
-"use strict";(self.webpackChunk_N_E=self.webpackChunk_N_E||[]).push([[604],{604:(_,e,n)=>{function t(){return window.__TAURI_OS_PLUGIN_INTERNALS__.platform}n.d(e,{platform:()=>t}),n(1249)}}]);
