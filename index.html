@@ -1,814 +1,1032 @@
 <!DOCTYPE html>
 <html lang="en" class="scroll-smooth">
+
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Correctify - Cross-Platform AI-Powered Grammar Correction App</title>
-    <meta name="description" content="A simple, cross-platform grammar correction app with 14 AI models from OpenAI, Anthropic, Mistral, and OpenRouter. Free models available. Secure key storage, pay only for what you use. Works on macOS, Windows, and Linux.">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Correctify - Cross-Platform AI-Powered Grammar Correction App</title>
+  <meta name="description"
+    content="A simple, cross-platform grammar correction app with 14 AI models from OpenAI, Anthropic, Mistral, and OpenRouter. Free models available. Secure key storage, pay only for what you use. Works on macOS, Windows, and Linux.">
 
-    <!-- Favicon -->
-    <link rel="icon" type="image/png" href="media/logo.png">
+  <!-- Favicon -->
+  <link rel="icon" type="image/png" href="media/logo.png">
 
-    <!-- Tailwind CSS -->
-    <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
 
-    <!-- Tailwind Config -->
-    <script>
-        tailwind.config = {
-            darkMode: 'class',
-            theme: {
-                extend: {
-                    colors: {
-                        stone: {
-                            50: 'oklch(1.0000 0 0)',
-                            100: 'oklch(0.9784 0.0011 197.1387)',
-                            200: 'oklch(0.9317 0.0118 231.6594)',
-                            400: 'oklch(0.5637 0.0078 247.9662)',
-                            500: 'oklch(0.5637 0.0078 247.9662)',
-                            700: 'oklch(0.2674 0.0047 248.0045)',
-                            800: 'oklch(0.2097 0.0080 274.5332)',
-                            900: 'oklch(0.1884 0.0128 248.5103)',
-                            950: 'oklch(0 0 0)'
-                        },
-                        lime: {
-                            200: 'oklch(0.7789 0.2299 140.8644)',
-                            300: 'oklch(0.6789 0.2099 140.8644)',
-                            400: 'oklch(0.5789 0.1899 140.8644)',
-                            500: 'oklch(0.6789 0.2099 140.8644)',
-                            600: 'oklch(0.5789 0.1899 140.8644)',
-                            700: 'oklch(0.4789 0.1599 140.8644)'
-                        },
-                        blue: {
-                            50: 'oklch(0.955 0.024 254.604)',
-                            200: 'oklch(0.885 0.071 254.946)',
-                            300: 'oklch(0.858 0.076 253.524)',
-                            700: 'oklch(0.367 0.131 265.633)',
-                            800: 'oklch(0.367 0.131 265.633)',
-                            900: 'oklch(0.267 0.068 265.75 / 0.2)'
-                        },
-                        red: {
-                            400: 'oklch(0.6188 0.2376 25.7658)',
-                            500: 'oklch(0.6188 0.2376 25.7658)'
-                        }
-                    }
-                }
+  <!-- Tailwind Config -->
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            stone: {
+              50: 'oklch(1.0000 0 0)',
+              100: 'oklch(0.9784 0.0011 197.1387)',
+              200: 'oklch(0.9317 0.0118 231.6594)',
+              400: 'oklch(0.5637 0.0078 247.9662)',
+              500: 'oklch(0.5637 0.0078 247.9662)',
+              700: 'oklch(0.2674 0.0047 248.0045)',
+              800: 'oklch(0.2097 0.0080 274.5332)',
+              900: 'oklch(0.1884 0.0128 248.5103)',
+              950: 'oklch(0 0 0)'
+            },
+            lime: {
+              200: 'oklch(0.7789 0.2299 140.8644)',
+              300: 'oklch(0.6789 0.2099 140.8644)',
+              400: 'oklch(0.5789 0.1899 140.8644)',
+              500: 'oklch(0.6789 0.2099 140.8644)',
+              600: 'oklch(0.5789 0.1899 140.8644)',
+              700: 'oklch(0.4789 0.1599 140.8644)'
+            },
+            blue: {
+              50: 'oklch(0.955 0.024 254.604)',
+              200: 'oklch(0.885 0.071 254.946)',
+              300: 'oklch(0.858 0.076 253.524)',
+              700: 'oklch(0.367 0.131 265.633)',
+              800: 'oklch(0.367 0.131 265.633)',
+              900: 'oklch(0.267 0.068 265.75 / 0.2)'
+            },
+            red: {
+              400: 'oklch(0.6188 0.2376 25.7658)',
+              500: 'oklch(0.6188 0.2376 25.7658)'
             }
+          }
         }
-    </script>
+      }
+    }
+  </script>
 
-    <style>
-        @media (prefers-color-scheme: dark) {
-            html:not(.light) {
-                color-scheme: dark;
-            }
-        }
+  <style>
+    @media (prefers-color-scheme: dark) {
+      html:not(.light) {
+        color-scheme: dark;
+      }
+    }
 
-        /* Scroll reveal animations */
-        .reveal {
-            opacity: 0;
-            transform: translateY(30px);
-            transition: opacity 0.6s ease-out, transform 0.6s ease-out;
-        }
+    /* Scroll reveal animations */
+    .reveal {
+      opacity: 0;
+      transform: translateY(30px);
+      transition: opacity 0.6s ease-out, transform 0.6s ease-out;
+    }
 
-        .reveal.active {
-            opacity: 1;
-            transform: translateY(0);
-        }
+    .reveal.active {
+      opacity: 1;
+      transform: translateY(0);
+    }
 
-        .reveal-delay-1 { transition-delay: 0.15s; }
-        .reveal-delay-2 { transition-delay: 0.3s; }
-        .reveal-delay-3 { transition-delay: 0.45s; }
-        .reveal-delay-4 { transition-delay: 0.6s; }
-        .reveal-delay-5 { transition-delay: 0.75s; }
-        .reveal-delay-6 { transition-delay: 0.9s; }
-        .reveal-delay-7 { transition-delay: 1.05s; }
-    </style>
+    .reveal-delay-1 {
+      transition-delay: 0.15s;
+    }
+
+    .reveal-delay-2 {
+      transition-delay: 0.3s;
+    }
+
+    .reveal-delay-3 {
+      transition-delay: 0.45s;
+    }
+
+    .reveal-delay-4 {
+      transition-delay: 0.6s;
+    }
+
+    .reveal-delay-5 {
+      transition-delay: 0.75s;
+    }
+
+    .reveal-delay-6 {
+      transition-delay: 0.9s;
+    }
+
+    .reveal-delay-7 {
+      transition-delay: 1.05s;
+    }
+  </style>
 </head>
+
 <body class="bg-stone-50 dark:bg-stone-950 text-stone-900 dark:text-stone-100 transition-colors">
 
-    <!-- Hero Section -->
-    <section class="min-h-screen flex items-center justify-center px-4">
-        <div class="max-w-6xl w-full">
-            <div class="text-center">
-                <!-- Logo -->
-                <div class="flex justify-center my-8">
-                    <img src="media/logo.png" alt="Correctify Logo" class="w-32 h-32 md:w-40 md:h-40">
-                </div>
-
-                <!-- Heading -->
-                <h1 class="reveal text-5xl md:text-7xl font-bold mb-6 bg-gradient-to-r from-lime-600 to-lime-400 bg-clip-text text-transparent">
-                    Correctify
-                </h1>
-
-                <!-- Tagline -->
-                <p class="reveal reveal-delay-1 text-xl md:text-2xl text-stone-500 text-balance dark:text-stone-400 mb-4 max-w-3xl mx-auto">
-                    A simple, cross-platform grammar correction app with 14 AI models (including free options).
-                </p>
-                <p class="reveal reveal-delay-1 text-xl md:text-2xl text-stone-500 text-balance dark:text-stone-400 mb-12 max-w-3xl mx-auto">
-                    Secure API key storage, pay only for what you use, and keep your data private.
-                </p>
-
-                <!-- CTA Buttons -->
-                <div class="reveal reveal-delay-2 flex flex-col sm:flex-row gap-4 justify-center items-center mb-16">
-                    <a href="#download" class="px-8 py-4 bg-lime-600 hover:bg-lime-700 text-white rounded-lg font-semibold transition-colors shadow-lg hover:shadow-xl">
-                        Download Now
-                    </a>
-                    <a href="https://github.com/tarikkavaz/Correctify" target="_blank" rel="noopener noreferrer" class="px-8 py-4 border-2 border-lime-600 text-lime-600 dark:text-lime-500 dark:border-lime-500 hover:bg-lime-50 dark:hover:bg-stone-900 rounded-lg font-semibold transition-colors">
-                        View on GitHub
-                    </a>
-                </div>
-
-                <!-- Screenshot -->
-                <div class="reveal reveal-delay-3 rounded-2xl overflow-hidden shadow-2xl mb-12">
-                    <img src="media/00-screenshot.jpg" alt="Correctify App Screenshot" class="w-full">
-                </div>
-            </div>
+  <!-- Hero Section -->
+  <section class="min-h-screen flex items-center justify-center px-4">
+    <div class="max-w-6xl w-full">
+      <div class="text-center">
+        <!-- Logo -->
+        <div class="flex justify-center my-8">
+          <img src="media/logo.png" alt="Correctify Logo" class="w-32 h-32 md:w-40 md:h-40">
         </div>
-    </section>
 
-    <!-- What It Does Section -->
-    <section class="py-20 px-4 bg-stone-100 dark:bg-stone-900">
-        <div class="max-w-6xl mx-auto">
-            <h2 class="reveal text-4xl md:text-5xl font-bold text-center mb-12">What It Does</h2>
-            <p class="reveal reveal-delay-1 text-lg text-stone-500 dark:text-stone-400 text-center max-w-3xl mx-auto mb-16 text-balance">
-                Correctify corrects grammar, spelling, and punctuation while preserving your writing style and formatting. It's a minimal, distraction-free menubar app that works on macOS, Windows, and Linux.
-            </p>
+        <!-- Heading -->
+        <h1
+          class="reveal text-5xl md:text-7xl font-bold mb-6 bg-gradient-to-r from-lime-600 to-lime-400 bg-clip-text text-transparent">
+          Correctify
+        </h1>
+
+        <!-- Tagline -->
+        <p
+          class="reveal reveal-delay-1 text-xl md:text-2xl text-stone-500 text-balance dark:text-stone-400 mb-4 max-w-3xl mx-auto">
+          A simple, cross-platform grammar correction app with 14 AI models (including free options).
+        </p>
+        <p
+          class="reveal reveal-delay-1 text-xl md:text-2xl text-stone-500 text-balance dark:text-stone-400 mb-12 max-w-3xl mx-auto">
+          Secure API key storage, pay only for what you use, and keep your data private.
+        </p>
+
+        <!-- CTA Buttons -->
+        <div class="reveal reveal-delay-2 flex flex-col sm:flex-row gap-4 justify-center items-center mb-16">
+          <div class="relative inline-block">
+            <a href="#download"
+              class="px-8 py-4 bg-lime-600 hover:bg-lime-700 text-white rounded-lg font-semibold transition-colors shadow-lg hover:shadow-xl relative">
+              Download Now
+            </a>
+            <span class="absolute -top-5 -right-2 bg-stone-700 dark:bg-stone-300 text-white dark:text-stone-900 text-xs px-2 py-0.5 rounded-full font-medium">v1.0.0</span>
+          </div>
+          <a href="https://github.com/tarikkavaz/Correctify" target="_blank" rel="noopener noreferrer"
+            class="px-8 py-4 border-2 border-lime-600 text-lime-600 dark:text-lime-500 dark:border-lime-500 hover:bg-lime-50 dark:hover:bg-stone-900 rounded-lg font-semibold transition-colors">
+            View on GitHub
+          </a>
         </div>
-    </section>
 
-    <!-- Features Section -->
-    <section class="py-20 px-4">
-        <div class="max-w-6xl mx-auto">
-            <h2 class="reveal text-4xl md:text-5xl font-bold text-center mb-16">Features</h2>
-
-            <div class="grid md:grid-cols-3 gap-8">
-                <!-- Feature 1 -->
-                <div class="reveal reveal-delay-2 group p-8 rounded-xl bg-white dark:bg-stone-800 border-2 border-stone-200 dark:border-stone-700 transition-all">
-                    <div class="w-12 h-12 bg-lime-100 dark:bg-lime-900/20 rounded-lg flex items-center justify-center mb-4">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6 text-lime-600 dark:text-lime-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                        </svg>
-                    </div>
-                    <h3 class="text-xl font-semibold mb-3">Menubar App</h3>
-                    <p class="text-stone-500 dark:text-stone-400">Lives in your system tray/menubar for instant access. Single click to show/hide. No dock icon on macOS. Launch at startup option available. Lightweight and always accessible without cluttering your desktop or dock.</p>
-                </div>
-
-                <!-- Feature 2 -->
-                <div class="reveal reveal-delay-3 group p-8 rounded-xl bg-white dark:bg-stone-800 border-2 border-stone-200 dark:border-stone-700 transition-all">
-                    <div class="w-12 h-12 bg-lime-100 dark:bg-lime-900/20 rounded-lg flex items-center justify-center mb-4">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6 text-lime-600 dark:text-lime-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                        </svg>
-                    </div>
-                    <h3 class="text-xl font-semibold mb-3">Writing Style Selector</h3>
-                    <p class="text-stone-500 dark:text-stone-400">Choose from 5 different writing styles: Grammar Only, Formal, Informal, Collaborative, or Concise. Your preference persists across sessions. Perfect for adapting corrections to your specific needs and context.</p>
-                </div>
-
-                <!-- Feature 3 -->
-                <div class="reveal reveal-delay-4 group p-8 rounded-xl bg-white dark:bg-stone-800 border-2 border-stone-200 dark:border-stone-700 transition-all">
-                    <div class="w-12 h-12 bg-lime-100 dark:bg-lime-900/20 rounded-lg flex items-center justify-center mb-4">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6 text-lime-600 dark:text-lime-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
-                        </svg>
-                    </div>
-                    <h3 class="text-xl font-semibold mb-3">Privacy First + Secure Storage</h3>
-                    <p class="text-stone-500 dark:text-stone-400">API keys are stored with OS-level encryption in secure app data directory. No text storage, no database, no analytics or tracking. Your data remains yours. Usage statistics stay local. Complete transparency with zero data collection.</p>
-                </div>
-
-                <!-- Feature 4 -->
-                <div class="reveal reveal-delay-5 group p-8 rounded-xl bg-white dark:bg-stone-800 border-2 border-stone-200 dark:border-stone-700 transition-all">
-                    <div class="w-12 h-12 bg-lime-100 dark:bg-lime-900/20 rounded-lg flex items-center justify-center mb-4">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6 text-lime-600 dark:text-lime-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
-                        </svg>
-                    </div>
-                    <h3 class="text-xl font-semibold mb-3">Enhanced Global Shortcut</h3>
-                    <p class="text-stone-500 dark:text-stone-400">Correct text from any app with fully customizable shortcuts. Choose from 4 modifier combinations (Cmd/Ctrl+Shift, Cmd/Ctrl+Alt, Alt/Option+Shift, or Cmd/Ctrl+Alt+Shift) and any final key. Optional auto copy/paste feature automatically copies and pastes corrected text in place. OS-specific display with Mac icons (⌘, ⇧, ⌥) for better UX.</p>
-                </div>
-
-                <!-- Feature 5 -->
-                <div class="reveal reveal-delay-6 group p-8 rounded-xl bg-white dark:bg-stone-800 border-2 border-stone-200 dark:border-stone-700 transition-all">
-                    <div class="w-12 h-12 bg-lime-100 dark:bg-lime-900/20 rounded-lg flex items-center justify-center mb-4">
-                        <svg xmlns="http://www.w3.org/2000/svg"  stroke-width="2" class="w-6 h-6 text-lime-600 dark:text-lime-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path d="M12 18V5"/><path d="M15 13a4.17 4.17 0 0 1-3-4 4.17 4.17 0 0 1-3 4"/><path d="M17.598 6.5A3 3 0 1 0 12 5a3 3 0 1 0-5.598 1.5"/><path d="M17.997 5.125a4 4 0 0 1 2.526 5.77"/><path d="M18 18a4 4 0 0 0 2-7.464"/><path d="M19.967 17.483A4 4 0 1 1 12 18a4 4 0 1 1-7.967-.517"/><path d="M6 18a4 4 0 0 1-2-7.464"/><path d="M6.003 5.125a4 4 0 0 0-2.526 5.77"/></svg>
-
-
-                    </div>
-                    <h3 class="text-xl font-semibold mb-3">14 AI Models + Free Options</h3>
-                    <p class="text-stone-500 dark:text-stone-400">Choose from 14 models across 4 providers - OpenAI (GPT-5, GPT-5 Mini, GPT-4o, GPT-4o Mini, GPT-4 Turbo, GPT-3.5 Turbo), Anthropic (Claude 3.5), Mistral, and OpenRouter. 4 free models available (no credit card). Pay-per-use for premium models. Intelligent fallback to free models on error.</p>
-                </div>
-
-                <!-- Feature 6 -->
-                <div class="reveal reveal-delay-6 group p-8 rounded-xl bg-white dark:bg-stone-800 border-2 border-stone-200 dark:border-stone-700 transition-all">
-                    <div class="w-12 h-12 bg-lime-100 dark:bg-lime-900/20 rounded-lg flex items-center justify-center mb-4">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6 text-lime-600 dark:text-lime-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M9 18V5l12-2v13"/><path d="m9 9 12-2"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>
-                    </div>
-                    <h3 class="text-xl font-semibold mb-3">Sound Notifications</h3>
-                    <p class="text-stone-500 dark:text-stone-400">Optional audio feedback for all notifications with distinct sounds for different notification types. Enable/disable in Settings. Works across all platforms. Provides clear audio cues for processing, completion, and error states.</p>
-                </div>
-
-                <!-- Feature 7 -->
-                <div class="reveal reveal-delay-7 group p-8 rounded-xl bg-white dark:bg-stone-800 border-2 border-stone-200 dark:border-stone-700 transition-all">
-                    <div class="w-12 h-12 bg-lime-100 dark:bg-lime-900/20 rounded-lg flex items-center justify-center mb-4">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6 text-lime-600 dark:text-lime-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                        </svg>
-                    </div>
-                    <h3 class="text-xl font-semibold mb-3">Custom Rules</h3>
-                    <p class="text-stone-500 dark:text-stone-400">Define your own correction rules that are automatically integrated into all AI prompts. Perfect for enforcing specific style preferences, avoiding certain words or phrases, or maintaining brand voice. Rules apply to both in-app and global shortcut corrections.</p>
-                </div>
-
-                <!-- Feature 8 -->
-                <div class="reveal reveal-delay-7 group p-8 rounded-xl bg-white dark:bg-stone-800 border-2 border-stone-200 dark:border-stone-700 transition-all">
-                    <div class="w-12 h-12 bg-lime-100 dark:bg-lime-900/20 rounded-lg flex items-center justify-center mb-4">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6 text-lime-600 dark:text-lime-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-                        </svg>
-                    </div>
-                    <h3 class="text-xl font-semibold mb-3">Auto-Updates</h3>
-                    <p class="text-stone-500 dark:text-stone-400">Beautiful in-app update notifications with release notes. Automatic update checks on startup (silent, only shows when update available). One-click installation with progress indicators. Never miss new features or improvements.</p>
-                </div>
-
-                <!-- Feature 9 -->
-                <div class="reveal reveal-delay-7 group p-8 rounded-xl bg-white dark:bg-stone-800 border-2 border-stone-200 dark:border-stone-700 transition-all">
-                    <div class="w-12 h-12 bg-lime-100 dark:bg-lime-900/20 rounded-lg flex items-center justify-center mb-4">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6 text-lime-600 dark:text-lime-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5h12M9 3v2m1.048 9.5A18.022 18.022 0 016.412 9m6.088 9h7M11 21l5-10 5 10M12.751 5C11.783 10.77 8.07 15.61 3 18.129" />
-                        </svg>
-                    </div>
-                    <h3 class="text-xl font-semibold mb-3">Multilingual Support</h3>
-                    <p class="text-stone-500 dark:text-stone-400">Fully translated interface supporting English, German, French, and Turkish. All UI elements, model descriptions, style options, and settings are localized. Automatic language detection based on system preferences with manual override option.</p>
-                </div>
-            </div>
+        <!-- Screenshot -->
+        <div class="reveal reveal-delay-3 rounded-2xl overflow-hidden shadow-2xl mb-12">
+          <img src="media/00-screenshot.jpg" alt="Correctify App Screenshot" class="w-full">
         </div>
-    </section>
-
-    <!-- Download Section -->
-    <section id="download" class="py-20 px-4 bg-stone-100 dark:bg-stone-900">
-        <div class="max-w-6xl mx-auto">
-            <h2 class="reveal text-4xl md:text-5xl font-bold text-center mb-6">Download</h2>
-            <p class="reveal reveal-delay-1 text-lg text-stone-500 dark:text-stone-400 text-center max-w-2xl mx-auto mb-16">
-                Choose your platform and start correcting your text with AI-powered precision.
-            </p>
-
-            <div class="grid md:grid-cols-3 gap-8 max-w-4xl mx-auto">
-                <!-- macOS -->
-                <a href="https://github.com/tarikkavaz/Correctify/releases/latest/download/Correctify_1.0.0_aarch64.dmg" class="reveal reveal-delay-2 group p-8 rounded-xl bg-white dark:bg-stone-800 border-2 border-stone-200 dark:border-stone-700 hover:border-lime-600 dark:hover:border-lime-500 transition-all hover:shadow-xl text-center">
-                    <div class="w-16 h-16 mx-auto mb-4 flex items-center justify-center">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="w-16 h-16 text-stone-700 dark:text-stone-300 group-hover:text-lime-600 dark:group-hover:text-lime-500 transition-colors" viewBox="0 0 24 24" fill="currentColor">
-                            <path d="M17.05 20.28c-.98.95-2.05.8-3.08.35-1.09-.46-2.09-.48-3.24 0-1.44.62-2.2.44-3.06-.35C2.79 15.25 3.51 7.59 9.05 7.31c1.35.07 2.29.74 3.08.8 1.18-.24 2.31-.93 3.57-.84 1.51.12 2.65.72 3.4 1.8-3.12 1.87-2.38 5.98.48 7.13-.57 1.5-1.31 2.99-2.54 4.09l.01-.01zM12.03 7.25c-.15-2.23 1.66-4.07 3.74-4.25.29 2.58-2.34 4.5-3.74 4.25z"/>
-                        </svg>
-                    </div>
-                    <h3 class="text-xl font-semibold mb-2">macOS</h3>
-                    <p class="text-sm text-stone-500 dark:text-stone-400">Apple Silicon (M1/M2/M3/M4)</p>
-                </a>
-
-                <!-- Windows -->
-                <a href="https://github.com/tarikkavaz/Correctify/releases/latest/download/Correctify_1.0.0_x64-setup.exe" class="reveal reveal-delay-3 group p-8 rounded-xl bg-white dark:bg-stone-800 border-2 border-stone-200 dark:border-stone-700 hover:border-lime-600 dark:hover:border-lime-500 transition-all hover:shadow-xl text-center">
-                    <div class="w-16 h-16 mx-auto mb-4 flex items-center justify-center">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="w-16 h-16 text-stone-700 dark:text-stone-300 group-hover:text-lime-600 dark:group-hover:text-lime-500 transition-colors" viewBox="0 0 24 24" fill="currentColor">
-                            <path d="M3 5.479L10.955 4.366v7.637H3V5.479zm0 13.042l7.955 1.112v-7.637H3v6.525zM11.955 3.271L21 2v9.003h-9.045V3.271zm0 17.457V12.725H21V22l-9.045-1.272z"/>
-                        </svg>
-                    </div>
-                    <h3 class="text-xl font-semibold mb-2">Windows</h3>
-                    <p class="text-sm text-stone-500 dark:text-stone-400">64-bit (NSIS Installer)</p>
-                </a>
-
-                <!-- Linux -->
-                <a href="https://github.com/tarikkavaz/Correctify/releases/latest/download/correctify_1.0.0_amd64.AppImage" class="reveal reveal-delay-4 group p-8 rounded-xl bg-white dark:bg-stone-800 border-2 border-stone-200 dark:border-stone-700 hover:border-lime-600 dark:hover:border-lime-500 transition-all hover:shadow-xl text-center">
-                    <div class="w-16 h-16 mx-auto mb-4 flex items-center justify-center">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="w-16 h-16 text-stone-700 dark:text-stone-300 group-hover:text-lime-600 dark:group-hover:text-lime-500 transition-colors" viewBox="0 0 24 24" fill="currentColor">
-                            <path d="M20.581 19.049c-.55-.446-.336-1.431-.907-1.917.553-3.365-.997-6.331-2.845-8.232-1.551-1.595-1.051-3.147-1.051-4.49 0-2.146-.881-4.41-3.55-4.41-2.853 0-3.635 2.38-3.663 3.738-.068 3.262.659 4.11-1.25 6.484-2.246 2.793-2.577 5.579-2.07 7.057-.237.276-.557.582-1.155.835-1.652.72-.441 1.925-.898 2.78-.13.243-.192.497-.192.74 0 .75.596 1.399 1.679 1.302 1.461-.13 2.809.905 3.681.905.77 0 1.402-.438 1.696-1.041 1.377-.339 3.077-.296 4.453.059.247.691.917 1.141 1.662 1.141 1.631 0 1.945-1.849 3.816-2.475.674-.225 1.013-.879 1.013-1.488 0-.39-.139-.762-.419-.988z"/>
-                        </svg>
-                    </div>
-                    <h3 class="text-xl font-semibold mb-2">Linux</h3>
-                    <p class="text-sm text-stone-500 dark:text-stone-400">AppImage (64-bit)</p>
-                </a>
-            </div>
-
-            <div class="reveal reveal-delay-5 text-center mt-12">
-                <p class="text-stone-500 dark:text-stone-400 mb-4">
-                    Looking for other formats or previous versions?
-                </p>
-                <a href="https://github.com/tarikkavaz/Correctify/releases" target="_blank" rel="noopener noreferrer" class="text-lime-600 dark:text-lime-500 hover:underline font-semibold">
-                    View all releases on GitHub →
-                </a>
-            </div>
-        </div>
-    </section>
-
-    <!-- How to Use Section -->
-    <section class="py-20 px-4">
-        <div class="max-w-4xl mx-auto">
-            <h2 class="reveal text-4xl md:text-5xl font-bold text-center mb-16">Getting Started</h2>
-
-            <div class="space-y-8">
-                <!-- Step 1 -->
-                <div class="reveal flex gap-6">
-                    <div class="flex-shrink-0 w-12 h-12 rounded-full bg-lime-600 text-white flex items-center justify-center font-bold text-xl">1</div>
-                    <div>
-                        <h3 class="text-2xl font-semibold mb-3">Get API Key(s) from Your Preferred Provider(s)</h3>
-                        <p class="text-stone-500 dark:text-stone-400 mb-3">Choose one or more providers based on your needs:</p>
-                        <div class="space-y-2 ml-4">
-                            <p class="text-stone-500 dark:text-stone-400">
-                                <strong>OpenRouter</strong> - <a href="https://openrouter.ai/keys" target="_blank" rel="noopener noreferrer" class="text-lime-600 dark:text-lime-500 hover:underline">Get FREE API Key</a>
-                                <span class="text-sm">(4 free models, no credit card!)</span>
-                            </p>
-                            <p class="text-stone-500 dark:text-stone-400">
-                                <a href="https://platform.openai.com/api-keys" target="_blank" rel="noopener noreferrer" class="text-lime-600 dark:text-lime-500 hover:underline">OpenAI</a> |
-                                <a href="https://console.anthropic.com/settings/keys" target="_blank" rel="noopener noreferrer" class="text-lime-600 dark:text-lime-500 hover:underline">Anthropic</a> |
-                                <a href="https://console.mistral.ai/api-keys/" target="_blank" rel="noopener noreferrer" class="text-lime-600 dark:text-lime-500 hover:underline">Mistral</a>
-                                <span class="text-sm">(Premium models, pay-per-use)</span>
-                            </p>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Step 2 -->
-                <div class="reveal reveal-delay-1 flex gap-6">
-                    <div class="flex-shrink-0 w-12 h-12 rounded-full bg-lime-600 text-white flex items-center justify-center font-bold text-xl">2</div>
-                    <div>
-                        <h3 class="text-2xl font-semibold mb-3">Configure Correctify</h3>
-                        <p class="text-stone-500 dark:text-stone-400 mb-2">Open the app from your system tray/menubar, click Settings, and add your API key(s) in the API Keys tab. Your keys are stored securely with OS-level encryption.</p>
-                        <p class="text-stone-500 dark:text-stone-400 text-sm flex items-start gap-2">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 text-white mt-0.5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
-                            </svg>
-                            <span><strong>Tip:</strong> You can configure multiple providers and switch between them anytime!</span>
-                        </p>
-                    </div>
-                </div>
-
-                <!-- Step 3 -->
-                <div class="reveal reveal-delay-2 flex gap-6">
-                    <div class="flex-shrink-0 w-12 h-12 rounded-full bg-lime-600 text-white flex items-center justify-center font-bold text-xl">3</div>
-                    <div>
-                        <h3 class="text-2xl font-semibold mb-3">Choose Your Model & Writing Style</h3>
-                        <p class="text-stone-500 dark:text-stone-400">Select from 14 available models (paid or free) and 5 writing styles (Grammar, Formal, Informal, Collaborative, Concise). Optionally add custom rules for specific correction preferences. Your preferences are saved automatically.</p>
-                    </div>
-                </div>
-
-                <!-- Step 4 -->
-                <div class="reveal reveal-delay-3 flex gap-6">
-                    <div class="flex-shrink-0 w-12 h-12 rounded-full bg-lime-600 text-white flex items-center justify-center font-bold text-xl">4</div>
-                    <div>
-                        <h3 class="text-2xl font-semibold mb-3">Customize Your Shortcut (Optional)</h3>
-                        <p class="text-stone-500 dark:text-stone-400">Go to Settings > Global Shortcut tab to customize your keyboard shortcut. Choose from 4 modifier combinations and any final key. Enable auto copy/paste for seamless text correction from any app.</p>
-                    </div>
-                </div>
-
-                <!-- Step 5 -->
-                <div class="reveal reveal-delay-4 flex gap-6">
-                    <div class="flex-shrink-0 w-12 h-12 rounded-full bg-lime-600 text-white flex items-center justify-center font-bold text-xl">5</div>
-                    <div>
-                        <h3 class="text-2xl font-semibold mb-3">Start Correcting</h3>
-                        <p class="text-stone-500 dark:text-stone-400">Type or paste text in the app, or use your customized global shortcut from any application to correct text instantly with auto copy/paste.</p>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Detailed Usage Instructions -->
-            <div class="reveal reveal-delay-3 mt-16 space-y-12">
-                <div class="bg-white dark:bg-stone-800 rounded-xl p-8 border border-stone-200 dark:border-stone-700">
-                    <h3 class="text-2xl font-semibold mb-6">In-App Correction</h3>
-                    <div class="space-y-4">
-                        <div class="flex gap-4">
-                            <div class="flex-shrink-0 w-8 h-8 rounded-full bg-lime-100 dark:bg-lime-900/20 text-lime-600 dark:text-lime-500 flex items-center justify-center font-semibold">1</div>
-                            <p class="text-stone-500 dark:text-stone-400">Type or paste text into the input area</p>
-                        </div>
-                        <div class="flex gap-4">
-                            <div class="flex-shrink-0 w-8 h-8 rounded-full bg-lime-100 dark:bg-lime-900/20 text-lime-600 dark:text-lime-500 flex items-center justify-center font-semibold">2</div>
-                            <p class="text-stone-500 dark:text-stone-400">Click "Correct" or press <kbd class="px-2 py-1 bg-stone-100 dark:bg-stone-700 rounded text-sm">Cmd+Enter</kbd> (Mac) / <kbd class="px-2 py-1 bg-stone-100 dark:bg-stone-700 rounded text-sm">Ctrl+Enter</kbd> (Windows/Linux)</p>
-                        </div>
-                        <div class="flex gap-4">
-                            <div class="flex-shrink-0 w-8 h-8 rounded-full bg-lime-100 dark:bg-lime-900/20 text-lime-600 dark:text-lime-500 flex items-center justify-center font-semibold">3</div>
-                            <p class="text-stone-500 dark:text-stone-400">See the corrected text appear below and click Copy to use it</p>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="bg-white dark:bg-stone-800 rounded-xl p-8 border border-stone-200 dark:border-stone-700">
-                    <h3 class="text-2xl font-semibold mb-6">Global Shortcut (Recommended)</h3>
-                    <div class="space-y-6">
-                        <div class="p-4 bg-lime-50 dark:bg-lime-900/20 rounded-lg border border-lime-200 dark:border-lime-800 mb-4">
-                            <p class="text-sm text-lime-700 dark:text-lime-300 flex items-start gap-2">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 text-white mt-0.5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
-                                </svg>
-                                <span><strong class="text-white">Customizable:</strong> Go to Settings > Global Shortcut tab to customize your shortcut. Choose from 4 modifier combinations (Cmd/Ctrl+Shift, Cmd/Ctrl+Alt, Alt/Option+Shift, or Cmd/Ctrl+Alt+Shift) and any final key. Default is Cmd+Shift+] / Ctrl+Shift+].</span>
-                            </p>
-                        </div>
-
-                        <div>
-                            <h4 class="text-lg font-semibold mb-3 text-lime-600 dark:text-lime-500">With Auto Copy/Paste</h4>
-                            <div class="space-y-3">
-                                <div class="flex gap-4">
-                                    <div class="flex-shrink-0 w-8 h-8 rounded-full bg-lime-100 dark:bg-lime-900/20 text-lime-600 dark:text-lime-500 flex items-center justify-center font-semibold">1</div>
-                                    <p class="text-stone-500 dark:text-stone-400">Select text in any app (just highlight it, no copying needed)</p>
-                                </div>
-                                <div class="flex gap-4">
-                                    <div class="flex-shrink-0 w-8 h-8 rounded-full bg-lime-100 dark:bg-lime-900/20 text-lime-600 dark:text-lime-500 flex items-center justify-center font-semibold">2</div>
-                                    <p class="text-stone-500 dark:text-stone-400">Press your configured shortcut (default: <kbd class="px-2 py-1 bg-stone-100 dark:bg-stone-700 rounded text-sm">Cmd+Shift+]</kbd> on Mac or <kbd class="px-2 py-1 bg-stone-100 dark:bg-stone-700 rounded text-sm">Ctrl+Shift+]</kbd> on Windows/Linux)</p>
-                                </div>
-                                <div class="flex gap-4">
-                                    <div class="flex-shrink-0 w-8 h-8 rounded-full bg-lime-100 dark:bg-lime-900/20 text-lime-600 dark:text-lime-500 flex items-center justify-center font-semibold">3</div>
-                                    <p class="text-stone-500 dark:text-stone-400">Wait for notification - corrected text automatically pastes in place!</p>
-                                </div>
-                            </div>
-                            <div class="mt-4 p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800">
-                                <p class="text-sm text-blue-700 dark:text-blue-500"><strong>Note:</strong> You'll need to grant Accessibility permissions for Auto Copy/Paste. Go to System Settings > Privacy & Security > Accessibility and enable <strong>Correctify</strong>.</p>
-                            </div>
-                        </div>
-
-                        <div>
-                            <h4 class="text-lg font-semibold mb-3 text-stone-600 dark:text-stone-400">Manual Mode</h4>
-                            <div class="space-y-3">
-                                <div class="flex gap-4">
-                                    <div class="flex-shrink-0 w-8 h-8 rounded-full bg-stone-100 dark:bg-stone-800 text-stone-600 dark:text-stone-400 flex items-center justify-center font-semibold">1</div>
-                                    <p class="text-stone-500 dark:text-stone-400">Select and copy text in any app (<kbd class="px-2 py-1 bg-stone-100 dark:bg-stone-700 rounded text-sm">Cmd+C</kbd> / <kbd class="px-2 py-1 bg-stone-100 dark:bg-stone-700 rounded text-sm">Ctrl+C</kbd>)</p>
-                                </div>
-                                <div class="flex gap-4">
-                                    <div class="flex-shrink-0 w-8 h-8 rounded-full bg-stone-100 dark:bg-stone-800 text-stone-600 dark:text-stone-400 flex items-center justify-center font-semibold">2</div>
-                                    <p class="text-stone-500 dark:text-stone-400">Press your configured shortcut</p>
-                                </div>
-                                <div class="flex gap-4">
-                                    <div class="flex-shrink-0 w-8 h-8 rounded-full bg-stone-100 dark:bg-stone-800 text-stone-600 dark:text-stone-400 flex items-center justify-center font-semibold">3</div>
-                                    <p class="text-stone-500 dark:text-stone-400">Wait for notification and paste the corrected text (<kbd class="px-2 py-1 bg-stone-100 dark:bg-stone-700 rounded text-sm">Cmd+V</kbd> / <kbd class="px-2 py-1 bg-stone-100 dark:bg-stone-700 rounded text-sm">Ctrl+V</kbd>)</p>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="bg-white dark:bg-stone-800 rounded-xl p-8 border border-stone-200 dark:border-stone-700">
-                    <h3 class="text-2xl font-semibold mb-6">Custom Rules</h3>
-                    <div class="space-y-4">
-                        <p class="text-stone-500 dark:text-stone-400">Define your own correction rules in Settings > Custom Rules tab. These rules are automatically integrated into all AI correction prompts, ensuring consistent style preferences across all corrections.</p>
-                        <div class="space-y-3">
-                            <div class="flex gap-4">
-                                <div class="flex-shrink-0 w-8 h-8 rounded-full bg-lime-100 dark:bg-lime-900/20 text-lime-600 dark:text-lime-500 flex items-center justify-center font-semibold">1</div>
-                                <p class="text-stone-500 dark:text-stone-400">Go to Settings > Custom Rules tab</p>
-                            </div>
-                            <div class="flex gap-4">
-                                <div class="flex-shrink-0 w-8 h-8 rounded-full bg-lime-100 dark:bg-lime-900/20 text-lime-600 dark:text-lime-500 flex items-center justify-center font-semibold">2</div>
-                                <p class="text-stone-500 dark:text-stone-400">Enter your custom rules (e.g., "Don't use em dashes", "Prefer British spelling", "Avoid passive voice")</p>
-                            </div>
-                            <div class="flex gap-4">
-                                <div class="flex-shrink-0 w-8 h-8 rounded-full bg-lime-100 dark:bg-lime-900/20 text-lime-600 dark:text-lime-500 flex items-center justify-center font-semibold">3</div>
-                                <p class="text-stone-500 dark:text-stone-400">Your rules will be applied to all future corrections automatically</p>
-                            </div>
-                        </div>
-                        <div class="mt-4 p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800">
-                            <p class="text-sm text-blue-700 dark:text-blue-500"><strong>Tip:</strong> Custom rules work with both in-app corrections and global shortcut corrections. Perfect for maintaining brand voice, avoiding specific words, or enforcing style guidelines.</p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- Keyboard Shortcuts Section -->
-    <section class="py-20 px-4 bg-stone-100 dark:bg-stone-900">
-        <div class="max-w-4xl mx-auto">
-            <h2 class="reveal text-4xl md:text-5xl font-bold text-center mb-16">Keyboard Shortcuts</h2>
-
-            <div class="reveal bg-white dark:bg-stone-800 rounded-xl p-8 border border-stone-200 dark:border-stone-700">
-                <div class="overflow-x-auto">
-                    <table class="w-full">
-                        <thead>
-                            <tr class="border-b border-stone-200 dark:border-stone-700">
-                                <th class="text-left py-4 px-6 font-semibold text-stone-900 dark:text-stone-100">Action</th>
-                                <th class="text-left py-4 px-6 font-semibold text-stone-900 dark:text-stone-100">macOS</th>
-                                <th class="text-left py-4 px-6 font-semibold text-stone-900 dark:text-stone-100">Windows/Linux</th>
-                            </tr>
-                        </thead>
-                        <tbody class="divide-y divide-stone-200 dark:divide-stone-700">
-                            <tr>
-                                <td class="py-4 px-6 text-stone-700 dark:text-stone-300">Submit for correction</td>
-                                <td class="py-4 px-6"><kbd class="px-2 py-1 bg-stone-100 dark:bg-stone-700 rounded text-sm">Cmd+Enter</kbd></td>
-                                <td class="py-4 px-6"><kbd class="px-2 py-1 bg-stone-100 dark:bg-stone-700 rounded text-sm">Ctrl+Enter</kbd></td>
-                            </tr>
-                            <tr>
-                                <td class="py-4 px-6 text-stone-700 dark:text-stone-300">Global correction (default)</td>
-                                <td class="py-4 px-6"><kbd class="px-2 py-1 bg-stone-100 dark:bg-stone-700 rounded text-sm">Cmd+Shift+]</kbd></td>
-                                <td class="py-4 px-6"><kbd class="px-2 py-1 bg-stone-100 dark:bg-stone-700 rounded text-sm">Ctrl+Shift+]</kbd></td>
-                            </tr>
-                            <tr>
-                                <td class="py-4 px-6 text-stone-700 dark:text-stone-300">Customize shortcut</td>
-                                <td class="py-4 px-6 text-stone-500 dark:text-stone-400">Settings > Global Shortcut</td>
-                                <td class="py-4 px-6 text-stone-500 dark:text-stone-400">Settings > Global Shortcut</td>
-                            </tr>
-                            <tr>
-                                <td class="py-4 px-6 text-stone-700 dark:text-stone-300">Copy result</td>
-                                <td class="py-4 px-6 text-stone-500 dark:text-stone-400">Click Copy button</td>
-                                <td class="py-4 px-6 text-stone-500 dark:text-stone-400">Click Copy button</td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- Privacy Section -->
-    <section class="py-20 px-4">
-        <div class="max-w-4xl mx-auto">
-            <h2 class="reveal text-4xl md:text-5xl font-bold text-center mb-16">Privacy First</h2>
-
-            <div class="reveal bg-white dark:bg-stone-800 rounded-xl p-8 border border-stone-200 dark:border-stone-700">
-                <div class="grid md:grid-cols-2 gap-8">
-                    <div>
-                        <h3 class="text-xl font-semibold mb-4 text-lime-600 dark:text-lime-500">What We Do</h3>
-                        <ul class="space-y-3 text-stone-500 dark:text-stone-400">
-                            <li class="flex items-start gap-3">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 text-lime-600 dark:text-lime-500 mt-0.5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
-                                </svg>
-                                <span>Send your text to OpenAI for correction</span>
-                            </li>
-                            <li class="flex items-start gap-3">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 text-lime-600 dark:text-lime-500 mt-0.5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
-                                </svg>
-                                <span>Store your API key locally on your device</span>
-                            </li>
-                            <li class="flex items-start gap-3">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 text-lime-600 dark:text-lime-500 mt-0.5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
-                                </svg>
-                                <span>Preserve your writing style and formatting</span>
-                            </li>
-                        </ul>
-                    </div>
-
-                    <div>
-                        <h3 class="text-xl font-semibold mb-4 text-red-500 dark:text-red-400">What We Don't Do</h3>
-                        <ul class="space-y-3 text-stone-500 dark:text-stone-400">
-                            <li class="flex items-start gap-3">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 text-red-500 dark:text-red-400 mt-0.5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-                                </svg>
-                                <span>Log, store, or track your text</span>
-                            </li>
-                            <li class="flex items-start gap-3">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 text-red-500 dark:text-red-400 mt-0.5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-                                </svg>
-                                <span>Collect analytics or telemetry</span>
-                            </li>
-                            <li class="flex items-start gap-3">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 text-red-500 dark:text-red-400 mt-0.5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-                                </svg>
-                                <span>Use databases or external storage</span>
-                            </li>
-                        </ul>
-                    </div>
-                </div>
-
-                <div class="mt-8 p-6 bg-lime-50 dark:bg-lime-900/20 rounded-lg border border-lime-200 dark:border-lime-800">
-                    <p class="text-lime-700 dark:text-lime-300 text-center font-medium">
-                        Your API key stays local and is never logged. Your data remains yours.
-                    </p>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- Screenshots Section -->
-    <section class="py-20 px-4 bg-stone-100 dark:bg-stone-900">
-        <div class="max-w-6xl mx-auto">
-            <h2 class="reveal text-4xl md:text-5xl font-bold text-center mb-16">Screenshots</h2>
-
-            <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-                <!-- Screenshot 1 -->
-                <div class="reveal reveal-delay-1 cursor-pointer group" onclick="openCarousel(0)">
-                    <div class="rounded-lg overflow-hidden shadow-lg hover:shadow-xl transition-shadow bg-white dark:bg-stone-800 border border-stone-200 dark:border-stone-700">
-                        <img src="media/01-in_app_correction.jpg" alt="In-App Correction" class="w-full h-auto group-hover:opacity-90 transition-opacity">
-                    </div>
-                    <p class="text-center mt-3 text-sm font-medium text-stone-700 dark:text-stone-300">In-App Correction</p>
-                </div>
-
-                <!-- Screenshot 2 -->
-                <div class="reveal reveal-delay-2 cursor-pointer group" onclick="openCarousel(1)">
-                    <div class="rounded-lg overflow-hidden shadow-lg hover:shadow-xl transition-shadow bg-white dark:bg-stone-800 border border-stone-200 dark:border-stone-700">
-                        <img src="media/02-style.jpg" alt="Writing Styles" class="w-full h-auto group-hover:opacity-90 transition-opacity">
-                    </div>
-                    <p class="text-center mt-3 text-sm font-medium text-stone-700 dark:text-stone-300">Writing Styles</p>
-                </div>
-
-                <!-- Screenshot 3 -->
-                <div class="reveal reveal-delay-3 cursor-pointer group" onclick="openCarousel(2)">
-                    <div class="rounded-lg overflow-hidden shadow-lg hover:shadow-xl transition-shadow bg-white dark:bg-stone-800 border border-stone-200 dark:border-stone-700">
-                        <img src="media/03-models.jpg" alt="AI Models" class="w-full h-auto group-hover:opacity-90 transition-opacity">
-                    </div>
-                    <p class="text-center mt-3 text-sm font-medium text-stone-700 dark:text-stone-300">AI Models</p>
-                </div>
-
-                <!-- Screenshot 4 -->
-                <div class="reveal reveal-delay-4 cursor-pointer group" onclick="openCarousel(3)">
-                    <div class="rounded-lg overflow-hidden shadow-lg hover:shadow-xl transition-shadow bg-white dark:bg-stone-800 border border-stone-200 dark:border-stone-700">
-                        <img src="media/04-app_settings.jpg" alt="App Settings" class="w-full h-auto group-hover:opacity-90 transition-opacity">
-                    </div>
-                    <p class="text-center mt-3 text-sm font-medium text-stone-700 dark:text-stone-300">App Settings</p>
-                </div>
-
-                <!-- Screenshot 5 -->
-                <div class="reveal reveal-delay-5 cursor-pointer group" onclick="openCarousel(4)">
-                    <div class="rounded-lg overflow-hidden shadow-lg hover:shadow-xl transition-shadow bg-white dark:bg-stone-800 border border-stone-200 dark:border-stone-700">
-                        <img src="media/05-custom_rules.jpg" alt="Custom Rules" class="w-full h-auto group-hover:opacity-90 transition-opacity">
-                    </div>
-                    <p class="text-center mt-3 text-sm font-medium text-stone-700 dark:text-stone-300">Custom Rules</p>
-                </div>
-
-                <!-- Screenshot 6 -->
-                <div class="reveal reveal-delay-6 cursor-pointer group" onclick="openCarousel(5)">
-                    <div class="rounded-lg overflow-hidden shadow-lg hover:shadow-xl transition-shadow bg-white dark:bg-stone-800 border border-stone-200 dark:border-stone-700">
-                        <img src="media/06-global_shortcut.jpg" alt="Global Shortcut" class="w-full h-auto group-hover:opacity-90 transition-opacity">
-                    </div>
-                    <p class="text-center mt-3 text-sm font-medium text-stone-700 dark:text-stone-300">Global Shortcut</p>
-                </div>
-
-                <!-- Screenshot 7 -->
-                <div class="reveal reveal-delay-7 cursor-pointer group" onclick="openCarousel(6)">
-                    <div class="rounded-lg overflow-hidden shadow-lg hover:shadow-xl transition-shadow bg-white dark:bg-stone-800 border border-stone-200 dark:border-stone-700">
-                        <img src="media/07-api_keys.jpg" alt="API Keys" class="w-full h-auto group-hover:opacity-90 transition-opacity">
-                    </div>
-                    <p class="text-center mt-3 text-sm font-medium text-stone-700 dark:text-stone-300">API Keys</p>
-                </div>
-
-                <!-- Screenshot 8 -->
-                <div class="reveal reveal-delay-7 cursor-pointer group" onclick="openCarousel(7)">
-                    <div class="rounded-lg overflow-hidden shadow-lg hover:shadow-xl transition-shadow bg-white dark:bg-stone-800 border border-stone-200 dark:border-stone-700">
-                        <img src="media/08-usage.jpg" alt="Usage Statistics" class="w-full h-auto group-hover:opacity-90 transition-opacity">
-                    </div>
-                    <p class="text-center mt-3 text-sm font-medium text-stone-700 dark:text-stone-300">Usage Statistics</p>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- Footer -->
-    <footer class="py-12 px-4 border-t border-stone-200 dark:border-stone-800">
-        <div class="max-w-6xl mx-auto">
-            <div class="flex flex-col md:flex-row justify-between items-center gap-6">
-                <div class="flex items-center gap-3">
-                    <img src="logo.png" alt="Correctify Logo" class="w-8 h-8">
-                    <span class="font-semibold text-lg">Correctify</span>
-                </div>
-
-                <div class="flex gap-6 text-sm">
-                    <a href="https://github.com/tarikkavaz/Correctify" target="_blank" rel="noopener noreferrer" class="text-stone-500 dark:text-stone-400 hover:text-lime-600 dark:hover:text-lime-500 transition-colors">GitHub</a>
-                    <a href="https://github.com/tarikkavaz/Correctify/issues" target="_blank" rel="noopener noreferrer" class="text-stone-500 dark:text-stone-400 hover:text-lime-600 dark:hover:text-lime-500 transition-colors">Issues</a>
-                    <a href="https://github.com/tarikkavaz/Correctify/releases" target="_blank" rel="noopener noreferrer" class="text-stone-500 dark:text-stone-400 hover:text-lime-600 dark:hover:text-lime-500 transition-colors">Releases</a>
-                </div>
-
-                <div class="text-sm text-stone-500 dark:text-stone-400">
-                    MIT License
-                </div>
-            </div>
-
-
-        </div>
-    </footer>
-
-    <!-- Carousel Modal -->
-    <div id="carouselModal" class="fixed inset-0 bg-black bg-opacity-90 z-50 hidden items-center justify-center p-4" onclick="closeCarousel()">
-        <div class="relative max-w-7xl w-full h-full flex flex-col items-center justify-center" onclick="event.stopPropagation()">
-            <!-- Close Button -->
-            <button onclick="closeCarousel()" class="absolute top-4 right-4 text-white hover:text-lime-500 transition-colors z-10">
-                <svg xmlns="http://www.w3.org/2000/svg" class="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-                </svg>
-            </button>
-
-            <!-- Previous Button -->
-            <button onclick="prevImage()" class="absolute left-4 text-white hover:text-lime-500 transition-colors p-2">
-                <svg xmlns="http://www.w3.org/2000/svg" class="w-10 h-10" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
-                </svg>
-            </button>
-
-            <!-- Next Button -->
-            <button onclick="nextImage()" class="absolute right-4 text-white hover:text-lime-500 transition-colors p-2">
-                <svg xmlns="http://www.w3.org/2000/svg" class="w-10 h-10" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
-                </svg>
-            </button>
-
-            <!-- Image Container -->
-            <div class="flex flex-col items-center justify-center max-h-full">
-                <img id="carouselImage" src="" alt="" class="max-w-full max-h-[80vh] object-contain rounded-lg shadow-2xl">
-
-                <!-- Image Info -->
-                <div class="mt-6 text-center">
-                    <h3 id="carouselTitle" class="text-2xl font-semibold text-white mb-2"></h3>
-                    <p id="carouselCounter" class="text-stone-300 text-sm"></p>
-                </div>
-            </div>
-        </div>
+      </div>
     </div>
+  </section>
 
-    <!-- Dark Mode Toggle Script -->
-    <script>
-        // Initialize dark mode based on system preference
-        if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
-            document.documentElement.classList.add('dark');
+  <!-- What It Does Section -->
+  <section class="py-20 px-4 bg-stone-100 dark:bg-stone-900">
+    <div class="max-w-6xl mx-auto">
+      <h2 class="reveal text-4xl md:text-5xl font-bold text-center mb-12">What It Does</h2>
+      <p
+        class="reveal reveal-delay-1 text-lg text-stone-500 dark:text-stone-400 text-center max-w-3xl mx-auto mb-16 text-balance">
+        Correctify corrects grammar, spelling, and punctuation while preserving your writing style and formatting. It's
+        a minimal, distraction-free menubar app that works on macOS, Windows, and Linux.
+      </p>
+    </div>
+  </section>
+
+  <!-- Features Section -->
+  <section class="py-20 px-4">
+    <div class="max-w-6xl mx-auto">
+      <h2 class="reveal text-4xl md:text-5xl font-bold text-center mb-16">Features</h2>
+
+      <div class="grid md:grid-cols-3 gap-8">
+        <!-- Feature 1 -->
+        <div
+          class="reveal reveal-delay-2 group p-8 rounded-xl bg-white dark:bg-stone-800 border-2 border-stone-200 dark:border-stone-700 transition-all">
+          <div class="w-12 h-12 bg-lime-100 dark:bg-lime-900/20 rounded-lg flex items-center justify-center mb-4">
+            <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6 text-lime-600 dark:text-lime-500" fill="none"
+              viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+          </div>
+          <h3 class="text-xl font-semibold mb-3">Menubar App</h3>
+          <p class="text-stone-500 dark:text-stone-400">Lives in your system tray/menubar for instant access. Single
+            click to show/hide. No dock icon on macOS. Launch at startup option available. Lightweight and always
+            accessible without cluttering your desktop or dock.</p>
+        </div>
+
+        <!-- Feature 2 -->
+        <div
+          class="reveal reveal-delay-3 group p-8 rounded-xl bg-white dark:bg-stone-800 border-2 border-stone-200 dark:border-stone-700 transition-all">
+          <div class="w-12 h-12 bg-lime-100 dark:bg-lime-900/20 rounded-lg flex items-center justify-center mb-4">
+            <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6 text-lime-600 dark:text-lime-500" fill="none"
+              viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+            </svg>
+          </div>
+          <h3 class="text-xl font-semibold mb-3">Writing Style Selector</h3>
+          <p class="text-stone-500 dark:text-stone-400">Choose from 5 different writing styles: Grammar Only, Formal,
+            Informal, Collaborative, or Concise. Your preference persists across sessions. Perfect for adapting
+            corrections to your specific needs and context.</p>
+        </div>
+
+        <!-- Feature 3 -->
+        <div
+          class="reveal reveal-delay-4 group p-8 rounded-xl bg-white dark:bg-stone-800 border-2 border-stone-200 dark:border-stone-700 transition-all">
+          <div class="w-12 h-12 bg-lime-100 dark:bg-lime-900/20 rounded-lg flex items-center justify-center mb-4">
+            <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6 text-lime-600 dark:text-lime-500" fill="none"
+              viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+            </svg>
+          </div>
+          <h3 class="text-xl font-semibold mb-3">Privacy First + Secure Storage</h3>
+          <p class="text-stone-500 dark:text-stone-400">API keys are stored with OS-level encryption in secure app data
+            directory. No text storage, no database, no analytics or tracking. Your data remains yours. Usage statistics
+            stay local. Complete transparency with zero data collection.</p>
+        </div>
+
+        <!-- Feature 4 -->
+        <div
+          class="reveal reveal-delay-5 group p-8 rounded-xl bg-white dark:bg-stone-800 border-2 border-stone-200 dark:border-stone-700 transition-all">
+          <div class="w-12 h-12 bg-lime-100 dark:bg-lime-900/20 rounded-lg flex items-center justify-center mb-4">
+            <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6 text-lime-600 dark:text-lime-500" fill="none"
+              viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
+            </svg>
+          </div>
+          <h3 class="text-xl font-semibold mb-3">Enhanced Global Shortcut</h3>
+          <p class="text-stone-500 dark:text-stone-400">Correct text from any app with fully customizable shortcuts.
+            Choose from 4 modifier combinations (Cmd/Ctrl+Shift, Cmd/Ctrl+Alt, Alt/Option+Shift, or Cmd/Ctrl+Alt+Shift)
+            and any final key. Optional auto copy/paste feature automatically copies and pastes corrected text in place.
+            OS-specific display with Mac icons (⌘, ⇧, ⌥) for better UX.</p>
+        </div>
+
+        <!-- Feature 5 -->
+        <div
+          class="reveal reveal-delay-6 group p-8 rounded-xl bg-white dark:bg-stone-800 border-2 border-stone-200 dark:border-stone-700 transition-all">
+          <div class="w-12 h-12 bg-lime-100 dark:bg-lime-900/20 rounded-lg flex items-center justify-center mb-4">
+            <svg xmlns="http://www.w3.org/2000/svg" stroke-width="2" class="w-6 h-6 text-lime-600 dark:text-lime-500"
+              fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path d="M12 18V5" />
+              <path d="M15 13a4.17 4.17 0 0 1-3-4 4.17 4.17 0 0 1-3 4" />
+              <path d="M17.598 6.5A3 3 0 1 0 12 5a3 3 0 1 0-5.598 1.5" />
+              <path d="M17.997 5.125a4 4 0 0 1 2.526 5.77" />
+              <path d="M18 18a4 4 0 0 0 2-7.464" />
+              <path d="M19.967 17.483A4 4 0 1 1 12 18a4 4 0 1 1-7.967-.517" />
+              <path d="M6 18a4 4 0 0 1-2-7.464" />
+              <path d="M6.003 5.125a4 4 0 0 0-2.526 5.77" />
+            </svg>
+
+
+          </div>
+          <h3 class="text-xl font-semibold mb-3">14 AI Models + Free Options</h3>
+          <p class="text-stone-500 dark:text-stone-400">Choose from 14 models across 4 providers - OpenAI (GPT-5, GPT-5
+            Mini, GPT-4o, GPT-4o Mini, GPT-4 Turbo, GPT-3.5 Turbo), Anthropic (Claude 3.5), Mistral, and OpenRouter. 4
+            free models available (no credit card). Pay-per-use for premium models. Intelligent fallback to free models
+            on error.</p>
+        </div>
+
+        <!-- Feature 6 -->
+        <div
+          class="reveal reveal-delay-6 group p-8 rounded-xl bg-white dark:bg-stone-800 border-2 border-stone-200 dark:border-stone-700 transition-all">
+          <div class="w-12 h-12 bg-lime-100 dark:bg-lime-900/20 rounded-lg flex items-center justify-center mb-4">
+            <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6 text-lime-600 dark:text-lime-500" fill="none"
+              viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <path d="M9 18V5l12-2v13" />
+              <path d="m9 9 12-2" />
+              <circle cx="6" cy="18" r="3" />
+              <circle cx="18" cy="16" r="3" />
+            </svg>
+          </div>
+          <h3 class="text-xl font-semibold mb-3">Sound Notifications</h3>
+          <p class="text-stone-500 dark:text-stone-400">Optional audio feedback for all notifications with distinct
+            sounds for different notification types. Enable/disable in Settings. Works across all platforms. Provides
+            clear audio cues for processing, completion, and error states.</p>
+        </div>
+
+        <!-- Feature 7 -->
+        <div
+          class="reveal reveal-delay-7 group p-8 rounded-xl bg-white dark:bg-stone-800 border-2 border-stone-200 dark:border-stone-700 transition-all">
+          <div class="w-12 h-12 bg-lime-100 dark:bg-lime-900/20 rounded-lg flex items-center justify-center mb-4">
+            <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6 text-lime-600 dark:text-lime-500" fill="none"
+              viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+            </svg>
+          </div>
+          <h3 class="text-xl font-semibold mb-3">Custom Rules</h3>
+          <p class="text-stone-500 dark:text-stone-400">Define your own correction rules that are automatically
+            integrated into all AI prompts. Perfect for enforcing specific style preferences, avoiding certain words or
+            phrases, or maintaining brand voice. Rules apply to both in-app and global shortcut corrections.</p>
+        </div>
+
+        <!-- Feature 8 -->
+        <div
+          class="reveal reveal-delay-7 group p-8 rounded-xl bg-white dark:bg-stone-800 border-2 border-stone-200 dark:border-stone-700 transition-all">
+          <div class="w-12 h-12 bg-lime-100 dark:bg-lime-900/20 rounded-lg flex items-center justify-center mb-4">
+            <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6 text-lime-600 dark:text-lime-500" fill="none"
+              viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+            </svg>
+          </div>
+          <h3 class="text-xl font-semibold mb-3">Auto-Updates</h3>
+          <p class="text-stone-500 dark:text-stone-400">Beautiful in-app update notifications with release notes.
+            Automatic update checks on startup (silent, only shows when update available). One-click installation with
+            progress indicators. Never miss new features or improvements.</p>
+        </div>
+
+        <!-- Feature 9 -->
+        <div
+          class="reveal reveal-delay-7 group p-8 rounded-xl bg-white dark:bg-stone-800 border-2 border-stone-200 dark:border-stone-700 transition-all">
+          <div class="w-12 h-12 bg-lime-100 dark:bg-lime-900/20 rounded-lg flex items-center justify-center mb-4">
+            <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6 text-lime-600 dark:text-lime-500" fill="none"
+              viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M3 5h12M9 3v2m1.048 9.5A18.022 18.022 0 016.412 9m6.088 9h7M11 21l5-10 5 10M12.751 5C11.783 10.77 8.07 15.61 3 18.129" />
+            </svg>
+          </div>
+          <h3 class="text-xl font-semibold mb-3">Multilingual Support</h3>
+          <p class="text-stone-500 dark:text-stone-400">Fully translated interface supporting English, German, French,
+            and Turkish. All UI elements, model descriptions, style options, and settings are localized. Automatic
+            language detection based on system preferences with manual override option.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Download Section -->
+  <section id="download" class="py-20 px-4 bg-stone-100 dark:bg-stone-900">
+    <div class="max-w-6xl mx-auto">
+      <h2 class="reveal text-4xl md:text-5xl font-bold text-center mb-6">Download</h2>
+      <p class="reveal reveal-delay-1 text-lg text-stone-500 dark:text-stone-400 text-center max-w-2xl mx-auto mb-16">
+        Choose your platform and start correcting your text with AI-powered precision. <span
+          class="font-medium text-stone-600 dark:text-stone-300">v1.0.0</span>
+      </p>
+
+      <div class="grid md:grid-cols-3 gap-8 max-w-4xl mx-auto">
+        <!-- macOS -->
+        <a href="https://github.com/tarikkavaz/Correctify/releases/latest/download/Correctify_1.0.0_aarch64.dmg"
+          class="reveal reveal-delay-2 group p-8 rounded-xl bg-white dark:bg-stone-800 border-2 border-stone-200 dark:border-stone-700 hover:border-lime-600 dark:hover:border-lime-500 transition-all hover:shadow-xl text-center">
+          <div class="w-16 h-16 mx-auto mb-4 flex items-center justify-center">
+            <svg xmlns="http://www.w3.org/2000/svg"
+              class="w-16 h-16 text-stone-700 dark:text-stone-300 group-hover:text-lime-600 dark:group-hover:text-lime-500 transition-colors"
+              viewBox="0 0 24 24" fill="currentColor">
+              <path
+                d="M17.05 20.28c-.98.95-2.05.8-3.08.35-1.09-.46-2.09-.48-3.24 0-1.44.62-2.2.44-3.06-.35C2.79 15.25 3.51 7.59 9.05 7.31c1.35.07 2.29.74 3.08.8 1.18-.24 2.31-.93 3.57-.84 1.51.12 2.65.72 3.4 1.8-3.12 1.87-2.38 5.98.48 7.13-.57 1.5-1.31 2.99-2.54 4.09l.01-.01zM12.03 7.25c-.15-2.23 1.66-4.07 3.74-4.25.29 2.58-2.34 4.5-3.74 4.25z" />
+            </svg>
+          </div>
+          <h3 class="text-xl font-semibold mb-2">macOS</h3>
+          <p class="text-sm text-stone-500 dark:text-stone-400">Apple Silicon (M1/M2/M3/M4)</p>
+        </a>
+
+        <!-- Windows -->
+        <a href="https://github.com/tarikkavaz/Correctify/releases/latest/download/Correctify_1.0.0_x64-setup.exe"
+          class="reveal reveal-delay-3 group p-8 rounded-xl bg-white dark:bg-stone-800 border-2 border-stone-200 dark:border-stone-700 hover:border-lime-600 dark:hover:border-lime-500 transition-all hover:shadow-xl text-center">
+          <div class="w-16 h-16 mx-auto mb-4 flex items-center justify-center">
+            <svg xmlns="http://www.w3.org/2000/svg"
+              class="w-16 h-16 text-stone-700 dark:text-stone-300 group-hover:text-lime-600 dark:group-hover:text-lime-500 transition-colors"
+              viewBox="0 0 24 24" fill="currentColor">
+              <path
+                d="M3 5.479L10.955 4.366v7.637H3V5.479zm0 13.042l7.955 1.112v-7.637H3v6.525zM11.955 3.271L21 2v9.003h-9.045V3.271zm0 17.457V12.725H21V22l-9.045-1.272z" />
+            </svg>
+          </div>
+          <h3 class="text-xl font-semibold mb-2">Windows</h3>
+          <p class="text-sm text-stone-500 dark:text-stone-400">64-bit (NSIS Installer)</p>
+        </a>
+
+        <!-- Linux -->
+        <a href="https://github.com/tarikkavaz/Correctify/releases/latest/download/correctify_1.0.0_amd64.AppImage"
+          class="reveal reveal-delay-4 group p-8 rounded-xl bg-white dark:bg-stone-800 border-2 border-stone-200 dark:border-stone-700 hover:border-lime-600 dark:hover:border-lime-500 transition-all hover:shadow-xl text-center">
+          <div class="w-16 h-16 mx-auto mb-4 flex items-center justify-center">
+            <svg xmlns="http://www.w3.org/2000/svg"
+              class="w-16 h-16 text-stone-700 dark:text-stone-300 group-hover:text-lime-600 dark:group-hover:text-lime-500 transition-colors"
+              viewBox="0 0 24 24" fill="currentColor">
+              <path
+                d="M20.581 19.049c-.55-.446-.336-1.431-.907-1.917.553-3.365-.997-6.331-2.845-8.232-1.551-1.595-1.051-3.147-1.051-4.49 0-2.146-.881-4.41-3.55-4.41-2.853 0-3.635 2.38-3.663 3.738-.068 3.262.659 4.11-1.25 6.484-2.246 2.793-2.577 5.579-2.07 7.057-.237.276-.557.582-1.155.835-1.652.72-.441 1.925-.898 2.78-.13.243-.192.497-.192.74 0 .75.596 1.399 1.679 1.302 1.461-.13 2.809.905 3.681.905.77 0 1.402-.438 1.696-1.041 1.377-.339 3.077-.296 4.453.059.247.691.917 1.141 1.662 1.141 1.631 0 1.945-1.849 3.816-2.475.674-.225 1.013-.879 1.013-1.488 0-.39-.139-.762-.419-.988z" />
+            </svg>
+          </div>
+          <h3 class="text-xl font-semibold mb-2">Linux</h3>
+          <p class="text-sm text-stone-500 dark:text-stone-400">AppImage (64-bit)</p>
+        </a>
+      </div>
+
+      <div class="reveal reveal-delay-5 text-center mt-12">
+        <p class="text-stone-500 dark:text-stone-400 mb-4">
+          Looking for other formats or previous versions?
+        </p>
+        <a href="https://github.com/tarikkavaz/Correctify/releases" target="_blank" rel="noopener noreferrer"
+          class="text-lime-600 dark:text-lime-500 hover:underline font-semibold">
+          View all releases on GitHub →
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- How to Use Section -->
+  <section class="py-20 px-4">
+    <div class="max-w-4xl mx-auto">
+      <h2 class="reveal text-4xl md:text-5xl font-bold text-center mb-16">Getting Started</h2>
+
+      <div class="space-y-8">
+        <!-- Step 1 -->
+        <div class="reveal flex gap-6">
+          <div
+            class="flex-shrink-0 w-12 h-12 rounded-full bg-lime-600 text-white flex items-center justify-center font-bold text-xl">
+            1</div>
+          <div>
+            <h3 class="text-2xl font-semibold mb-3">Get API Key(s) from Your Preferred Provider(s)</h3>
+            <p class="text-stone-500 dark:text-stone-400 mb-3">Choose one or more providers based on your needs:</p>
+            <div class="space-y-2 ml-4">
+              <p class="text-stone-500 dark:text-stone-400">
+                <strong>OpenRouter</strong> - <a href="https://openrouter.ai/keys" target="_blank"
+                  rel="noopener noreferrer" class="text-lime-600 dark:text-lime-500 hover:underline">Get FREE API
+                  Key</a>
+                <span class="text-sm">(4 free models, no credit card!)</span>
+              </p>
+              <p class="text-stone-500 dark:text-stone-400">
+                <a href="https://platform.openai.com/api-keys" target="_blank" rel="noopener noreferrer"
+                  class="text-lime-600 dark:text-lime-500 hover:underline">OpenAI</a> |
+                <a href="https://console.anthropic.com/settings/keys" target="_blank" rel="noopener noreferrer"
+                  class="text-lime-600 dark:text-lime-500 hover:underline">Anthropic</a> |
+                <a href="https://console.mistral.ai/api-keys/" target="_blank" rel="noopener noreferrer"
+                  class="text-lime-600 dark:text-lime-500 hover:underline">Mistral</a>
+                <span class="text-sm">(Premium models, pay-per-use)</span>
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Step 2 -->
+        <div class="reveal reveal-delay-1 flex gap-6">
+          <div
+            class="flex-shrink-0 w-12 h-12 rounded-full bg-lime-600 text-white flex items-center justify-center font-bold text-xl">
+            2</div>
+          <div>
+            <h3 class="text-2xl font-semibold mb-3">Configure Correctify</h3>
+            <p class="text-stone-500 dark:text-stone-400 mb-2">Open the app from your system tray/menubar, click
+              Settings, and add your API key(s) in the API Keys tab. Your keys are stored securely with OS-level
+              encryption.</p>
+            <p class="text-stone-500 dark:text-stone-400 text-sm flex items-start gap-2">
+              <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 text-white mt-0.5 flex-shrink-0" fill="none"
+                viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
+              </svg>
+              <span><strong>Tip:</strong> You can configure multiple providers and switch between them anytime!</span>
+            </p>
+          </div>
+        </div>
+
+        <!-- Step 3 -->
+        <div class="reveal reveal-delay-2 flex gap-6">
+          <div
+            class="flex-shrink-0 w-12 h-12 rounded-full bg-lime-600 text-white flex items-center justify-center font-bold text-xl">
+            3</div>
+          <div>
+            <h3 class="text-2xl font-semibold mb-3">Choose Your Model & Writing Style</h3>
+            <p class="text-stone-500 dark:text-stone-400">Select from 14 available models (paid or free) and 5 writing
+              styles (Grammar, Formal, Informal, Collaborative, Concise). Optionally add custom rules for specific
+              correction preferences. Your preferences are saved automatically.</p>
+          </div>
+        </div>
+
+        <!-- Step 4 -->
+        <div class="reveal reveal-delay-3 flex gap-6">
+          <div
+            class="flex-shrink-0 w-12 h-12 rounded-full bg-lime-600 text-white flex items-center justify-center font-bold text-xl">
+            4</div>
+          <div>
+            <h3 class="text-2xl font-semibold mb-3">Customize Your Shortcut (Optional)</h3>
+            <p class="text-stone-500 dark:text-stone-400">Go to Settings > Global Shortcut tab to customize your
+              keyboard shortcut. Choose from 4 modifier combinations and any final key. Enable auto copy/paste for
+              seamless text correction from any app.</p>
+          </div>
+        </div>
+
+        <!-- Step 5 -->
+        <div class="reveal reveal-delay-4 flex gap-6">
+          <div
+            class="flex-shrink-0 w-12 h-12 rounded-full bg-lime-600 text-white flex items-center justify-center font-bold text-xl">
+            5</div>
+          <div>
+            <h3 class="text-2xl font-semibold mb-3">Start Correcting</h3>
+            <p class="text-stone-500 dark:text-stone-400">Type or paste text in the app, or use your customized global
+              shortcut from any application to correct text instantly with auto copy/paste.</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Detailed Usage Instructions -->
+      <div class="reveal reveal-delay-3 mt-16 space-y-12">
+        <div class="bg-white dark:bg-stone-800 rounded-xl p-8 border border-stone-200 dark:border-stone-700">
+          <h3 class="text-2xl font-semibold mb-6">In-App Correction</h3>
+          <div class="space-y-4">
+            <div class="flex gap-4">
+              <div
+                class="flex-shrink-0 w-8 h-8 rounded-full bg-lime-100 dark:bg-lime-900/20 text-lime-600 dark:text-lime-500 flex items-center justify-center font-semibold">
+                1</div>
+              <p class="text-stone-500 dark:text-stone-400">Type or paste text into the input area</p>
+            </div>
+            <div class="flex gap-4">
+              <div
+                class="flex-shrink-0 w-8 h-8 rounded-full bg-lime-100 dark:bg-lime-900/20 text-lime-600 dark:text-lime-500 flex items-center justify-center font-semibold">
+                2</div>
+              <p class="text-stone-500 dark:text-stone-400">Click "Correct" or press <kbd
+                  class="px-2 py-1 bg-stone-100 dark:bg-stone-700 rounded text-sm">Cmd+Enter</kbd> (Mac) / <kbd
+                  class="px-2 py-1 bg-stone-100 dark:bg-stone-700 rounded text-sm">Ctrl+Enter</kbd> (Windows/Linux)</p>
+            </div>
+            <div class="flex gap-4">
+              <div
+                class="flex-shrink-0 w-8 h-8 rounded-full bg-lime-100 dark:bg-lime-900/20 text-lime-600 dark:text-lime-500 flex items-center justify-center font-semibold">
+                3</div>
+              <p class="text-stone-500 dark:text-stone-400">See the corrected text appear below and click Copy to use it
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <div class="bg-white dark:bg-stone-800 rounded-xl p-8 border border-stone-200 dark:border-stone-700">
+          <h3 class="text-2xl font-semibold mb-6">Global Shortcut (Recommended)</h3>
+          <div class="space-y-6">
+            <div class="p-4 bg-lime-50 dark:bg-lime-900/20 rounded-lg border border-lime-200 dark:border-lime-800 mb-4">
+              <p class="text-sm text-lime-700 dark:text-lime-300 flex items-start gap-2">
+                <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 text-white mt-0.5 flex-shrink-0" fill="none"
+                  viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
+                </svg>
+                <span><strong class="text-white">Customizable:</strong> Go to Settings > Global Shortcut tab to
+                  customize your shortcut. Choose from 4 modifier combinations (Cmd/Ctrl+Shift, Cmd/Ctrl+Alt,
+                  Alt/Option+Shift, or Cmd/Ctrl+Alt+Shift) and any final key. Default is Cmd+Shift+] /
+                  Ctrl+Shift+].</span>
+              </p>
+            </div>
+
+            <div>
+              <h4 class="text-lg font-semibold mb-3 text-lime-600 dark:text-lime-500">With Auto Copy/Paste</h4>
+              <div class="space-y-3">
+                <div class="flex gap-4">
+                  <div
+                    class="flex-shrink-0 w-8 h-8 rounded-full bg-lime-100 dark:bg-lime-900/20 text-lime-600 dark:text-lime-500 flex items-center justify-center font-semibold">
+                    1</div>
+                  <p class="text-stone-500 dark:text-stone-400">Select text in any app (just highlight it, no copying
+                    needed)</p>
+                </div>
+                <div class="flex gap-4">
+                  <div
+                    class="flex-shrink-0 w-8 h-8 rounded-full bg-lime-100 dark:bg-lime-900/20 text-lime-600 dark:text-lime-500 flex items-center justify-center font-semibold">
+                    2</div>
+                  <p class="text-stone-500 dark:text-stone-400">Press your configured shortcut (default: <kbd
+                      class="px-2 py-1 bg-stone-100 dark:bg-stone-700 rounded text-sm">Cmd+Shift+]</kbd> on Mac or <kbd
+                      class="px-2 py-1 bg-stone-100 dark:bg-stone-700 rounded text-sm">Ctrl+Shift+]</kbd> on
+                    Windows/Linux)</p>
+                </div>
+                <div class="flex gap-4">
+                  <div
+                    class="flex-shrink-0 w-8 h-8 rounded-full bg-lime-100 dark:bg-lime-900/20 text-lime-600 dark:text-lime-500 flex items-center justify-center font-semibold">
+                    3</div>
+                  <p class="text-stone-500 dark:text-stone-400">Wait for notification - corrected text automatically
+                    pastes in place!</p>
+                </div>
+              </div>
+              <div
+                class="mt-4 p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800">
+                <p class="text-sm text-blue-700 dark:text-blue-500"><strong>Note:</strong> You'll need to grant
+                  Accessibility permissions for Auto Copy/Paste. Go to System Settings > Privacy & Security >
+                  Accessibility and enable <strong>Correctify</strong>.</p>
+              </div>
+            </div>
+
+            <div>
+              <h4 class="text-lg font-semibold mb-3 text-stone-600 dark:text-stone-400">Manual Mode</h4>
+              <div class="space-y-3">
+                <div class="flex gap-4">
+                  <div
+                    class="flex-shrink-0 w-8 h-8 rounded-full bg-stone-100 dark:bg-stone-800 text-stone-600 dark:text-stone-400 flex items-center justify-center font-semibold">
+                    1</div>
+                  <p class="text-stone-500 dark:text-stone-400">Select and copy text in any app (<kbd
+                      class="px-2 py-1 bg-stone-100 dark:bg-stone-700 rounded text-sm">Cmd+C</kbd> / <kbd
+                      class="px-2 py-1 bg-stone-100 dark:bg-stone-700 rounded text-sm">Ctrl+C</kbd>)</p>
+                </div>
+                <div class="flex gap-4">
+                  <div
+                    class="flex-shrink-0 w-8 h-8 rounded-full bg-stone-100 dark:bg-stone-800 text-stone-600 dark:text-stone-400 flex items-center justify-center font-semibold">
+                    2</div>
+                  <p class="text-stone-500 dark:text-stone-400">Press your configured shortcut</p>
+                </div>
+                <div class="flex gap-4">
+                  <div
+                    class="flex-shrink-0 w-8 h-8 rounded-full bg-stone-100 dark:bg-stone-800 text-stone-600 dark:text-stone-400 flex items-center justify-center font-semibold">
+                    3</div>
+                  <p class="text-stone-500 dark:text-stone-400">Wait for notification and paste the corrected text (<kbd
+                      class="px-2 py-1 bg-stone-100 dark:bg-stone-700 rounded text-sm">Cmd+V</kbd> / <kbd
+                      class="px-2 py-1 bg-stone-100 dark:bg-stone-700 rounded text-sm">Ctrl+V</kbd>)</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="bg-white dark:bg-stone-800 rounded-xl p-8 border border-stone-200 dark:border-stone-700">
+          <h3 class="text-2xl font-semibold mb-6">Custom Rules</h3>
+          <div class="space-y-4">
+            <p class="text-stone-500 dark:text-stone-400">Define your own correction rules in Settings > Custom Rules
+              tab. These rules are automatically integrated into all AI correction prompts, ensuring consistent style
+              preferences across all corrections.</p>
+            <div class="space-y-3">
+              <div class="flex gap-4">
+                <div
+                  class="flex-shrink-0 w-8 h-8 rounded-full bg-lime-100 dark:bg-lime-900/20 text-lime-600 dark:text-lime-500 flex items-center justify-center font-semibold">
+                  1</div>
+                <p class="text-stone-500 dark:text-stone-400">Go to Settings > Custom Rules tab</p>
+              </div>
+              <div class="flex gap-4">
+                <div
+                  class="flex-shrink-0 w-8 h-8 rounded-full bg-lime-100 dark:bg-lime-900/20 text-lime-600 dark:text-lime-500 flex items-center justify-center font-semibold">
+                  2</div>
+                <p class="text-stone-500 dark:text-stone-400">Enter your custom rules (e.g., "Don't use em dashes",
+                  "Prefer British spelling", "Avoid passive voice")</p>
+              </div>
+              <div class="flex gap-4">
+                <div
+                  class="flex-shrink-0 w-8 h-8 rounded-full bg-lime-100 dark:bg-lime-900/20 text-lime-600 dark:text-lime-500 flex items-center justify-center font-semibold">
+                  3</div>
+                <p class="text-stone-500 dark:text-stone-400">Your rules will be applied to all future corrections
+                  automatically</p>
+              </div>
+            </div>
+            <div class="mt-4 p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800">
+              <p class="text-sm text-blue-700 dark:text-blue-500"><strong>Tip:</strong> Custom rules work with both
+                in-app corrections and global shortcut corrections. Perfect for maintaining brand voice, avoiding
+                specific words, or enforcing style guidelines.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Keyboard Shortcuts Section -->
+  <section class="py-20 px-4 bg-stone-100 dark:bg-stone-900">
+    <div class="max-w-4xl mx-auto">
+      <h2 class="reveal text-4xl md:text-5xl font-bold text-center mb-16">Keyboard Shortcuts</h2>
+
+      <div class="reveal bg-white dark:bg-stone-800 rounded-xl p-8 border border-stone-200 dark:border-stone-700">
+        <div class="overflow-x-auto">
+          <table class="w-full">
+            <thead>
+              <tr class="border-b border-stone-200 dark:border-stone-700">
+                <th class="text-left py-4 px-6 font-semibold text-stone-900 dark:text-stone-100">Action</th>
+                <th class="text-left py-4 px-6 font-semibold text-stone-900 dark:text-stone-100">macOS</th>
+                <th class="text-left py-4 px-6 font-semibold text-stone-900 dark:text-stone-100">Windows/Linux</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-stone-200 dark:divide-stone-700">
+              <tr>
+                <td class="py-4 px-6 text-stone-700 dark:text-stone-300">Submit for correction</td>
+                <td class="py-4 px-6"><kbd
+                    class="px-2 py-1 bg-stone-100 dark:bg-stone-700 rounded text-sm">Cmd+Enter</kbd></td>
+                <td class="py-4 px-6"><kbd
+                    class="px-2 py-1 bg-stone-100 dark:bg-stone-700 rounded text-sm">Ctrl+Enter</kbd></td>
+              </tr>
+              <tr>
+                <td class="py-4 px-6 text-stone-700 dark:text-stone-300">Global correction (default)</td>
+                <td class="py-4 px-6"><kbd
+                    class="px-2 py-1 bg-stone-100 dark:bg-stone-700 rounded text-sm">Cmd+Shift+]</kbd></td>
+                <td class="py-4 px-6"><kbd
+                    class="px-2 py-1 bg-stone-100 dark:bg-stone-700 rounded text-sm">Ctrl+Shift+]</kbd></td>
+              </tr>
+              <tr>
+                <td class="py-4 px-6 text-stone-700 dark:text-stone-300">Customize shortcut</td>
+                <td class="py-4 px-6 text-stone-500 dark:text-stone-400">Settings > Global Shortcut</td>
+                <td class="py-4 px-6 text-stone-500 dark:text-stone-400">Settings > Global Shortcut</td>
+              </tr>
+              <tr>
+                <td class="py-4 px-6 text-stone-700 dark:text-stone-300">Copy result</td>
+                <td class="py-4 px-6 text-stone-500 dark:text-stone-400">Click Copy button</td>
+                <td class="py-4 px-6 text-stone-500 dark:text-stone-400">Click Copy button</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Privacy Section -->
+  <section class="py-20 px-4">
+    <div class="max-w-4xl mx-auto">
+      <h2 class="reveal text-4xl md:text-5xl font-bold text-center mb-16">Privacy First</h2>
+
+      <div class="reveal bg-white dark:bg-stone-800 rounded-xl p-8 border border-stone-200 dark:border-stone-700">
+        <div class="grid md:grid-cols-2 gap-8">
+          <div>
+            <h3 class="text-xl font-semibold mb-4 text-lime-600 dark:text-lime-500">What We Do</h3>
+            <ul class="space-y-3 text-stone-500 dark:text-stone-400">
+              <li class="flex items-start gap-3">
+                <svg xmlns="http://www.w3.org/2000/svg"
+                  class="w-5 h-5 text-lime-600 dark:text-lime-500 mt-0.5 flex-shrink-0" fill="none" viewBox="0 0 24 24"
+                  stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                </svg>
+                <span>Send your text to OpenAI for correction</span>
+              </li>
+              <li class="flex items-start gap-3">
+                <svg xmlns="http://www.w3.org/2000/svg"
+                  class="w-5 h-5 text-lime-600 dark:text-lime-500 mt-0.5 flex-shrink-0" fill="none" viewBox="0 0 24 24"
+                  stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                </svg>
+                <span>Store your API key locally on your device</span>
+              </li>
+              <li class="flex items-start gap-3">
+                <svg xmlns="http://www.w3.org/2000/svg"
+                  class="w-5 h-5 text-lime-600 dark:text-lime-500 mt-0.5 flex-shrink-0" fill="none" viewBox="0 0 24 24"
+                  stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                </svg>
+                <span>Preserve your writing style and formatting</span>
+              </li>
+            </ul>
+          </div>
+
+          <div>
+            <h3 class="text-xl font-semibold mb-4 text-red-500 dark:text-red-400">What We Don't Do</h3>
+            <ul class="space-y-3 text-stone-500 dark:text-stone-400">
+              <li class="flex items-start gap-3">
+                <svg xmlns="http://www.w3.org/2000/svg"
+                  class="w-5 h-5 text-red-500 dark:text-red-400 mt-0.5 flex-shrink-0" fill="none" viewBox="0 0 24 24"
+                  stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+                <span>Log, store, or track your text</span>
+              </li>
+              <li class="flex items-start gap-3">
+                <svg xmlns="http://www.w3.org/2000/svg"
+                  class="w-5 h-5 text-red-500 dark:text-red-400 mt-0.5 flex-shrink-0" fill="none" viewBox="0 0 24 24"
+                  stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+                <span>Collect analytics or telemetry</span>
+              </li>
+              <li class="flex items-start gap-3">
+                <svg xmlns="http://www.w3.org/2000/svg"
+                  class="w-5 h-5 text-red-500 dark:text-red-400 mt-0.5 flex-shrink-0" fill="none" viewBox="0 0 24 24"
+                  stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+                <span>Use databases or external storage</span>
+              </li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="mt-8 p-6 bg-lime-50 dark:bg-lime-900/20 rounded-lg border border-lime-200 dark:border-lime-800">
+          <p class="text-lime-700 dark:text-lime-300 text-center font-medium">
+            Your API key stays local and is never logged. Your data remains yours.
+          </p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Screenshots Section -->
+  <section class="py-20 px-4 bg-stone-100 dark:bg-stone-900">
+    <div class="max-w-6xl mx-auto">
+      <h2 class="reveal text-4xl md:text-5xl font-bold text-center mb-16">Screenshots</h2>
+
+      <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+        <!-- Screenshot 1 -->
+        <div class="reveal reveal-delay-1 cursor-pointer group" onclick="openCarousel(0)">
+          <div
+            class="rounded-lg overflow-hidden shadow-lg hover:shadow-xl transition-shadow bg-white dark:bg-stone-800 border border-stone-200 dark:border-stone-700">
+            <img src="media/01-in_app_correction.jpg" alt="In-App Correction"
+              class="w-full h-auto group-hover:opacity-90 transition-opacity">
+          </div>
+          <p class="text-center mt-3 text-sm font-medium text-stone-700 dark:text-stone-300">In-App Correction</p>
+        </div>
+
+        <!-- Screenshot 2 -->
+        <div class="reveal reveal-delay-2 cursor-pointer group" onclick="openCarousel(1)">
+          <div
+            class="rounded-lg overflow-hidden shadow-lg hover:shadow-xl transition-shadow bg-white dark:bg-stone-800 border border-stone-200 dark:border-stone-700">
+            <img src="media/02-style.jpg" alt="Writing Styles"
+              class="w-full h-auto group-hover:opacity-90 transition-opacity">
+          </div>
+          <p class="text-center mt-3 text-sm font-medium text-stone-700 dark:text-stone-300">Writing Styles</p>
+        </div>
+
+        <!-- Screenshot 3 -->
+        <div class="reveal reveal-delay-3 cursor-pointer group" onclick="openCarousel(2)">
+          <div
+            class="rounded-lg overflow-hidden shadow-lg hover:shadow-xl transition-shadow bg-white dark:bg-stone-800 border border-stone-200 dark:border-stone-700">
+            <img src="media/03-models.jpg" alt="AI Models"
+              class="w-full h-auto group-hover:opacity-90 transition-opacity">
+          </div>
+          <p class="text-center mt-3 text-sm font-medium text-stone-700 dark:text-stone-300">AI Models</p>
+        </div>
+
+        <!-- Screenshot 4 -->
+        <div class="reveal reveal-delay-4 cursor-pointer group" onclick="openCarousel(3)">
+          <div
+            class="rounded-lg overflow-hidden shadow-lg hover:shadow-xl transition-shadow bg-white dark:bg-stone-800 border border-stone-200 dark:border-stone-700">
+            <img src="media/04-app_settings.jpg" alt="App Settings"
+              class="w-full h-auto group-hover:opacity-90 transition-opacity">
+          </div>
+          <p class="text-center mt-3 text-sm font-medium text-stone-700 dark:text-stone-300">App Settings</p>
+        </div>
+
+        <!-- Screenshot 5 -->
+        <div class="reveal reveal-delay-5 cursor-pointer group" onclick="openCarousel(4)">
+          <div
+            class="rounded-lg overflow-hidden shadow-lg hover:shadow-xl transition-shadow bg-white dark:bg-stone-800 border border-stone-200 dark:border-stone-700">
+            <img src="media/05-custom_rules.jpg" alt="Custom Rules"
+              class="w-full h-auto group-hover:opacity-90 transition-opacity">
+          </div>
+          <p class="text-center mt-3 text-sm font-medium text-stone-700 dark:text-stone-300">Custom Rules</p>
+        </div>
+
+        <!-- Screenshot 6 -->
+        <div class="reveal reveal-delay-6 cursor-pointer group" onclick="openCarousel(5)">
+          <div
+            class="rounded-lg overflow-hidden shadow-lg hover:shadow-xl transition-shadow bg-white dark:bg-stone-800 border border-stone-200 dark:border-stone-700">
+            <img src="media/06-global_shortcut.jpg" alt="Global Shortcut"
+              class="w-full h-auto group-hover:opacity-90 transition-opacity">
+          </div>
+          <p class="text-center mt-3 text-sm font-medium text-stone-700 dark:text-stone-300">Global Shortcut</p>
+        </div>
+
+        <!-- Screenshot 7 -->
+        <div class="reveal reveal-delay-7 cursor-pointer group" onclick="openCarousel(6)">
+          <div
+            class="rounded-lg overflow-hidden shadow-lg hover:shadow-xl transition-shadow bg-white dark:bg-stone-800 border border-stone-200 dark:border-stone-700">
+            <img src="media/07-api_keys.jpg" alt="API Keys"
+              class="w-full h-auto group-hover:opacity-90 transition-opacity">
+          </div>
+          <p class="text-center mt-3 text-sm font-medium text-stone-700 dark:text-stone-300">API Keys</p>
+        </div>
+
+        <!-- Screenshot 8 -->
+        <div class="reveal reveal-delay-7 cursor-pointer group" onclick="openCarousel(7)">
+          <div
+            class="rounded-lg overflow-hidden shadow-lg hover:shadow-xl transition-shadow bg-white dark:bg-stone-800 border border-stone-200 dark:border-stone-700">
+            <img src="media/08-usage.jpg" alt="Usage Statistics"
+              class="w-full h-auto group-hover:opacity-90 transition-opacity">
+          </div>
+          <p class="text-center mt-3 text-sm font-medium text-stone-700 dark:text-stone-300">Usage Statistics</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="py-12 px-4 border-t border-stone-200 dark:border-stone-800">
+    <div class="max-w-6xl mx-auto">
+      <div class="flex flex-col md:flex-row justify-between items-center gap-6">
+        <div class="flex items-center gap-3">
+          <img src="logo.png" alt="Correctify Logo" class="w-8 h-8">
+          <span class="font-semibold text-lg">Correctify</span>
+        </div>
+
+        <div class="flex gap-6 text-sm">
+          <a href="https://github.com/tarikkavaz/Correctify" target="_blank" rel="noopener noreferrer"
+            class="text-stone-500 dark:text-stone-400 hover:text-lime-600 dark:hover:text-lime-500 transition-colors">GitHub</a>
+          <a href="https://github.com/tarikkavaz/Correctify/issues" target="_blank" rel="noopener noreferrer"
+            class="text-stone-500 dark:text-stone-400 hover:text-lime-600 dark:hover:text-lime-500 transition-colors">Issues</a>
+          <a href="https://github.com/tarikkavaz/Correctify/releases" target="_blank" rel="noopener noreferrer"
+            class="text-stone-500 dark:text-stone-400 hover:text-lime-600 dark:hover:text-lime-500 transition-colors">Releases</a>
+        </div>
+
+        <div class="text-sm text-stone-500 dark:text-stone-400">
+          MIT License
+        </div>
+      </div>
+
+
+    </div>
+  </footer>
+
+  <!-- Carousel Modal -->
+  <div id="carouselModal" class="fixed inset-0 bg-black bg-opacity-90 z-50 hidden items-center justify-center p-4"
+    onclick="closeCarousel()">
+    <div class="relative max-w-7xl w-full h-full flex flex-col items-center justify-center"
+      onclick="event.stopPropagation()">
+      <!-- Close Button -->
+      <button onclick="closeCarousel()"
+        class="absolute top-4 right-4 text-white hover:text-lime-500 transition-colors z-10">
+        <svg xmlns="http://www.w3.org/2000/svg" class="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+        </svg>
+      </button>
+
+      <!-- Previous Button -->
+      <button onclick="prevImage()" class="absolute left-4 text-white hover:text-lime-500 transition-colors p-2">
+        <svg xmlns="http://www.w3.org/2000/svg" class="w-10 h-10" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+        </svg>
+      </button>
+
+      <!-- Next Button -->
+      <button onclick="nextImage()" class="absolute right-4 text-white hover:text-lime-500 transition-colors p-2">
+        <svg xmlns="http://www.w3.org/2000/svg" class="w-10 h-10" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+        </svg>
+      </button>
+
+      <!-- Image Container -->
+      <div class="flex flex-col items-center justify-center max-h-full">
+        <img id="carouselImage" src="" alt="" class="max-w-full max-h-[80vh] object-contain rounded-lg shadow-2xl">
+
+        <!-- Image Info -->
+        <div class="mt-6 text-center">
+          <h3 id="carouselTitle" class="text-2xl font-semibold text-white mb-2"></h3>
+          <p id="carouselCounter" class="text-stone-300 text-sm"></p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Dark Mode Toggle Script -->
+  <script>
+    // Initialize dark mode based on system preference
+    if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+      document.documentElement.classList.add('dark');
+    }
+
+    // Listen for system theme changes
+    window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', e => {
+      if (e.matches) {
+        document.documentElement.classList.add('dark');
+      } else {
+        document.documentElement.classList.remove('dark');
+      }
+    });
+
+    // Scroll reveal animation
+    const observerOptions = {
+      threshold: 0.1,
+      rootMargin: '0px 0px -50px 0px'
+    };
+
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('active');
         }
+      });
+    }, observerOptions);
 
-        // Listen for system theme changes
-        window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', e => {
-            if (e.matches) {
-                document.documentElement.classList.add('dark');
-            } else {
-                document.documentElement.classList.remove('dark');
-            }
-        });
+    // Observe all elements with the reveal class
+    document.addEventListener('DOMContentLoaded', () => {
+      const revealElements = document.querySelectorAll('.reveal');
+      revealElements.forEach(el => observer.observe(el));
+    });
 
-        // Scroll reveal animation
-        const observerOptions = {
-            threshold: 0.1,
-            rootMargin: '0px 0px -50px 0px'
-        };
+    // Carousel functionality
+    const screenshots = [
+      { src: 'media/01-in_app_correction.jpg', title: 'In-App Correction' },
+      { src: 'media/02-style.jpg', title: 'Writing Styles' },
+      { src: 'media/03-models.jpg', title: 'AI Models' },
+      { src: 'media/04-app_settings.jpg', title: 'App Settings' },
+      { src: 'media/05-custom_rules.jpg', title: 'Custom Rules' },
+      { src: 'media/06-global_shortcut.jpg', title: 'Global Shortcut' },
+      { src: 'media/07-api_keys.jpg', title: 'API Keys' },
+      { src: 'media/08-usage.jpg', title: 'Usage Statistics' }
+    ];
 
-        const observer = new IntersectionObserver((entries) => {
-            entries.forEach(entry => {
-                if (entry.isIntersecting) {
-                    entry.target.classList.add('active');
-                }
-            });
-        }, observerOptions);
+    let currentImageIndex = 0;
 
-        // Observe all elements with the reveal class
-        document.addEventListener('DOMContentLoaded', () => {
-            const revealElements = document.querySelectorAll('.reveal');
-            revealElements.forEach(el => observer.observe(el));
-        });
+    function openCarousel(index) {
+      currentImageIndex = index;
+      updateCarouselImage();
+      const modal = document.getElementById('carouselModal');
+      modal.classList.remove('hidden');
+      modal.classList.add('flex');
+      document.body.style.overflow = 'hidden';
+    }
 
-        // Carousel functionality
-        const screenshots = [
-            { src: 'media/01-in_app_correction.jpg', title: 'In-App Correction' },
-            { src: 'media/02-style.jpg', title: 'Writing Styles' },
-            { src: 'media/03-models.jpg', title: 'AI Models' },
-            { src: 'media/04-app_settings.jpg', title: 'App Settings' },
-            { src: 'media/05-custom_rules.jpg', title: 'Custom Rules' },
-            { src: 'media/06-global_shortcut.jpg', title: 'Global Shortcut' },
-            { src: 'media/07-api_keys.jpg', title: 'API Keys' },
-            { src: 'media/08-usage.jpg', title: 'Usage Statistics' }
-        ];
+    function closeCarousel() {
+      const modal = document.getElementById('carouselModal');
+      modal.classList.add('hidden');
+      modal.classList.remove('flex');
+      document.body.style.overflow = '';
+    }
 
-        let currentImageIndex = 0;
+    function nextImage() {
+      currentImageIndex = (currentImageIndex + 1) % screenshots.length;
+      updateCarouselImage();
+    }
 
-        function openCarousel(index) {
-            currentImageIndex = index;
-            updateCarouselImage();
-            const modal = document.getElementById('carouselModal');
-            modal.classList.remove('hidden');
-            modal.classList.add('flex');
-            document.body.style.overflow = 'hidden';
+    function prevImage() {
+      currentImageIndex = (currentImageIndex - 1 + screenshots.length) % screenshots.length;
+      updateCarouselImage();
+    }
+
+    function updateCarouselImage() {
+      const image = document.getElementById('carouselImage');
+      const title = document.getElementById('carouselTitle');
+      const counter = document.getElementById('carouselCounter');
+
+      const screenshot = screenshots[currentImageIndex];
+      image.src = screenshot.src;
+      image.alt = screenshot.title;
+      title.textContent = screenshot.title;
+      counter.textContent = `${currentImageIndex + 1} / ${screenshots.length}`;
+    }
+
+    // Keyboard navigation
+    document.addEventListener('keydown', (e) => {
+      const modal = document.getElementById('carouselModal');
+      if (!modal.classList.contains('hidden')) {
+        if (e.key === 'Escape') {
+          closeCarousel();
+        } else if (e.key === 'ArrowLeft') {
+          prevImage();
+        } else if (e.key === 'ArrowRight') {
+          nextImage();
         }
-
-        function closeCarousel() {
-            const modal = document.getElementById('carouselModal');
-            modal.classList.add('hidden');
-            modal.classList.remove('flex');
-            document.body.style.overflow = '';
-        }
-
-        function nextImage() {
-            currentImageIndex = (currentImageIndex + 1) % screenshots.length;
-            updateCarouselImage();
-        }
-
-        function prevImage() {
-            currentImageIndex = (currentImageIndex - 1 + screenshots.length) % screenshots.length;
-            updateCarouselImage();
-        }
-
-        function updateCarouselImage() {
-            const image = document.getElementById('carouselImage');
-            const title = document.getElementById('carouselTitle');
-            const counter = document.getElementById('carouselCounter');
-
-            const screenshot = screenshots[currentImageIndex];
-            image.src = screenshot.src;
-            image.alt = screenshot.title;
-            title.textContent = screenshot.title;
-            counter.textContent = `${currentImageIndex + 1} / ${screenshots.length}`;
-        }
-
-        // Keyboard navigation
-        document.addEventListener('keydown', (e) => {
-            const modal = document.getElementById('carouselModal');
-            if (!modal.classList.contains('hidden')) {
-                if (e.key === 'Escape') {
-                    closeCarousel();
-                } else if (e.key === 'ArrowLeft') {
-                    prevImage();
-                } else if (e.key === 'ArrowRight') {
-                    nextImage();
-                }
-            }
-        });
-    </script>
+      }
+    });
+  </script>
 </body>
+
 </html>
