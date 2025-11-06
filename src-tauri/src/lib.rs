@@ -922,11 +922,6 @@ pub fn run() {
 
             // Create application menu for all platforms
             {
-                // About menu item (used in different menus per platform)
-                let about_item = MenuItemBuilder::new("About Correctify")
-                    .id("about")
-                    .build(app)?;
-
                 #[cfg(target_os = "macos")]
                 {
                     // macOS-specific: App Menu (Correctify)
@@ -934,8 +929,6 @@ pub fn run() {
                     let quit_item = PredefinedMenuItem::quit(app, None)?;
 
                     let app_menu = SubmenuBuilder::new(app, "Correctify")
-                        .item(&about_item)
-                        .separator()
                         .item(&hide_item)
                         .separator()
                         .item(&quit_item)
@@ -1032,26 +1025,6 @@ pub fn run() {
                             if let Some(window) = app.get_webview_window("main") {
                                 let _ = window.show();
                                 let _ = window.set_focus();
-                            }
-                        }
-                        "about" => {
-                            // Check if about window already exists
-                            if let Some(about_window) = app.get_webview_window("about") {
-                                let _ = about_window.show();
-                                let _ = about_window.set_focus();
-                            } else {
-                                // Create new about window
-                                use tauri::WebviewWindowBuilder;
-                                let _ = WebviewWindowBuilder::new(
-                                    app,
-                                    "about",
-                                    tauri::WebviewUrl::App("/about".into())
-                                )
-                                .title("About Correctify")
-                                .inner_size(400.0, 550.0)
-                                .resizable(false)
-                                .center()
-                                .build();
                             }
                         }
                         _ => {}
