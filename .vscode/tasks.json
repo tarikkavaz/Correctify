@@ -1,0 +1,18 @@
+{
+  "version": "2.0.0",
+  "inputs": [
+    {
+      "id": "version",
+      "type": "promptString",
+      "description": "Enter version (e.g. 0.2.0)"
+    }
+  ],
+  "tasks": [
+    {
+      "label": "Empty Release Commit",
+      "type": "shell",
+      "command": "git commit --allow-empty -m \"release: v${input:version}\"",
+      "problemMatcher": []
+    }
+  ]
+}

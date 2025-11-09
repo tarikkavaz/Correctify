@@ -175,17 +175,54 @@ jobs:
         if: matrix.platform == 'ubuntu-22.04' && matrix.target == 'x86_64-unknown-linux-gnu'
         run: |
           sudo apt-get update
-          sudo apt-get install -y libwebkit2gtk-4.1-dev libappindicator3-dev librsvg2-dev patchelf libasound2-dev
+          sudo apt-get install -y libwebkit2gtk-4.1-dev libappindicator3-dev librsvg2-dev patchelf libasound2-dev gnupg debsigs dpkg-sig
 
       - name: Install dependencies (Ubuntu ARM64)
         if: matrix.platform == 'ubuntu-22.04-arm'
         run: |
           # Native ARM64 build - install standard dependencies
           sudo apt-get update
-          sudo apt-get install -y libwebkit2gtk-4.1-dev libappindicator3-dev librsvg2-dev patchelf libasound2-dev
+          sudo apt-get install -y libwebkit2gtk-4.1-dev libappindicator3-dev librsvg2-dev patchelf libasound2-dev gnupg debsigs dpkg-sig
 
       - name: Install frontend dependencies
         run: pnpm install
+
+      - name: Setup GPG key for package signing (Linux)
+        if: matrix.platform == 'ubuntu-22.04' || matrix.platform == 'ubuntu-22.04-arm'
+        env:
+          GNUPGHOME: ${{ runner.temp }}/gnupg
+        run: |
+          # Create GPG directory
+          mkdir -p $GNUPGHOME
+          chmod 700 $GNUPGHOME
+
+          # Generate GPG key configuration
+          GPG_PASSPHRASE="${{ secrets.GPG_PASSPHRASE }}"
+          if [ -z "$GPG_PASSPHRASE" ]; then
+            GPG_PASSPHRASE="temp-build-passphrase-$(date +%s)"
+          fi
+
+          # Generate key with batch configuration
+          cat > $GNUPGHOME/gpg-batch.conf <<EOF
+          Key-Type: RSA
+          Key-Length: 4096
+          Name-Real: Correctify Build Signing Key
+          Name-Email: correctify@build.local
+          Expire-Date: 0
+          Passphrase: $GPG_PASSPHRASE
+          %no-protection
+          %commit
+          EOF
+
+          # Generate the key
+          gpg --batch --generate-key $GNUPGHOME/gpg-batch.conf
+
+          # Export public key for verification
+          KEY_FPR=$(gpg --list-keys --with-colons | grep '^fpr:' | head -1 | cut -d: -f10)
+          gpg --armor --export "$KEY_FPR" > $RUNNER_TEMP/public-key.asc
+
+          echo "GPG key generated successfully"
+          echo "Key fingerprint: $KEY_FPR"
 
       - name: Setup macOS certificate
         if: matrix.platform == 'macos-latest'
@@ -236,9 +273,35 @@ jobs:
         if: matrix.platform == 'ubuntu-22.04'
         run: pnpm tauri build ${{ matrix.args }}
 
+      - name: Sign .deb packages (Linux x86_64)
+        if: matrix.platform == 'ubuntu-22.04' && matrix.target == 'x86_64-unknown-linux-gnu'
+        env:
+          GNUPGHOME: ${{ runner.temp }}/gnupg
+        run: |
+          KEY_FPR=$(gpg --list-keys --with-colons | grep '^fpr:' | head -1 | cut -d: -f10)
+          for deb in src-tauri/target/release/bundle/deb/*.deb; do
+            if [ -f "$deb" ]; then
+              echo "Signing $deb..."
+              debsigs --sign=origin --default-key "$KEY_FPR" "$deb"
+            fi
+          done
+
       - name: Build app (Linux ARM64)
         if: matrix.platform == 'ubuntu-22.04-arm'
         run: pnpm tauri build --target aarch64-unknown-linux-gnu
+
+      - name: Sign .deb packages (Linux ARM64)
+        if: matrix.platform == 'ubuntu-22.04-arm'
+        env:
+          GNUPGHOME: ${{ runner.temp }}/gnupg
+        run: |
+          KEY_FPR=$(gpg --list-keys --with-colons | grep '^fpr:' | head -1 | cut -d: -f10)
+          for deb in src-tauri/target/aarch64-unknown-linux-gnu/release/bundle/deb/*.deb; do
+            if [ -f "$deb" ]; then
+              echo "Signing $deb..."
+              debsigs --sign=origin --default-key "$KEY_FPR" "$deb"
+            fi
+          done
 
       - name: Build app (Windows)
         if: matrix.platform == 'windows-latest'
