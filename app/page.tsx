@@ -1242,7 +1242,17 @@ export default function HomePage() {
                 </div>
                 <div className="p-4 pb-8 bg-card border border-border rounded-lg min-h-[12rem] transition-colors">
                   <div className="prose max-w-none">
-                    <ReactMarkdown remarkPlugins={[remarkGfm]}>{outputText}</ReactMarkdown>
+                    <ReactMarkdown
+                      key={outputText}
+                      remarkPlugins={[remarkGfm]}
+                      components={{
+                        p: ({ children }) => (
+                          <p className="my-0">{children}</p>
+                        ),
+                      }}
+                    >
+                      {outputText.replace(/\n(?!\n)/g, "  \n")}
+                    </ReactMarkdown>
                   </div>
                 </div>
               </div>
