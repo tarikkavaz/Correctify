@@ -456,44 +456,53 @@ jobs:
 
       - name: Generate release body
         id: release_body
+        env:
+          CHANGELOG_CONTENT: ${{ needs.check-release.outputs.changelog }}
         run: |
-          CHANGELOG="${{ needs.check-release.outputs.changelog }}"
-          if [ "$CHANGELOG" != "New release" ] && [ -n "$CHANGELOG" ]; then
-            BODY="## Changelog
+          # Write changelog to a temp file to safely handle any special characters
+          printf '%s\n' "$CHANGELOG_CONTENT" > /tmp/changelog.txt
 
-          $CHANGELOG
+          # Read and check the changelog
+          CHANGELOG=$(cat /tmp/changelog.txt)
+          CHANGELOG_TRIMMED=$(echo "$CHANGELOG" | sed -e 's/^[[:space:]]*//' -e 's/[[:space:]]*$//')
 
-          ## Downloads"
-          else
-            BODY="## Downloads"
-          fi
-
-          BODY="$BODY
-
-          Choose the installer for your operating system:
-
-          **macOS:**
-          - Apple Silicon (M1/M2/M3/M4): \`Correctify_*_aarch64.dmg\`
-          - Intel Macs: \`Correctify_*_x64.dmg\`
-
-          **Windows:**
-          - Installer: \`Correctify_*_x64-setup.exe\`
-          - MSI Installer: \`Correctify_*_x64_en-US.msi\`
-
-          **Linux:**
-          - x86_64 (Intel/AMD):
-            - Debian/Ubuntu: \`correctify_*_amd64.deb\`
-            - AppImage (Universal): \`correctify_*_amd64.AppImage\`
-            - RPM: \`correctify_*_amd64.rpm\`
-          - ARM64 (Raspberry Pi 4+, ARM servers, etc.):
-            - Debian/Ubuntu: \`correctify_*_arm64.deb\`
-            - AppImage (Universal): \`correctify_*_arm64.AppImage\`
-            - RPM: \`correctify_*_arm64.rpm\`
-
-          Just download, run the installer, and you're ready to correct grammar!"
+          # Build the release body
+          {
+            if [ "$CHANGELOG_TRIMMED" != "New release" ] && [ -n "$CHANGELOG_TRIMMED" ]; then
+              echo "## Changelog"
+              echo ""
+              printf '%s\n' "$CHANGELOG"
+              echo ""
+              echo "## Downloads"
+            else
+              echo "## Downloads"
+            fi
+            echo ""
+            echo "Choose the installer for your operating system:"
+            echo ""
+            echo "**macOS:**"
+            echo "- Apple Silicon (M1/M2/M3/M4): \`Correctify_*_aarch64.dmg\`"
+            echo "- Intel Macs: \`Correctify_*_x64.dmg\`"
+            echo ""
+            echo "**Windows:**"
+            echo "- Installer: \`Correctify_*_x64-setup.exe\`"
+            echo "- MSI Installer: \`Correctify_*_x64_en-US.msi\`"
+            echo ""
+            echo "**Linux:**"
+            echo "- x86_64 (Intel/AMD):"
+            echo "  - Debian/Ubuntu: \`correctify_*_amd64.deb\`"
+            echo "  - AppImage (Universal): \`correctify_*_amd64.AppImage\`"
+            echo "  - RPM: \`correctify_*_amd64.rpm\`"
+            echo "- ARM64 (Raspberry Pi 4+, ARM servers, etc.):"
+            echo "  - Debian/Ubuntu: \`correctify_*_arm64.deb\`"
+            echo "  - AppImage (Universal): \`correctify_*_arm64.AppImage\`"
+            echo "  - RPM: \`correctify_*_arm64.rpm\`"
+            echo ""
+            echo "Just download, run the installer, and you're ready to correct grammar!"
+          } > /tmp/release_body.md
 
           echo "body<<EOF" >> $GITHUB_OUTPUT
-          echo "$BODY" >> $GITHUB_OUTPUT
+          cat /tmp/release_body.md >> $GITHUB_OUTPUT
           echo "EOF" >> $GITHUB_OUTPUT
 
       - name: Create GitHub Release
