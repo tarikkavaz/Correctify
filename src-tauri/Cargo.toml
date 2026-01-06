@@ -10,19 +10,19 @@ name = "correctify_lib"
 crate-type = ["staticlib", "cdylib", "rlib"]
 
 [build-dependencies]
-tauri-build = { version = "2.0.0", features = [] }
+tauri-build = { version = "2.8", features = [] }
 
 [dependencies]
-tauri = { version = "2.0.0", features = ["macos-private-api", "tray-icon", "image-png"] }
-tauri-plugin-shell = "2.0.0"
-tauri-plugin-global-shortcut = "2.0.0"
-tauri-plugin-clipboard-manager = "2.0.0"
-tauri-plugin-notification = "2.0.0"
-tauri-plugin-os = "2.0.0"
-tauri-plugin-autostart = "2.0.0"
-tauri-plugin-updater = "2.0.0"
-tauri-plugin-process = "2.0.0"
-tauri-plugin-dialog = "2.0.0"
+tauri = { version = "2.8", features = ["macos-private-api", "tray-icon", "image-png"] }
+tauri-plugin-shell = "2.3"
+tauri-plugin-global-shortcut = "2.3"
+tauri-plugin-clipboard-manager = "2.3"
+tauri-plugin-notification = "2.3"
+tauri-plugin-os = "2.3"
+tauri-plugin-autostart = "2.5"
+tauri-plugin-updater = "2.9"
+tauri-plugin-process = "2.3"
+tauri-plugin-dialog = "2.4"
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
 rodio = "0.19"
