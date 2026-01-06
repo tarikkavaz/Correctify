@@ -1,0 +1,8 @@
+_tools/
+_tools
+src-tauri/
+next-env.d.ts
+.next/
+.cursor/
+.env
+out/
