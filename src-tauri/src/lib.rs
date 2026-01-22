@@ -5,6 +5,8 @@ use tauri::image::Image;
 use std::thread;
 use std::time::Duration;
 use std::sync::{Arc, Mutex};
+#[cfg(target_os = "macos")]
+use std::cell::RefCell;
 use std::io::Cursor;
 use std::fs;
 use std::path::PathBuf;
@@ -17,6 +19,13 @@ use window_vibrancy::{apply_vibrancy, NSVisualEffectMaterial};
 
 #[cfg(target_os = "windows")]
 use window_vibrancy::apply_blur;
+
+#[cfg(target_os = "macos")]
+use objc2::rc::Retained;
+#[cfg(target_os = "macos")]
+use objc2::runtime::{NSObjectProtocol, ProtocolObject};
+#[cfg(target_os = "macos")]
+use objc2_foundation::{NSActivityOptions, NSProcessInfo, NSString};
 
 // Locale JSON files loaded at compile time
 const LOCALE_EN: &str = include_str!("../../lib/locales/en.json");
@@ -33,6 +42,31 @@ struct AppState {
     current_model: Arc<Mutex<String>>,
     current_style: Arc<Mutex<String>>,
     locale: Arc<Mutex<String>>,
+}
+
+#[cfg(target_os = "macos")]
+thread_local! {
+    static APP_NAP_ACTIVITY: RefCell<Option<Retained<ProtocolObject<dyn NSObjectProtocol>>>> =
+        RefCell::new(None);
+}
+
+#[cfg(target_os = "macos")]
+fn refresh_app_nap_activity() {
+    let reason = NSString::from_str("Correctify global shortcut");
+    APP_NAP_ACTIVITY.with(|cell| {
+        let mut activity_guard = cell.borrow_mut();
+        if let Some(activity) = activity_guard.take() {
+            unsafe {
+                NSProcessInfo::processInfo().endActivity(&*activity);
+            }
+        }
+        let activity = NSProcessInfo::processInfo()
+            .beginActivityWithOptions_reason(
+                NSActivityOptions::UserInitiatedAllowingIdleSystemSleep,
+                &reason,
+            );
+        *activity_guard = Some(activity);
+    });
 }
 
 // Sound playback function (non-blocking)
@@ -701,6 +735,10 @@ pub fn run() {
                     if event.state == ShortcutState::Pressed {
                         // Get settings state
                         let state = app.state::<AppState>();
+                        #[cfg(target_os = "macos")]
+                        {
+                            refresh_app_nap_activity();
+                        }
                         let sound_enabled = *state.sound_enabled.lock().unwrap();
                         let auto_paste_enabled = *state.auto_paste_enabled.lock().unwrap();
 
@@ -843,6 +881,13 @@ pub fn run() {
             #[cfg(target_os = "macos")]
             {
                 app.set_activation_policy(tauri::ActivationPolicy::Accessory);
+            }
+
+            // Prevent App Nap from pausing the hidden webview on macOS
+            #[cfg(target_os = "macos")]
+            {
+                refresh_app_nap_activity();
+                println!("macOS App Nap disabled");
             }
 
             // Create system tray icon (no menu - click to toggle)

@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.0.2] - 2026-01-22
+
+### Fixed
+
+- **Fixed global shortcut wake on macOS**: Prevented the app from idling when triggered via the global shortcut so corrections continue in the background without opening the UI.
+
+
 ## [1.0.1] - 2026-01-06
 
 ### Fixed
