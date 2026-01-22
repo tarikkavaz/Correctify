@@ -3,7 +3,7 @@ name: Deploy GH Pages
 on:
   push:
     branches:
-      - master
+      - gh-pages
   workflow_dispatch:
 
 permissions:
