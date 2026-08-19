@@ -25,8 +25,9 @@ jobs:
       - name: Quick check for release commit
         id: precheck
         run: |
-          # Try to get commit message from GitHub event context first
-          msg="${{ github.event.head_commit.message }}"
+          # workflow_dispatch has no head_commit payload, so the checkout step below
+          # is the authoritative source when no version input is provided.
+          msg=""
 
           # If not available, we'll need to do a minimal checkout (handled in next step)
           if [ -z "$msg" ]; then
@@ -184,6 +185,7 @@ jobs:
     runs-on: ${{ matrix.platform }}
     env:
       TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_UPDATER_PRIVATE_KEY }}
+      TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
     steps:
       - uses: actions/checkout@v4
         with:
