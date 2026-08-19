@@ -1,6 +1,6 @@
 {
   "productName": "Correctify",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "identifier": "com.correctify",
   "build": {
     "beforeDevCommand": "pnpm dev",
@@ -35,9 +35,6 @@
             "core:window:allow-start-dragging",
             "core:window:allow-hide",
             "core:window:allow-show",
-            "core:webview:allow-create-webview-window",
-            "core:webview:allow-webview-position",
-            "core:webview:allow-webview-size",
             "shell:allow-open",
             "global-shortcut:default",
             "global-shortcut:allow-register",
@@ -58,12 +55,9 @@
             "updater:allow-check",
             "updater:allow-download",
             "updater:allow-install",
-            "updater:allow-download-and-install",
             "process:default",
             "process:allow-restart",
             "process:allow-exit",
-            "dialog:default",
-            "dialog:allow-ask",
             "dialog:allow-message"
           ]
         },
@@ -83,6 +77,7 @@
   },
   "bundle": {
     "active": true,
+    "createUpdaterArtifacts": true,
     "targets": "all",
     "icon": [
       "icons/32x32.png",
@@ -112,7 +107,7 @@
       "endpoints": [
         "https://github.com/tarikkavaz/Correctify/releases/latest/download/latest.json"
       ],
-      "pubkey": "",
+      "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IERDRUEyQUIwMTMxNzVDOEQKUldTTlhCY1RzQ3JxM0xUa1pldC9IckF5RGRjdDMxcUQ2RldqZ0R3K1M0M3IvR1FicXo0aXlhUUQK",
       "windows": {
         "installMode": "passive"
       }

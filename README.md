@@ -1,7 +1,7 @@
 # Correctify
 
-A simple, cross-platform grammar correction app powered by multiple AI providers.
-Bring your own API key, choose from 14 models (including free options), and keep your data private with secure local storage.
+A cross-platform, desktop-first grammar correction app powered by multiple AI providers.
+Bring your own API key, choose a tested low-cost model, and keep credentials in your operating system's credential vault.
 
 ![Correctify Screenshot](public/screenshot.jpg)
 
@@ -11,51 +11,46 @@ Correctify corrects grammar, spelling, and punctuation while preserving your wri
 It's a minimal, distraction-free menubar app that works on macOS, Windows, and Linux.
 
 **Key Features**
-- **Secure API Key Storage** - OS-level encrypted storage
+- **Native API Key Storage** - macOS Keychain, Windows Credential Manager, or Linux Secret Service
 - **Multiple LLM Providers** - OpenAI, Anthropic, Mistral, and OpenRouter
-- **Free Models Available** - 4 free models via OpenRouter (no credit card needed)
+- **Free Fallback Available** - OpenRouter's adaptive free router (availability and selected model may vary)
 - **Usage Tracking** - Monitor token usage, costs, and performance locally
-- **Intelligent Fallback** - Auto-retry with free models on failure
+- **Intentional Fallback** - One-click retry with the OpenRouter free router after transient failures
 - **Global Shortcuts** - Correct text from anywhere with customizable shortcuts
 - **Auto Copy/Paste** - Seamless text correction in any app
 - **5 Writing Styles** - Grammar, Formal, Informal, Collaborative, Concise
 - **Custom Update Notifications** - Beautiful in-app update modal with release notes
 - **Full Localization** - Complete translation support (English, German, French, Turkish)
 - **Modern UI** - Clean interface
-- **Privacy-First** - All data stays on your device
+- **Desktop-only credentials** - Browser builds never accept or persist API keys
 - **Cross-Platform** - macOS, Windows, and Linux support
 
 
 ## Supported Models
 
 ### Paid Models (API Key Required)
-- **OpenAI**: GPT-5, GPT-5 Mini, GPT-4o, GPT-4o Mini, GPT-4 Turbo, GPT-3.5 Turbo
-- **Anthropic**: Claude 3.5 Sonnet, Claude 3.5 Haiku
-- **Mistral**: Mistral Large, Mistral Small
+- **OpenAI**: GPT-5.4 Nano (default), GPT-5.4 Mini
+- **Anthropic**: Claude Haiku 4.5
+- **Mistral**: Ministral 3B
 
 ### Free Models (OpenRouter API Key Required)
-- **Meta Llama**: Llama 3.2 3B
-- **Google Gemma**: Gemma 2 9B
-- **Microsoft Phi**: Phi-3 Mini
-- **Mistral**: Mistral 7B
+- **OpenRouter Free**: `openrouter/free`, which selects an available free model for each request
 
 > [!NOTE]
 > OpenRouter free models require a free account and API key (no credit card needed).
 
 ## API Key Configuration & Security
 
-- **File-Based Encryption** - Keys stored in OS-protected app data directory
-- **Automatic Migration** - Seamlessly migrates from localStorage to secure storage
+- **OS Credential Vault** - Keys are stored in the platform credential service, never as app files
+- **Automatic Migration** - Imports legacy localStorage/base64-file keys and deletes each legacy copy after a successful import
 - **Per-Provider Keys** - Configure keys for each provider independently
-- **Local Storage Only** - Keys never leave your device or sent to any server
-- **Base64 Encoding** - Additional obfuscation layer for stored keys
+- **Desktop Only** - API keys never persist in localStorage or browser builds
 
-**Storage Location:**
-- **macOS**: `~/Library/Application Support/com.correctify/.keys/`
-- **Windows**: `%APPDATA%\com.correctify\.keys\`
-- **Linux**: `~/.config/com.correctify/.keys/`
+All API requests are made directly from your device to the selected LLM provider. No intermediary server or data collection is used.
 
-All API requests are made directly from your device to the LLM provider. No intermediary servers, no data collection.
+## Signed Updates
+
+Release builds require the `TAURI_UPDATER_PRIVATE_KEY` and `TAURI_UPDATER_PUBKEY` GitHub secrets. The workflow fails if either secret or any platform signature is missing. Generate the keypair once with the Tauri signer, store the private key only in GitHub Secrets, and use the public key secret to embed verification material in release builds.
 
 
 

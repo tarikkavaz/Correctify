@@ -5,7 +5,8 @@ export interface UsageEntry {
   timestamp: number;
   provider: Provider;
   model: string;
-  tokens?: number;
+  inputTokens?: number;
+  outputTokens?: number;
   duration: number; // milliseconds
   success: boolean;
   error?: string;
@@ -29,7 +30,7 @@ export interface UsageStats {
   >;
 }
 
-const STORAGE_KEY = "correctify_usage_history";
+const STORAGE_KEY = "correctify_usage_history_v2";
 const MAX_ENTRIES = 1000; // Keep last 1000 entries
 
 /**
@@ -104,21 +105,21 @@ export function calculateUsageStats(entries: UsageEntry[] = getUsageHistory()): 
 
   for (const entry of entries) {
     stats.totalDuration += entry.duration;
-    stats.totalTokens += entry.tokens || 0;
+    const totalTokens = (entry.inputTokens || 0) + (entry.outputTokens || 0);
+    stats.totalTokens += totalTokens;
 
     // Calculate cost based on model
     const modelInfo = getModelById(entry.model);
-    if (modelInfo?.costPer1kTokens && entry.tokens) {
-      // Estimate cost (assuming 50/50 split between input/output for simplicity)
-      const avgCost = (modelInfo.costPer1kTokens.input + modelInfo.costPer1kTokens.output) / 2;
-      const cost = (entry.tokens / 1000) * avgCost;
+    if (modelInfo?.costPer1MToken) {
+      const cost = ((entry.inputTokens || 0) / 1_000_000) * modelInfo.costPer1MToken.input
+        + ((entry.outputTokens || 0) / 1_000_000) * modelInfo.costPer1MToken.output;
       stats.estimatedCost += cost;
       stats.byProvider[entry.provider].cost += cost;
     }
 
     // Provider stats
     stats.byProvider[entry.provider].requests++;
-    stats.byProvider[entry.provider].tokens += entry.tokens || 0;
+    stats.byProvider[entry.provider].tokens += totalTokens;
     stats.byProvider[entry.provider].duration += entry.duration;
   }
 
@@ -134,12 +135,4 @@ export function getUsageStatsForPeriod(days: number): UsageStats {
 
   const entries = getUsageHistory().filter((e) => e.timestamp >= cutoff);
   return calculateUsageStats(entries);
-}
-
-/**
- * Estimate tokens from text length (rough approximation)
- * GPT-3.5/4 uses roughly 1 token per 4 characters
- */
-export function estimateTokens(text: string): number {
-  return Math.ceil(text.length / 4);
 }

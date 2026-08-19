@@ -1,5 +1,22 @@
 # Changelog
 
+## [1.0.3] - 2026-08-19
+
+### Changed
+
+- Replaced the legacy model list with GPT-5.4 Nano, GPT-5.4 Mini, Claude Haiku 4.5, Ministral 3B, and the OpenRouter Free fallback.
+- Moved desktop API keys from base64 files to the operating system credential vault, with one-time migration and consolidation into a single credential record.
+- Removed browser correction and API-key handling. Browser builds are now non-interactive.
+- Added correction model validation, request timeout/cancellation, actual token usage accounting, and retry classification.
+- Added signed updater artifacts with required key checks, plus signed and notarized macOS distribution builds.
+- Updated the frontend, Tauri, AI SDK, Rust, linting, and build-tool dependency baseline.
+
+### Fixed
+
+- Migrated stale saved model selections to the current default before inline or global-shortcut correction.
+- Fixed duplicate global-shortcut listeners and added a native auto-paste guard, preventing duplicate paste operations.
+- Removed unsupported temperature requests for GPT-5 models.
+
 ## [1.0.2] - 2026-01-22
 
 ### Fixed

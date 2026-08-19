@@ -5,14 +5,13 @@ use tauri::image::Image;
 use std::thread;
 use std::time::Duration;
 use std::sync::{Arc, Mutex};
+use std::fs;
 #[cfg(target_os = "macos")]
 use std::cell::RefCell;
 use std::io::Cursor;
-use std::fs;
-use std::path::PathBuf;
-use std::io::Write;
 use enigo::{Enigo, Key, Keyboard, Settings};
 use base64::{Engine as _, engine::general_purpose};
+use keyring::Entry;
 use serde_json::Value;
 #[cfg(target_os = "macos")]
 use window_vibrancy::{apply_vibrancy, NSVisualEffectMaterial};
@@ -39,6 +38,7 @@ struct AppState {
     shortcut_key: Arc<Mutex<String>>,
     shortcut_modifier: Arc<Mutex<String>>,
     auto_paste_enabled: Arc<Mutex<bool>>,
+    auto_paste_in_flight: Arc<Mutex<bool>>,
     current_model: Arc<Mutex<String>>,
     current_style: Arc<Mutex<String>>,
     locale: Arc<Mutex<String>>,
@@ -157,6 +157,14 @@ async fn handle_corrected_text(
     // If auto-paste is enabled, simulate paste using clipboard (Cmd+V/Ctrl+V)
     // Since text is already copied to clipboard, this is more reliable than typing
     if should_auto_paste {
+        {
+            let mut in_flight = state.auto_paste_in_flight.lock().unwrap();
+            if *in_flight {
+                println!("[Auto-paste] Ignored duplicate paste request");
+                return Ok(());
+            }
+            *in_flight = true;
+        }
         let _ = app.emit("auto-paste-debug", "Auto-paste enabled, checking permissions...");
         println!("[Auto-paste] Auto-paste enabled, checking permissions...");
 
@@ -191,6 +199,7 @@ async fn handle_corrected_text(
                     .title(&title)
                     .body(&body)
                     .show();
+                *state.auto_paste_in_flight.lock().unwrap() = false;
                 return Ok(()); // Don't try to use enigo without permission
             }
             let _ = app.emit("auto-paste-debug", "Accessibility permission granted");
@@ -205,26 +214,19 @@ async fn handle_corrected_text(
             use tauri_plugin_notification::NotificationExt;
             use std::panic;
 
-            // Helper function to safely emit debug messages and write to file
+            // Helper function to safely emit diagnostics without persisting them.
             let emit_debug = |msg: &str| {
                 println!("[Auto-paste] {}", msg);
-                write_log_file(&app_clone, msg);
                 let _ = app_clone.emit("auto-paste-debug", msg);
             };
 
             // Emit initial message
             emit_debug("Thread spawned, waiting before paste...");
-            write_log_file(&app_clone, "CRITICAL: About to sleep for 1200ms");
-
-            // Simple sleep without catch_unwind first to see if that's the issue
             thread::sleep(Duration::from_millis(1200));
-
-            write_log_file(&app_clone, "CRITICAL: Sleep completed, still alive");
             emit_debug("Sleep completed, proceeding...");
             emit_debug("Attempting to create Enigo instance...");
 
             // Now wrap Enigo operations in catch_unwind
-            write_log_file(&app_clone, "CRITICAL: About to enter catch_unwind");
             let result = panic::catch_unwind(panic::AssertUnwindSafe(|| {
                 // Use AppleScript for paste on macOS - it's more reliable and doesn't crash
                 #[cfg(target_os = "macos")]
@@ -283,15 +285,10 @@ async fn handle_corrected_text(
                 #[cfg(not(target_os = "macos"))]
                 {
                     // Create Enigo for non-macOS platforms
-                    write_log_file(&app_clone, "CRITICAL: Inside catch_unwind, about to create Enigo");
                     let mut enigo = match Enigo::new(&Settings::default()) {
-                        Ok(enigo) => {
-                            write_log_file(&app_clone, "CRITICAL: Enigo created successfully");
-                            enigo
-                        },
+                        Ok(enigo) => enigo,
                         Err(e) => {
                             let error_msg = format!("Failed to create Enigo instance: {:?}", e);
-                            write_log_file(&app_clone, &format!("ERROR: {}", error_msg));
                             println!("[Auto-paste] {}", error_msg);
                             let _ = app_clone.emit("auto-paste-debug", &error_msg);
                             let state = app_clone.state::<AppState>();
@@ -371,6 +368,7 @@ async fn handle_corrected_text(
             } else {
                 emit_debug("Thread completed without panicking");
             }
+            *app_clone.state::<AppState>().auto_paste_in_flight.lock().unwrap() = false;
         });
     }
 
@@ -608,95 +606,90 @@ fn get_locale(state: tauri::State<AppState>) -> Result<String, String> {
     Ok(current_locale.clone())
 }
 
-// Helper function to get storage file path
-fn get_storage_path(app: &tauri::AppHandle) -> Result<PathBuf, String> {
-    let app_data_dir = app.path().app_data_dir()
-        .map_err(|e| format!("Failed to get app data dir: {}", e))?;
-
-    let keys_dir = app_data_dir.join(".keys");
-
-    // Create the .keys directory if it doesn't exist
-    fs::create_dir_all(&keys_dir)
-        .map_err(|e| format!("Failed to create keys directory: {}", e))?;
-
-    Ok(keys_dir)
+fn keyring_entry(key: &str) -> Result<Entry, String> {
+    Entry::new("com.correctify", key)
+        .map_err(|e| format!("Could not access the system credential vault: {}", e))
 }
 
-// Helper function to write debug logs to file
-fn write_log_file(app: &tauri::AppHandle, message: &str) {
-    if let Ok(app_data_dir) = app.path().app_data_dir() {
-        let log_file = app_data_dir.join("auto-paste-debug.log");
-        let timestamp = std::time::SystemTime::now()
-            .duration_since(std::time::UNIX_EPOCH)
-            .map(|d| d.as_secs_f64())
-            .unwrap_or(0.0);
-        let log_line = format!("[{:.3}] {}\n", timestamp, message);
+// Secure storage commands backed by the OS credential vault.
+#[tauri::command]
+fn secure_storage_get(key: String) -> Result<String, String> {
+    keyring_entry(&key)?.get_password()
+        .map_err(|e| format!("Could not read credential '{}': {}", key, e))
+}
 
-        // Try to append to log file, ignore errors - use sync write for immediate flush
-        if let Ok(mut file) = fs::OpenOptions::new()
-            .create(true)
-            .append(true)
-            .open(&log_file)
-        {
-            let _ = file.write_all(log_line.as_bytes());
-            let _ = file.sync_all(); // Force write to disk immediately
+#[tauri::command]
+fn secure_storage_set(key: String, value: String) -> Result<(), String> {
+    keyring_entry(&key)?.set_password(&value)
+        .map_err(|e| format!("Could not save credential '{}': {}", key, e))
+}
+
+#[tauri::command]
+fn secure_storage_remove(key: String) -> Result<(), String> {
+    keyring_entry(&key)?.delete_credential()
+        .map_err(|e| format!("Could not remove credential '{}': {}", key, e))
+}
+
+/// Imports credentials written by pre-1.1 releases. A file is removed only
+/// after its value is safely committed to the system credential vault.
+#[tauri::command]
+fn migrate_legacy_key_files(app: tauri::AppHandle) -> Result<u32, String> {
+    let legacy_dir = app.path().app_data_dir()
+        .map_err(|e| format!("Failed to locate app data: {}", e))?
+        .join(".keys");
+    if !legacy_dir.exists() { return Ok(0); }
+
+    let mut migrated = 0;
+    for entry in fs::read_dir(&legacy_dir).map_err(|e| format!("Failed to read legacy keys: {}", e))? {
+        let entry = entry.map_err(|e| format!("Failed to read legacy key entry: {}", e))?;
+        let path = entry.path();
+        if path.extension().and_then(|ext| ext.to_str()) != Some("dat") { continue; }
+        let encoded = fs::read_to_string(&path).map_err(|e| format!("Failed to read legacy credential: {}", e))?;
+        let value = String::from_utf8(general_purpose::STANDARD.decode(encoded.trim()).map_err(|e| format!("Failed to decode legacy credential: {}", e))?)
+            .map_err(|e| format!("Failed to decode legacy credential text: {}", e))?;
+        let key = path.file_stem().and_then(|stem| stem.to_str()).ok_or("Invalid legacy credential filename")?;
+        keyring_entry(key)?.set_password(&value).map_err(|e| format!("Could not migrate credential '{}': {}", key, e))?;
+        fs::remove_file(&path).map_err(|e| format!("Credential migrated, but legacy file could not be removed: {}", e))?;
+        migrated += 1;
+    }
+    if fs::read_dir(&legacy_dir).map_err(|e| format!("Failed to inspect legacy key directory: {}", e))?.next().is_none() {
+        let _ = fs::remove_dir(&legacy_dir);
+    }
+    Ok(migrated)
+}
+
+/// Consolidates pre-v2 native credential records into one Keychain item. This
+/// avoids a separate Keychain approval prompt for each provider on startup.
+#[tauri::command]
+fn migrate_legacy_keyring_entries(key: String) -> Result<u32, String> {
+    let legacy_keys = [
+        ("openai", "correctify_openai-api-key"),
+        ("anthropic", "correctify_anthropic-api-key"),
+        ("mistral", "correctify_mistral-api-key"),
+        ("openrouter", "correctify_openrouter-api-key"),
+    ];
+    let destination = keyring_entry(&key)?;
+    if destination.get_password().is_ok() { return Ok(0); }
+
+    let mut values = serde_json::Map::new();
+    let mut entries_to_delete = Vec::new();
+    let mut migrated = 0;
+    for (provider, legacy_key) in legacy_keys {
+        let entry = keyring_entry(legacy_key)?;
+        if let Ok(value) = entry.get_password() {
+            values.insert(provider.to_string(), Value::String(value));
+            entries_to_delete.push((legacy_key, entry));
+            migrated += 1;
         }
     }
-}
-
-// Secure storage commands using file-based storage
-// Files are stored in app data directory with base64 encoding
-#[tauri::command]
-fn secure_storage_get(app: tauri::AppHandle, key: String) -> Result<String, String> {
-    let storage_path = get_storage_path(&app)?;
-    let key_file = storage_path.join(format!("{}.dat", key));
-
-    if !key_file.exists() {
-        return Err(format!("Key '{}' not found", key));
+    if migrated > 0 {
+        destination.set_password(&Value::Object(values).to_string())
+            .map_err(|e| format!("Could not consolidate credentials: {}", e))?;
+        for (legacy_key, entry) in entries_to_delete {
+            entry.delete_credential().map_err(|e| format!("Could not remove migrated credential '{}': {}", legacy_key, e))?;
+        }
     }
-
-    match fs::read_to_string(&key_file) {
-        Ok(encoded) => {
-            // Decode from base64
-            match general_purpose::STANDARD.decode(&encoded) {
-                Ok(decoded_bytes) => {
-                    match String::from_utf8(decoded_bytes) {
-                        Ok(value) => {
-                            Ok(value)
-                        },
-                        Err(e) => Err(format!("Failed to decode value: {}", e))
-                    }
-                },
-                Err(e) => Err(format!("Failed to decode base64: {}", e))
-            }
-        },
-        Err(e) => Err(format!("Failed to read file: {}", e))
-    }
-}
-
-#[tauri::command]
-fn secure_storage_set(app: tauri::AppHandle, key: String, value: String) -> Result<(), String> {
-    let storage_path = get_storage_path(&app)?;
-    let key_file = storage_path.join(format!("{}.dat", key));
-
-    // Encode to base64
-    let encoded = general_purpose::STANDARD.encode(value.as_bytes());
-
-    fs::write(&key_file, encoded)
-        .map_err(|e| format!("Failed to write file: {}", e))
-}
-
-#[tauri::command]
-fn secure_storage_remove(app: tauri::AppHandle, key: String) -> Result<(), String> {
-    let storage_path = get_storage_path(&app)?;
-    let key_file = storage_path.join(format!("{}.dat", key));
-
-    if !key_file.exists() {
-        return Ok(()); // Not an error if it doesn't exist
-    }
-
-    fs::remove_file(&key_file)
-        .map_err(|e| format!("Failed to delete file: {}", e))
+    Ok(migrated)
 }
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
@@ -707,7 +700,8 @@ pub fn run() {
         shortcut_key: Arc::new(Mutex::new("]".to_string())), // Default: closing bracket key
         shortcut_modifier: Arc::new(Mutex::new("CmdOrCtrl+Shift".to_string())), // Default: Cmd+Shift on Mac, Ctrl+Shift on Win/Linux
         auto_paste_enabled: Arc::new(Mutex::new(false)), // Default: auto-paste disabled
-        current_model: Arc::new(Mutex::new("gpt-4o-mini".to_string())), // Default model
+        auto_paste_in_flight: Arc::new(Mutex::new(false)),
+        current_model: Arc::new(Mutex::new("gpt-5.4-nano".to_string())), // Default model
         current_style: Arc::new(Mutex::new("grammar".to_string())), // Default style
         locale: Arc::new(Mutex::new("en".to_string())), // Default locale: English
     };
@@ -870,6 +864,8 @@ pub fn run() {
             secure_storage_get,
             secure_storage_set,
             secure_storage_remove,
+            migrate_legacy_key_files,
+            migrate_legacy_keyring_entries,
             set_correction_settings,
             get_current_model,
             get_current_style,

@@ -8,10 +8,10 @@ import UpdateModal from "@/components/UpdateModal";
 import UsageModal from "@/components/UsageModal";
 import { UnifiedCorrector, getProviderForModel } from "@/lib/llm";
 import { MODELS, type ModelInfo, getAvailableModels, getModelById } from "@/lib/models";
-import { deleteKey, getKey, migrateFromLocalStorage, setKey } from "@/lib/secure-keys";
-import type { CorrectionResponse, Provider, WritingStyle } from "@/lib/types";
+import { deleteKey, getKey, getKeys, migrateFromLocalStorage, setKey } from "@/lib/secure-keys";
+import { CorrectionError, type CorrectionResponse, type Provider, type WritingStyle } from "@/lib/types";
 import { checkForUpdates, installUpdate, type UpdateInfo } from "@/lib/updater";
-import { estimateTokens, trackUsage } from "@/lib/usage-tracker";
+import { trackUsage } from "@/lib/usage-tracker";
 import { useLocale } from "@/lib/useLocale";
 import { useTheme } from "@/lib/useTheme";
 import { isMacOS, isTauri } from "@/lib/utils";
@@ -31,7 +31,6 @@ export default function HomePage() {
   const [isMac, setIsMac] = useState(false); // Default to false to avoid hydration mismatch
   const [inputText, setInputText] = useState("");
   const [outputText, setOutputText] = useState("");
-  const [apiKey, setApiKey] = useState("");
   const [apiKeys, setApiKeys] = useState<Record<Provider, string>>({
     openai: "",
     anthropic: "",
@@ -43,7 +42,7 @@ export default function HomePage() {
   const [shortcutKey, setShortcutKey] = useState("]"); // Default: closing bracket
   const [shortcutModifier, setShortcutModifier] = useState("CmdOrCtrl+Shift"); // Default: Cmd+Shift / Ctrl+Shift
   const [autoPasteEnabled, setAutoPasteEnabled] = useState(false); // Default: disabled
-  const [model, setModel] = useState<string>("gpt-4o-mini");
+  const [model, setModel] = useState<string>("gpt-5.4-nano");
   const [availableModels, setAvailableModels] = useState<ModelInfo[]>([]);
   const [isModelDropdownOpen, setIsModelDropdownOpen] = useState(false);
   const [writingStyle, setWritingStyle] = useState<WritingStyle>("grammar");
@@ -75,6 +74,8 @@ export default function HomePage() {
   }, []);
 
   useEffect(() => {
+    let disposed = false;
+    let unlistenShortcut: (() => void) | undefined;
     const initializeApp = async () => {
       // Migrate from localStorage to secure storage (one-time, Tauri only)
       if (isTauri()) {
@@ -82,16 +83,9 @@ export default function HomePage() {
       }
 
       // Load all API keys from secure storage
-      const loadedKeys: Record<Provider, string> = {
-        openai: (await getKey("openai-api-key")) || "",
-        anthropic: (await getKey("anthropic-api-key")) || "",
-        mistral: (await getKey("mistral-api-key")) || "",
-        openrouter: (await getKey("openrouter-api-key")) || "",
-      };
+      const loadedKeys = await getKeys();
 
       setApiKeys(loadedKeys);
-      // Keep apiKey state for backward compatibility
-      setApiKey(loadedKeys.openai);
 
       // Compute available models based on API keys
       const hasKeys: Record<Provider, boolean> = {
@@ -111,6 +105,11 @@ export default function HomePage() {
       } else if (available.length > 0) {
         modelToSet = available[0].id;
         setModel(modelToSet);
+        localStorage.setItem("selected-model", modelToSet);
+      } else {
+        modelToSet = "gpt-5.4-nano";
+        setModel(modelToSet);
+        localStorage.setItem("selected-model", modelToSet);
       }
 
       const savedStyle = localStorage.getItem("writing-style") as WritingStyle | null;
@@ -258,7 +257,9 @@ export default function HomePage() {
 
             // Check if API key is available
             // Get current model and its provider
-            const currentModel = localStorage.getItem("selected-model") || "gpt-4o-mini";
+            const savedModel = localStorage.getItem("selected-model");
+            const currentModel = getModelById(savedModel || "")?.id || "gpt-5.4-nano";
+            if (savedModel !== currentModel) localStorage.setItem("selected-model", currentModel);
             const provider = getProviderForModel(currentModel);
 
             // Check if API key for this provider is configured
@@ -327,7 +328,11 @@ export default function HomePage() {
           },
         );
 
-        return unlisten;
+        if (disposed) {
+          unlisten();
+        } else {
+          unlistenShortcut = unlisten;
+        }
       }
     };
 
@@ -350,6 +355,11 @@ export default function HomePage() {
         console.error("Update check failed:", err);
       });
     }
+
+    return () => {
+      disposed = true;
+      unlistenShortcut?.();
+    };
   }, []);
 
   useEffect(() => {
@@ -483,7 +493,6 @@ export default function HomePage() {
   ) => {
     // Update state
     setApiKeys(newApiKeys);
-    setApiKey(newApiKeys.openai); // For backward compatibility
     setAutostartEnabled(newAutostartEnabled);
     setSoundEnabled(newSoundEnabled);
     setShortcutKey(newShortcutKey);
@@ -598,6 +607,11 @@ export default function HomePage() {
       return;
     }
 
+    if (!isTauri()) {
+      setError("Corrections and API keys are available only in the Correctify desktop app.");
+      return;
+    }
+
     // Get provider and API key for selected model
     const provider = getProviderForModel(model);
     const modelApiKey = apiKeys[provider];
@@ -625,12 +639,7 @@ export default function HomePage() {
     const startTime = Date.now();
 
     try {
-      // Check if we're in production build or dev mode
-      const isProduction = process.env.NODE_ENV === "production";
-
-      // In Tauri production, call LLM directly since static export doesn't support API routes
-      // In dev mode, always use API route to avoid CORS issues
-      if (isTauri() && isProduction) {
+      {
         const { invoke } = await import("@tauri-apps/api/core");
 
         // Play processing sound
@@ -655,6 +664,9 @@ export default function HomePage() {
           duration,
           model: model,
           provider: provider,
+          usage: result.usage,
+          finishReason: result.finishReason,
+          requestId: result.requestId,
         });
 
         // Track usage
@@ -662,7 +674,8 @@ export default function HomePage() {
           timestamp: Date.now(),
           provider,
           model,
-          tokens: estimateTokens(inputText) + estimateTokens(result.result),
+          inputTokens: result.usage.inputTokens,
+          outputTokens: result.usage.outputTokens,
           duration,
           success: true,
         });
@@ -672,55 +685,6 @@ export default function HomePage() {
           await invoke("play_sound_in_app", { soundType: "completed" });
         } catch (err) {
           console.error("Failed to play completed sound:", err);
-        }
-      } else {
-        // In browser, use API route to keep API key more secure
-        const headers: Record<string, string> = {
-          "Content-Type": "application/json",
-          [`x-${provider}-key`]: modelApiKey,
-        };
-
-        const customRules = localStorage.getItem("custom-rules") || "";
-        const response = await fetch("/api/correct", {
-          method: "POST",
-          headers,
-          body: JSON.stringify({
-            text: inputText,
-            provider: provider,
-            model: model,
-            writingStyle: writingStyle,
-            customRules: customRules.trim() || undefined,
-          }),
-        });
-
-        const data: CorrectionResponse = await response.json();
-
-        if (!data.ok) {
-          setError(data.error || "An error occurred");
-
-          // Track failed usage
-          trackUsage({
-            timestamp: Date.now(),
-            provider,
-            model,
-            tokens: estimateTokens(inputText),
-            duration: Date.now() - startTime,
-            success: false,
-            error: data.error || "An error occurred",
-          });
-        } else {
-          setOutputText(data.result || "");
-          setMeta(data.meta || null);
-
-          // Track successful usage
-          trackUsage({
-            timestamp: Date.now(),
-            provider,
-            model,
-            tokens: estimateTokens(inputText) + estimateTokens(data.result || ""),
-            duration: data.meta?.duration || Date.now() - startTime,
-            success: true,
-          });
         }
       }
     } catch (err) {
@@ -732,15 +696,17 @@ export default function HomePage() {
         timestamp: Date.now(),
         provider,
         model,
-        tokens: estimateTokens(inputText),
+        inputTokens: 0,
+        outputTokens: 0,
         duration: Date.now() - startTime,
         success: false,
         error: errorMsg,
       });
 
       // Check if a free fallback model is available
+      const retryKind = err instanceof CorrectionError ? err.retryKind : "unknown";
       const freeModels = availableModels.filter((m) => m.category === "free");
-      if (freeModels.length > 0 && model !== freeModels[0].id) {
+      if (["transient", "capacity"].includes(retryKind) && freeModels.length > 0 && model !== freeModels[0].id) {
         setFallbackModelId(freeModels[0].id);
         setShowFallbackOption(true);
       }
@@ -865,14 +831,14 @@ export default function HomePage() {
                       <button
                         type="button"
                         onClick={() => setIsStyleDropdownOpen(!isStyleDropdownOpen)}
-                        className="flex items-center gap-2 px-3 py-1.5 text-xs font-medium text-foreground bg-background/40 hover:bg-background/80 hover:text-foreground  rounded-lg focus:outline-none focus:ring-2 focus:ring-primary cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed transition-colors min-w-[140px]"
+                        className="flex items-center gap-2 px-3 py-1.5 text-xs font-medium text-foreground bg-background/40 hover:bg-background/80 hover:text-foreground  rounded-lg focus:outline-none focus:ring-2 focus:ring-primary cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed transition-colors min-w-35"
                         disabled={isLoading}
                       >
                         <span className="flex-1 text-left">
                           {styleOptions.find((option) => option.value === writingStyle)?.label}
                         </span>
                         <ChevronDown
-                          className={`w-3 h-3 transition-transform flex-shrink-0 ${isStyleDropdownOpen ? "rotate-180" : ""}`}
+                          className={`w-3 h-3 transition-transform shrink-0 ${isStyleDropdownOpen ? "rotate-180" : ""}`}
                         />
                       </button>
 
@@ -913,19 +879,19 @@ export default function HomePage() {
                       <button
                         type="button"
                         onClick={() => setIsModelDropdownOpen(!isModelDropdownOpen)}
-                        className="flex items-center gap-2 px-3 py-1.5 text-xs font-medium text-foreground bg-background/40 hover:bg-background/80 hover:text-foreground rounded-lg focus:outline-none focus:ring-2 focus:ring-primary cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed transition-colors min-w-[160px]"
+                        className="flex items-center gap-2 px-3 py-1.5 text-xs font-medium text-foreground bg-background/40 hover:bg-background/80 hover:text-foreground rounded-lg focus:outline-none focus:ring-2 focus:ring-primary cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed transition-colors min-w-40"
                         disabled={isLoading}
                       >
                         <span className="flex-1 text-left">
                           {getModelById(model)?.name || messages.home.selectModel}
                         </span>
                         <ChevronDown
-                          className={`w-3 h-3 transition-transform flex-shrink-0 ${isModelDropdownOpen ? "rotate-180" : ""}`}
+                          className={`w-3 h-3 transition-transform shrink-0 ${isModelDropdownOpen ? "rotate-180" : ""}`}
                         />
                       </button>
 
                       {isModelDropdownOpen && (
-                        <div className="absolute top-full right-0 mt-1 w-max min-w-[150px] max-w-[300px] bg-card-bg border border-border rounded-lg shadow-lg z-10 max-h-[400px] overflow-y-auto" style={{ backgroundColor: "var(--card-bg-solid)" }}>
+                        <div className="absolute top-full right-0 mt-1 w-max min-w-37.5 max-w-75 bg-card-bg border border-border rounded-lg shadow-lg z-10 max-h-100 overflow-y-auto" style={{ backgroundColor: "var(--card-bg-solid)" }}>
                           {paidModels.length > 0 && (
                             <>
                               <div className="px-3 py-2 text-[10px] font-semibold text-foreground/40 uppercase tracking-wider border-b border-border">
@@ -945,7 +911,7 @@ export default function HomePage() {
                                   <div className="flex items-start justify-between gap-3">
                                     <span className="flex-1 min-w-0">{modelInfo.name}</span>
                                     <span
-                                      className={`text-[10px] uppercase flex-shrink-0 ${
+                                      className={`text-[10px] uppercase shrink-0 ${
                                         model === modelInfo.id
                                           ? "text-button-text/60"
                                           : "text-foreground/40"
@@ -988,7 +954,7 @@ export default function HomePage() {
                                   <div className="flex items-start justify-between gap-3">
                                     <span className="flex-1 min-w-0">{modelInfo.name}</span>
                                     <span
-                                      className={`text-[10px] uppercase flex-shrink-0 ${
+                                      className={`text-[10px] uppercase shrink-0 ${
                                         model === modelInfo.id
                                           ? "text-button-text/60"
                                           : "text-foreground/40"
@@ -1068,7 +1034,7 @@ export default function HomePage() {
           {availableModels.length === 0 && (
             <div className="mt-6 p-4 bg-error-bg border border-error-border rounded-lg">
               <div className="flex items-start gap-3">
-                <div className="flex-shrink-0">
+                <div className="shrink-0">
                   <svg
                     className="w-5 h-5 text-error-icon"
                     viewBox="0 0 20 20"
@@ -1240,7 +1206,7 @@ export default function HomePage() {
                     )}
                   </button>
                 </div>
-                <div className="p-4 pb-8 bg-card border border-border rounded-lg min-h-[12rem] transition-colors">
+                <div className="p-4 pb-8 bg-card border border-border rounded-lg min-h-48 transition-colors">
                   <div className="prose max-w-none">
                     <ReactMarkdown
                       key={outputText}
