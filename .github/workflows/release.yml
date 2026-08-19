@@ -550,6 +550,7 @@ jobs:
           prerelease: false
           files: |
             installers/**/*.dmg
+            installers/**/*.app.tar.gz
             installers/**/*.exe
             installers/**/*.msi
             installers/**/*.deb
