@@ -459,7 +459,7 @@ jobs:
             --arg version "${VERSION#v}" \
             --arg notes "$NOTES" \
             --arg pub_date "$(date -u +"%Y-%m-%dT%H:%M:%SZ")" \
-            --arg darwin_aarch64_url "https://github.com/tarikkavaz/Correctify/releases/download/${VERSION}/Correctify_${VERSION#v}_aarch64-aarch64-apple-darwin.app.tar.gz" \
+            --arg darwin_aarch64_url "https://github.com/tarikkavaz/Correctify/releases/download/${VERSION}/Correctify_${VERSION#v}_aarch64-apple-darwin.app.tar.gz" \
             --arg darwin_x64_url "https://github.com/tarikkavaz/Correctify/releases/download/${VERSION}/Correctify_${VERSION#v}_x86_64-apple-darwin.app.tar.gz" \
             --arg linux_url "https://github.com/tarikkavaz/Correctify/releases/download/${VERSION}/correctify_${VERSION#v}_amd64.AppImage" \
             --arg linux_arm64_url "https://github.com/tarikkavaz/Correctify/releases/download/${VERSION}/Correctify_${VERSION#v}_aarch64.AppImage" \
