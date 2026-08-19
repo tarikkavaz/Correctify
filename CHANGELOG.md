@@ -5,6 +5,7 @@
 ### Changed
 
 - Replaced the legacy model list with GPT-5.4 Nano, GPT-5.4 Mini, Claude Haiku 4.5, Ministral 3B, and the OpenRouter Free fallback.
+- Expanded the OpenAI selection with GPT-5.4 and GPT-5.5, and corrected the GPT-5.4 Nano and Mini context-window metadata.
 - Moved desktop API keys from base64 files to the operating system credential vault, with one-time migration and consolidation into a single credential record.
 - Removed browser correction and API-key handling. Browser builds are now non-interactive.
 - Added correction model validation, request timeout/cancellation, actual token usage accounting, and retry classification.

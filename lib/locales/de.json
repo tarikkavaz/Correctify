@@ -66,6 +66,8 @@
     "modelDescriptions": {
       "gpt-5.4-nano": "Schnellste und günstigste OpenAI-Option",
       "gpt-5.4-mini": "Hochwertigere OpenAI-Korrekturen",
+      "gpt-5.4": "Premium-OpenAI-Korrekturen für anspruchsvolle Texte",
+      "gpt-5.5": "OpenAI-Flaggschiff für Korrekturen höchster Qualität",
       "claude-haiku-4-5-20251001": "Schnelle Anthropic-Alternative",
       "ministral-3b-2512": "Kostengünstige Mistral-Korrektur",
       "openrouter/free": "Variierendes kostenloses Modell von OpenRouter",

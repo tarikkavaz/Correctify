@@ -66,6 +66,8 @@
     "modelDescriptions": {
       "gpt-5.4-nano": "En hızlı ve en düşük maliyetli OpenAI seçeneği",
       "gpt-5.4-mini": "Daha yüksek kaliteli OpenAI düzeltmeleri",
+      "gpt-5.4": "Zorlu metinler için üst düzey OpenAI düzeltmeleri",
+      "gpt-5.5": "En yüksek kaliteli düzeltmeler için OpenAI'ın amiral gemisi",
       "claude-haiku-4-5-20251001": "Hızlı Anthropic alternatifi",
       "ministral-3b-2512": "Düşük maliyetli Mistral düzeltmesi",
       "openrouter/free": "OpenRouter'ın seçtiği değişken ücretsiz model",
