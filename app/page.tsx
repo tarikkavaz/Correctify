@@ -3,22 +3,25 @@
 import AboutModal from "@/components/AboutModal";
 import DraggableHeader from "@/components/DraggableHeader";
 import HelpModal from "@/components/HelpModal";
+import OnboardingModal from "@/components/OnboardingModal";
+import ReviewPanel from "@/components/ReviewPanel";
 import SettingsModal from "@/components/SettingsModal";
 import UpdateModal from "@/components/UpdateModal";
 import UsageModal from "@/components/UsageModal";
 import { UnifiedCorrector, getProviderForModel } from "@/lib/llm";
-import { MODELS, type ModelInfo, getAvailableModels, getModelById } from "@/lib/models";
+import { MODELS, type ModelInfo, getAvailableModels, getModelById, getRecommendedModel } from "@/lib/models";
 import { deleteKey, getKey, getKeys, migrateFromLocalStorage, setKey } from "@/lib/secure-keys";
 import { CorrectionError, type CorrectionResponse, type Provider, type WritingStyle } from "@/lib/types";
+import { createReview, detectLanguage } from "@/lib/review";
+import { getPresets, savePreset } from "@/lib/presets";
+import type { CorrectionReview, DetectedLanguage, LanguagePreference, Preset } from "@/lib/types";
 import { checkForUpdates, installUpdate, type UpdateInfo } from "@/lib/updater";
 import { trackUsage } from "@/lib/usage-tracker";
 import { useLocale } from "@/lib/useLocale";
 import { useTheme } from "@/lib/useTheme";
 import { isMacOS, isTauri } from "@/lib/utils";
-import { Check, ChevronDown, Command, Copy, CornerDownLeft, Lightbulb } from "lucide-react";
-import { type FormEvent, type KeyboardEvent, useEffect, useRef, useState } from "react";
-import ReactMarkdown from "react-markdown";
-import remarkGfm from "remark-gfm";
+import { ChevronDown, Command, CornerDownLeft, Lightbulb, Plus } from "lucide-react";
+import { type FormEvent, type KeyboardEvent, useEffect, useMemo, useRef, useState } from "react";
 
 export default function HomePage() {
   const { messages } = useLocale();
@@ -31,6 +34,11 @@ export default function HomePage() {
   const [isMac, setIsMac] = useState(false); // Default to false to avoid hydration mismatch
   const [inputText, setInputText] = useState("");
   const [outputText, setOutputText] = useState("");
+  const [review, setReview] = useState<CorrectionReview | null>(null);
+  const [languagePreference, setLanguagePreference] = useState<LanguagePreference>("auto");
+  const [presets, setPresets] = useState<Preset[]>([]);
+  const [selectedPresetId, setSelectedPresetId] = useState("");
+  const [isOnboardingOpen, setIsOnboardingOpen] = useState(false);
   const [apiKeys, setApiKeys] = useState<Record<Provider, string>>({
     openai: "",
     anthropic: "",
@@ -42,7 +50,7 @@ export default function HomePage() {
   const [shortcutKey, setShortcutKey] = useState("]"); // Default: closing bracket
   const [shortcutModifier, setShortcutModifier] = useState("CmdOrCtrl+Shift"); // Default: Cmd+Shift / Ctrl+Shift
   const [autoPasteEnabled, setAutoPasteEnabled] = useState(false); // Default: disabled
-  const [model, setModel] = useState<string>("gpt-5.4-nano");
+  const [model, setModel] = useState<string>("gpt-5.4-mini");
   const [availableModels, setAvailableModels] = useState<ModelInfo[]>([]);
   const [isModelDropdownOpen, setIsModelDropdownOpen] = useState(false);
   const [writingStyle, setWritingStyle] = useState<WritingStyle>("grammar");
@@ -67,6 +75,8 @@ export default function HomePage() {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const modelDropdownRef = useRef<HTMLDivElement>(null);
   const styleDropdownRef = useRef<HTMLDivElement>(null);
+  const detectedLanguage = useMemo(() => detectLanguage(inputText), [inputText]);
+  const activeLanguage = languagePreference === "auto" ? detectedLanguage : languagePreference;
 
   useEffect(() => {
     // Detect OS only on client side to avoid hydration mismatch
@@ -76,6 +86,7 @@ export default function HomePage() {
   useEffect(() => {
     let disposed = false;
     let unlistenShortcut: (() => void) | undefined;
+    let unlistenSettings: (() => void) | undefined;
     const initializeApp = async () => {
       // Migrate from localStorage to secure storage (one-time, Tauri only)
       if (isTauri()) {
@@ -86,6 +97,7 @@ export default function HomePage() {
       const loadedKeys = await getKeys();
 
       setApiKeys(loadedKeys);
+      setPresets(getPresets());
 
       // Compute available models based on API keys
       const hasKeys: Record<Provider, boolean> = {
@@ -103,11 +115,11 @@ export default function HomePage() {
       if (savedModel && available.some((m) => m.id === savedModel)) {
         setModel(savedModel);
       } else if (available.length > 0) {
-        modelToSet = available[0].id;
+        modelToSet = getRecommendedModel(hasKeys)?.id || available[0].id;
         setModel(modelToSet);
         localStorage.setItem("selected-model", modelToSet);
       } else {
-        modelToSet = "gpt-5.4-nano";
+        modelToSet = "gpt-5.4-mini";
         setModel(modelToSet);
         localStorage.setItem("selected-model", modelToSet);
       }
@@ -179,14 +191,18 @@ export default function HomePage() {
 
       // Check if running in Tauri (client-side only)
       setShowGlobalShortcutInfo(isTauri());
+      if (isTauri() && !localStorage.getItem("correctify_onboarding_v1") && !Object.values(loadedKeys).some(Boolean)) {
+        setIsOnboardingOpen(true);
+      }
 
       // Listen for global shortcut event from Rust backend
       if (isTauri()) {
-        const { listen } = await import("@tauri-apps/api/event");
-        const { invoke } = await import("@tauri-apps/api/core");
-        const { isPermissionGranted, requestPermission } = await import(
-          "@tauri-apps/plugin-notification"
-        );
+        const [{ listen }, { invoke }] = await Promise.all([
+          import("@tauri-apps/api/event"),
+          import("@tauri-apps/api/core"),
+        ]);
+        const stopSettingsListener = await listen("open-settings", () => setIsSettingsModalOpen(true));
+        if (disposed) stopSettingsListener(); else unlistenSettings = stopSettingsListener;
 
         console.log("Setting up global shortcut event listener...");
 
@@ -212,40 +228,7 @@ export default function HomePage() {
           console.error("Failed to initialize settings:", err);
         }
 
-        // Check and request notification permissions
-        let permissionGranted = await isPermissionGranted();
-        console.log("Notification permission granted:", permissionGranted);
-
-        if (!permissionGranted) {
-          console.log("Requesting notification permission...");
-          const permission = await requestPermission();
-          permissionGranted = permission === "granted";
-          console.log("Notification permission result:", permission);
-        }
-
-        // Send a test notification if permissions are granted
-        if (permissionGranted) {
-          const { sendNotification } = await import("@tauri-apps/plugin-notification");
-          const { platform } = await import("@tauri-apps/plugin-os");
-
-          try {
-            const platformName = await platform();
-            const shortcutKey = platformName === "macos" ? "Cmd" : "Ctrl";
-
-            await sendNotification({
-              title: "Correctify Ready",
-              body: `Global shortcut ${shortcutKey}+Shift+] is active!`,
-            });
-            console.log("Test notification sent successfully");
-          } catch (err) {
-            console.error("Failed to send test notification:", err);
-          }
-        } else {
-          console.warn("Notification permission not granted. Notifications will not work.");
-          console.warn(
-            "Please enable notifications in System Settings > Notifications > Correctify",
-          );
-        }
+        // Notification permission is intentionally requested only when a user enables notification feedback.
 
         const unlisten = await listen(
           "correct-clipboard-text",
@@ -258,7 +241,7 @@ export default function HomePage() {
             // Check if API key is available
             // Get current model and its provider
             const savedModel = localStorage.getItem("selected-model");
-            const currentModel = getModelById(savedModel || "")?.id || "gpt-5.4-nano";
+            const currentModel = getModelById(savedModel || "")?.id || "gpt-5.4-mini";
             if (savedModel !== currentModel) localStorage.setItem("selected-model", currentModel);
             const provider = getProviderForModel(currentModel);
 
@@ -359,6 +342,7 @@ export default function HomePage() {
     return () => {
       disposed = true;
       unlistenShortcut?.();
+      unlistenSettings?.();
     };
   }, []);
 
@@ -529,7 +513,7 @@ export default function HomePage() {
 
       // Reset model if current model is no longer available
       if (!available.some((m) => m.id === model) && available.length > 0) {
-        const newModel = available[0].id;
+        const newModel = getRecommendedModel(hasKeys)?.id || available[0].id;
         setModel(newModel);
         localStorage.setItem("selected-model", newModel);
 
@@ -634,6 +618,7 @@ export default function HomePage() {
     setIsLoading(true);
     setError("");
     setOutputText("");
+    setReview(null);
     setMeta(null);
 
     const startTime = Date.now();
@@ -655,11 +640,14 @@ export default function HomePage() {
           text: inputText,
           writingStyle: writingStyle,
           customRules: customRules.trim() || undefined,
+          language: activeLanguage,
         });
 
         const duration = Date.now() - startTime;
 
         setOutputText(result.result);
+        const nextReview = createReview(inputText, result.result);
+        setReview(nextReview);
         setMeta({
           duration,
           model: model,
@@ -678,6 +666,10 @@ export default function HomePage() {
           outputTokens: result.usage.outputTokens,
           duration,
           success: true,
+          writingStyle,
+          language: activeLanguage,
+          detectedEdits: nextReview.edits.length,
+          acceptedEdits: nextReview.edits.length,
         });
 
         // Play completed sound
@@ -700,7 +692,9 @@ export default function HomePage() {
         outputTokens: 0,
         duration: Date.now() - startTime,
         success: false,
-        error: errorMsg,
+          error: errorMsg,
+          writingStyle,
+          language: activeLanguage,
       });
 
       // Check if a free fallback model is available
@@ -749,6 +743,48 @@ export default function HomePage() {
     }
   };
 
+  const handleCopyReview = async (text: string) => {
+    await navigator.clipboard.writeText(text);
+    setIsCopied(true);
+    setTimeout(() => setIsCopied(false), 2000);
+  };
+
+  const handleSavePreset = () => {
+    const name = window.prompt("Preset name");
+    if (!name?.trim()) return;
+    const now = Date.now();
+    const preset: Preset = { id: crypto.randomUUID(), name: name.trim(), writingStyle, customRules: localStorage.getItem("custom-rules") || "", language: languagePreference, createdAt: now, updatedAt: now };
+    setPresets(savePreset(preset));
+    setSelectedPresetId(preset.id);
+  };
+
+  const handlePresetChange = (id: string) => {
+    setSelectedPresetId(id);
+    const preset = presets.find((item) => item.id === id);
+    if (!preset) return;
+    setWritingStyle(preset.writingStyle);
+    setLanguagePreference(preset.language);
+    localStorage.setItem("writing-style", preset.writingStyle);
+    localStorage.setItem("custom-rules", preset.customRules);
+  };
+
+  const handleOnboarding = async (provider: Provider, key: string) => {
+    const modelForProvider = provider === "openai" ? getModelById("gpt-5.4-mini") : MODELS.find((item) => item.provider === provider);
+    if (!modelForProvider) return false;
+    try {
+      await new UnifiedCorrector(provider, key, modelForProvider.id).correct({ text: "Correctify test.", writingStyle: "grammar" });
+      await setKey(`${provider}-api-key`, key);
+      const nextKeys = { ...apiKeys, [provider]: key };
+      setApiKeys(nextKeys);
+      setAvailableModels(getAvailableModels({ openai: !!nextKeys.openai, anthropic: !!nextKeys.anthropic, mistral: !!nextKeys.mistral, openrouter: !!nextKeys.openrouter }));
+      setModel(modelForProvider.id);
+      localStorage.setItem("selected-model", modelForProvider.id);
+      localStorage.setItem("correctify_onboarding_v1", "complete");
+      setIsOnboardingOpen(false);
+      return true;
+    } catch { return false; }
+  };
+
   return (
     <>
       <DraggableHeader
@@ -760,7 +796,11 @@ export default function HomePage() {
         onQuitClick={handleQuit}
         theme={theme}
         onThemeToggle={toggleTheme}
+        shortcutLabel={`${shortcutModifier.replace("CmdOrCtrl", isMac ? "Cmd" : "Ctrl")}+${shortcutKey}`}
+        copyOnly={!autoPasteEnabled}
       />
+
+      <OnboardingModal isOpen={isOnboardingOpen} onComplete={handleOnboarding} />
 
       <SettingsModal
         isOpen={isSettingsModalOpen}
@@ -772,6 +812,11 @@ export default function HomePage() {
         currentShortcutKey={shortcutKey}
         currentShortcutModifier={shortcutModifier}
         currentAutoPasteEnabled={autoPasteEnabled}
+        onTestApiKey={async (provider, key) => {
+          const modelInfo = MODELS.find((item) => item.provider === provider);
+          if (!modelInfo) return false;
+          try { await new UnifiedCorrector(provider, key, modelInfo.id).correct({ text: "Validation test.", writingStyle: "grammar" }); return true; } catch { return false; }
+        }}
       />
 
       <HelpModal
@@ -816,7 +861,7 @@ export default function HomePage() {
 
       <UsageModal isOpen={isUsageModalOpen} onClose={() => setIsUsageModalOpen(false)} />
 
-      <main className="h-screen flex justify-center p-6 bg-transparent pt-24 transition-colors overflow-auto">
+      <main className="min-h-screen flex justify-center p-6 bg-transparent pt-24 transition-colors overflow-auto">
         <div className="w-full max-w-4xl">
           <form onSubmit={handleSubmit} className="space-y-6">
             <div className="space-y-2">
@@ -825,6 +870,15 @@ export default function HomePage() {
                   {messages.home.inputLabel}
                 </label>
                 <div className="flex items-center gap-4">
+                  <div className="hidden items-center gap-2 lg:flex">
+                    <label htmlFor="preset" className="text-xs font-medium text-foreground">Preset:</label>
+                    <select id="preset" value={selectedPresetId} onChange={(event) => handlePresetChange(event.target.value)} className="rounded-lg border border-border bg-background/40 px-2 py-1.5 text-xs text-foreground outline-none focus:ring-2 focus:ring-primary"><option value="">Custom</option>{presets.map((preset) => <option key={preset.id} value={preset.id}>{preset.name}</option>)}</select>
+                    <button type="button" onClick={handleSavePreset} aria-label="Save current settings as preset" className="rounded-lg p-1.5 text-primary hover:bg-primary/10"><Plus className="h-3.5 w-3.5" /></button>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <label htmlFor="correction-language" className="text-xs font-medium text-foreground">Language:</label>
+                    <select id="correction-language" value={languagePreference} onChange={(event) => setLanguagePreference(event.target.value as LanguagePreference)} disabled={isLoading} className="rounded-lg border border-border bg-background/40 px-2 py-1.5 text-xs text-foreground outline-none focus:ring-2 focus:ring-primary"><option value="auto">Auto ({detectedLanguage})</option><option value="en">English</option><option value="tr">Turkish</option><option value="de">German</option><option value="fr">French</option><option value="mixed">Mixed</option></select>
+                  </div>
                   <div className="flex items-center gap-2">
                     <span className="text-xs font-medium text-foreground">{messages.home.styleLabel}</span>
                     <div className="relative" ref={styleDropdownRef}>
@@ -910,6 +964,7 @@ export default function HomePage() {
                                 >
                                   <div className="flex items-start justify-between gap-3">
                                     <span className="flex-1 min-w-0">{modelInfo.name}</span>
+                                    {modelInfo.badge && <span className="rounded bg-primary/10 px-1.5 py-0.5 text-[9px] font-semibold text-primary">{modelInfo.badge}</span>}
                                     <span
                                       className={`text-[10px] uppercase shrink-0 ${
                                         model === modelInfo.id
@@ -953,6 +1008,7 @@ export default function HomePage() {
                                 >
                                   <div className="flex items-start justify-between gap-3">
                                     <span className="flex-1 min-w-0">{modelInfo.name}</span>
+                                    {modelInfo.badge && <span className="rounded bg-primary/10 px-1.5 py-0.5 text-[9px] font-semibold text-primary">{modelInfo.badge}</span>}
                                     <span
                                       className={`text-[10px] uppercase shrink-0 ${
                                         model === modelInfo.id
@@ -996,7 +1052,7 @@ export default function HomePage() {
                 onChange={(e) => setInputText(e.target.value)}
                 onKeyDown={handleKeyDown}
                 placeholder={messages.home.inputPlaceholder}
-                className="w-full h-96 px-4 py-3 bg-card border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary resize-none text-foreground transition-colors placeholder:text-muted-foreground"
+                className={`w-full ${review ? "h-64" : "h-96"} px-4 py-3 bg-card border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary resize-none text-foreground transition-colors placeholder:text-muted-foreground`}
                 disabled={isLoading}
               />
             </div>
@@ -1180,63 +1236,7 @@ export default function HomePage() {
             </div>
           )}
 
-          {outputText && (
-            <div className="mt-6 space-y-4 pb-6">
-              <div className="space-y-2">
-                <div className="flex items-center justify-between">
-                  <span className="block text-sm font-medium text-foreground">
-                    {messages.home.outputLabel}
-                  </span>
-                  <button
-                    type="button"
-                    onClick={handleCopy}
-                    className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-foreground/70 hover:text-foreground bg-foreground/5 hover:bg-foreground/10 rounded-lg transition-colors"
-                    aria-label="Copy to clipboard"
-                  >
-                    {isCopied ? (
-                      <>
-                        <Check className="w-3.5 h-3.5" />
-                        <span>{messages.home.copied}</span>
-                      </>
-                    ) : (
-                      <>
-                        <Copy className="w-3.5 h-3.5" />
-                        <span>{messages.home.copy}</span>
-                      </>
-                    )}
-                  </button>
-                </div>
-                <div className="p-4 pb-8 bg-card border border-border rounded-lg min-h-48 transition-colors">
-                  <div className="prose max-w-none">
-                    <ReactMarkdown
-                      key={outputText}
-                      remarkPlugins={[remarkGfm]}
-                      components={{
-                        p: ({ children }) => (
-                          <p className="my-0">{children}</p>
-                        ),
-                      }}
-                    >
-                      {outputText.replace(/\n(?!\n)/g, "  \n")}
-                    </ReactMarkdown>
-                  </div>
-                </div>
-              </div>
-
-              {meta && (
-                <div className="flex items-center justify-between text-xs text-text-muted">
-                  <span>
-                    {messages.home.metaModel} {meta.model}
-                  </span>
-                  {meta.duration && (
-                    <span>
-                      {messages.home.metaDuration} {(meta.duration / 1000).toFixed(2)}s
-                    </span>
-                  )}
-                </div>
-              )}
-            </div>
-          )}
+          {review && meta && <ReviewPanel review={review} model={meta.model || model} duration={meta.duration || 0} estimatedCost={(() => { const info = getModelById(model); return info?.costPer1MToken ? ((meta.usage?.inputTokens || 0) * info.costPer1MToken.input + (meta.usage?.outputTokens || 0) * info.costPer1MToken.output) / 1_000_000 : 0; })()} onChange={setReview} onCopy={handleCopyReview} onReplace={(text) => { setInputText(text); setReview(null); setOutputText(""); }} onRestore={() => { setInputText(review.original); setReview(null); setOutputText(""); }} />}
 
         </div>
       </main>

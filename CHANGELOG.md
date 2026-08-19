@@ -11,12 +11,21 @@
 - Added correction model validation, request timeout/cancellation, actual token usage accounting, and retry classification.
 - Added signed updater artifacts with required key checks, plus signed and notarized macOS distribution builds.
 - Updated the frontend, Tauri, AI SDK, Rust, linting, and build-tool dependency baseline.
+- Added first-run onboarding with provider selection, API-key validation before secure storage, and copy-only shortcut guidance.
+- Replaced the static correction output with an accept/reject review workflow, including copy accepted text, replace input, and restore original actions.
+- Added local language detection and override, reusable presets, metadata-only recent activity, and CSV export.
+- Made GPT-5.4 Mini the recommended OpenAI default, labeled Nano as the fastest option, and added model-quality badges and API-key test actions.
+- Updated the tray interaction: left-click opens Correctify, while the right-click menu exposes status, settings, and quit controls.
 
 ### Fixed
 
 - Migrated stale saved model selections to the current default before inline or global-shortcut correction.
 - Fixed duplicate global-shortcut listeners and added a native auto-paste guard, preventing duplicate paste operations.
 - Removed unsupported temperature requests for GPT-5 models.
+- Fixed Turkish auto-detection incorrectly treating ordinary English `i` as a Turkish-specific character.
+- Protected inline and fenced Markdown code during correction, preserving original command text exactly.
+- Fixed correction-review diff offsets that could corrupt accepted output around insertions or code spans.
+- Tightened Grammar Only guidance to correct clear typos, verb forms, articles, and required prepositions without broad stylistic rewrites.
 
 ## [1.0.2] - 2026-01-22
 

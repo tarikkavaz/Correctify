@@ -22,6 +22,8 @@ interface DraggableHeaderProps {
   onQuitClick: () => void;
   theme: Theme;
   onThemeToggle: () => void;
+  shortcutLabel?: string;
+  copyOnly?: boolean;
 }
 
 export default function DraggableHeader({
@@ -33,6 +35,8 @@ export default function DraggableHeader({
   onQuitClick,
   theme,
   onThemeToggle,
+  shortcutLabel,
+  copyOnly = true,
 }: DraggableHeaderProps) {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
@@ -54,7 +58,7 @@ export default function DraggableHeader({
   return (
     <div
       data-tauri-drag-region
-      className="fixed top-0 left-0 right-0 flex items-center justify-between px-4 py-4 bg-background/20 backdrop-blur-md z-40 transition-colors"
+      className="fixed top-0 left-0 right-0 flex items-center justify-between border-b border-border px-4 py-3 bg-background/95 backdrop-blur-md z-40 transition-colors"
     >
       <div data-tauri-drag-region className="flex-1" />
       <div
@@ -70,6 +74,7 @@ export default function DraggableHeader({
           <p data-tauri-drag-region className="text-xs text-foreground">
             {messages.header.subtitle}
           </p>
+          {shortcutLabel && <p data-tauri-drag-region className="mt-0.5 text-[10px] font-medium text-primary">{shortcutLabel} · {copyOnly ? "Copy only" : "Auto-paste"}</p>}
         </div>
       </div>
       <div className="flex items-center gap-2">

@@ -9,6 +9,39 @@ import { CorrectionError, type CorrectionInput, type CorrectionResult, type Corr
 const MAX_INPUT_CHARACTERS = 100_000;
 const MAX_OUTPUT_TOKENS = 8_192;
 const REQUEST_TIMEOUT_MS = 30_000;
+const CODE_SEGMENT_PATTERN = /```[\s\S]*?```|`[^`\n]*`/g;
+
+interface ProtectedCode {
+  text: string;
+  markers: Array<{ marker: string; source: string }>;
+}
+
+/**
+ * Models must never receive executable Markdown as editable prose. We use opaque
+ * markers and refuse a response that does not preserve them exactly.
+ */
+function protectCode(text: string): ProtectedCode {
+  const markers: ProtectedCode["markers"] = [];
+  const protectedText = text.replace(CODE_SEGMENT_PATTERN, (source) => {
+    const marker = `[[CORRECTIFY_CODE_${markers.length}_DO_NOT_EDIT]]`;
+    markers.push({ marker, source });
+    return marker;
+  });
+  return { text: protectedText, markers };
+}
+
+function restoreCode(text: string, markers: ProtectedCode["markers"]): string | null {
+  let restored = text;
+  for (const { marker, source } of markers) {
+    if (!restored.includes(marker)) return null;
+    restored = restored.replace(marker, source);
+  }
+  // Do not trust a model to keep code syntax intact around a restored marker.
+  // Reapply each original span in order, then fail closed if the structure changed.
+  let index = 0;
+  const enforced = restored.replace(CODE_SEGMENT_PATTERN, () => markers[index++]?.source ?? "");
+  return index === markers.length ? enforced : null;
+}
 
 function classifyError(error: unknown): RetryKind {
   const message = error instanceof Error ? error.message.toLowerCase() : "";
@@ -34,17 +67,24 @@ export class UnifiedCorrector implements Corrector {
     const timeout = AbortSignal.timeout(REQUEST_TIMEOUT_MS);
     const signal = input.signal ? AbortSignal.any([input.signal, timeout]) : timeout;
     try {
-      const response = await generateText({
-        model: this.getAIProvider()(model),
-        system: getSystemPrompt(input.writingStyle ?? "grammar", input.customRules),
-        prompt: input.text,
-        ...(model.startsWith("gpt-5") ? {} : { temperature: input.temperature ?? 0 }),
-        maxOutputTokens: MAX_OUTPUT_TOKENS,
-        maxRetries: 1,
-        abortSignal: signal,
-      });
-      if (!response.text.trim()) throw new CorrectionError("The model returned an empty correction.", "transient");
-      return { result: response.text.trim(), usage: { inputTokens: response.usage.inputTokens, outputTokens: response.usage.outputTokens, totalTokens: response.usage.totalTokens }, finishReason: response.finishReason, requestId: response.response.headers?.["x-request-id"] };
+      const protectedCode = protectCode(input.text);
+      for (let attempt = 0; attempt < 2; attempt++) {
+        const response = await generateText({
+          model: this.getAIProvider()(model),
+          system: `${getSystemPrompt(input.writingStyle ?? "grammar", input.customRules, input.language)}${attempt ? "\nYour previous response altered a protected code marker. Output every CORRECTIFY_CODE marker exactly as received." : ""}`,
+          prompt: protectedCode.text,
+          ...(model.startsWith("gpt-5") ? {} : { temperature: input.temperature ?? 0 }),
+          maxOutputTokens: MAX_OUTPUT_TOKENS,
+          maxRetries: 1,
+          abortSignal: signal,
+        });
+        if (!response.text.trim()) throw new CorrectionError("The model returned an empty correction.", "transient");
+        const restored = restoreCode(response.text.trim(), protectedCode.markers);
+        if (restored !== null) {
+          return { result: restored, usage: { inputTokens: response.usage.inputTokens, outputTokens: response.usage.outputTokens, totalTokens: response.usage.totalTokens }, finishReason: response.finishReason, requestId: response.response.headers?.["x-request-id"] };
+        }
+      }
+      throw new CorrectionError("The model could not preserve protected code. No correction was applied.", "transient");
     } catch (error) {
       if (error instanceof CorrectionError) throw error;
       if (signal.aborted && input.signal?.aborted) throw new CorrectionError("Correction cancelled.");

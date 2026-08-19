@@ -2,8 +2,8 @@
 
 import type { Provider } from "@/lib/types";
 import { useLocale } from "@/lib/useLocale";
-import { clearUsageHistory, getUsageStatsForPeriod } from "@/lib/usage-tracker";
-import { BarChart3, Clock, DollarSign, Trash2, TrendingUp, X } from "lucide-react";
+import { clearUsageHistory, exportUsageHistory, getUsageHistory, getUsageStatsForPeriod } from "@/lib/usage-tracker";
+import { BarChart3, Clock, Download, DollarSign, Trash2, TrendingUp, X } from "lucide-react";
 import { useState } from "react";
 
 interface UsageModalProps {
@@ -23,6 +23,12 @@ export default function UsageModal({ isOpen, onClose }: UsageModalProps) {
       clearUsageHistory();
       setRefreshKey((k) => k + 1); // Force refresh
     }
+  };
+  const handleExport = () => {
+    const blob = new Blob([exportUsageHistory()], { type: "text/csv" });
+    const url = URL.createObjectURL(blob);
+    const anchor = document.createElement("a");
+    anchor.href = url; anchor.download = "correctify-activity.csv"; anchor.click(); URL.revokeObjectURL(url);
   };
 
   if (!isOpen) return null;
@@ -178,6 +184,11 @@ export default function UsageModal({ isOpen, onClose }: UsageModalProps) {
 
           {/* Clear History */}
           <div className="pt-4 border-t border-border">
+            <div className="mb-4 space-y-2">
+              <h3 className="text-sm font-semibold text-foreground">Recent activity</h3>
+              {getUsageHistory().slice(-5).reverse().map((entry) => <div key={entry.timestamp} className="flex items-center justify-between text-xs text-foreground/65"><span>{new Date(entry.timestamp).toLocaleString()} · {entry.model} · {entry.language ?? "unknown"}</span><span className={entry.success ? "text-success-text" : "text-error-text"}>{entry.success ? "Completed" : entry.error ?? "Failed"}</span></div>)}
+            </div>
+            <button type="button" onClick={handleExport} className="mb-2 w-full flex items-center justify-center gap-2 px-4 py-2 text-sm font-medium text-foreground hover:bg-foreground/5 rounded-lg transition-colors"><Download className="w-4 h-4" />Export metadata CSV</button>
             <button
               type="button"
               onClick={handleClearHistory}

@@ -25,6 +25,7 @@ interface SettingsModalProps {
   currentShortcutKey: string;
   currentShortcutModifier: string;
   currentAutoPasteEnabled: boolean;
+  onTestApiKey: (provider: Provider, key: string) => Promise<boolean>;
 }
 
 const API_KEY_CONFIG: Array<{
@@ -69,6 +70,7 @@ export default function SettingsModal({
   currentShortcutKey,
   currentShortcutModifier,
   currentAutoPasteEnabled,
+  onTestApiKey,
 }: SettingsModalProps) {
   const [apiKeys, setApiKeys] = useState<Record<Provider, string>>(currentApiKeys);
   const [autostartEnabled, setAutostartEnabled] = useState(currentAutostartEnabled);
@@ -90,22 +92,16 @@ export default function SettingsModal({
   const languageDropdownRef = useRef<HTMLDivElement>(null);
   const { messages, locale, changeLocale } = useLocale();
   const [isMac, setIsMac] = useState(false); // Default to false to avoid hydration mismatch
+  const [keyValidation, setKeyValidation] = useState<Partial<Record<Provider, "testing" | "valid" | "invalid">>>({});
+  const [saveError, setSaveError] = useState("");
 
   useEffect(() => {
     // Detect OS only on client side to avoid hydration mismatch
     setIsMac(isMacOS());
   }, []);
 
-  // Get saved language or default to "system"
-  const [selectedLanguage, setSelectedLanguage] = useState<Locale | "system">(() => {
-    if (typeof window !== "undefined") {
-      const saved = localStorage.getItem("app-language");
-      if (saved && (saved === "system" || ["en", "de", "fr", "tr"].includes(saved))) {
-        return saved as Locale | "system";
-      }
-    }
-    return "system";
-  });
+  // Hydrate the saved preference after mount to keep server/client markup identical.
+  const [selectedLanguage, setSelectedLanguage] = useState<Locale | "system">("system");
 
   useEffect(() => {
     setIsTauriApp(isTauri());
@@ -167,6 +163,8 @@ export default function SettingsModal({
 
   const handleSubmit = (e: FormEvent) => {
     e.preventDefault();
+    const untestedChange = (Object.keys(apiKeys) as Provider[]).find((provider) => apiKeys[provider].trim() && apiKeys[provider] !== currentApiKeys[provider] && keyValidation[provider] !== "valid");
+    if (untestedChange) { setSaveError(`Test the ${untestedChange} key before saving it.`); return; }
     // Save custom rules to localStorage
     if (typeof window !== "undefined") {
       localStorage.setItem("custom-rules", customRules);
@@ -177,6 +175,14 @@ export default function SettingsModal({
 
   const handleApiKeyChange = (provider: Provider, value: string) => {
     setApiKeys((prev) => ({ ...prev, [provider]: value }));
+    setKeyValidation((previous) => ({ ...previous, [provider]: undefined }));
+  };
+
+  const testKey = async (provider: Provider) => {
+    if (!apiKeys[provider].trim()) return;
+    setKeyValidation((previous) => ({ ...previous, [provider]: "testing" }));
+    const valid = await onTestApiKey(provider, apiKeys[provider]);
+    setKeyValidation((previous) => ({ ...previous, [provider]: valid ? "valid" : "invalid" }));
   };
 
   const handleClearApiKey = (provider: Provider) => {
@@ -344,8 +350,14 @@ export default function SettingsModal({
                       </button>
                     )}
                   </div>
+                  <div className="flex items-center gap-2">
+                    <button type="button" onClick={() => testKey(config.provider)} disabled={!apiKeys[config.provider] || keyValidation[config.provider] === "testing"} className="rounded px-2 py-1 text-xs font-medium text-primary hover:bg-primary/10 disabled:opacity-50">{keyValidation[config.provider] === "testing" ? "Testing…" : "Test key"}</button>
+                    {keyValidation[config.provider] === "valid" && <span className="text-xs text-success-text">Validated</span>}
+                    {keyValidation[config.provider] === "invalid" && <span className="text-xs text-error-text">Could not validate</span>}
+                  </div>
                 </div>
               ))}
+              {saveError && <p className="text-sm text-error-text">{saveError}</p>}
               <div className="flex items-start gap-2 text-xs text-foreground/60 pt-2">
                 <p className="flex-1">{messages.apiModal.securityNote}</p>
               </div>
@@ -730,7 +742,7 @@ export default function SettingsModal({
 
                   {/* Preview */}
                   <div className="space-y-2">
-                    <label className="text-xs text-foreground/60">{messages.apiModal.shortcutPreview}</label>
+                    <p className="text-xs text-foreground/60">{messages.apiModal.shortcutPreview}</p>
                     <div className="px-3 py-2 bg-foreground/5 border border-border rounded-lg text-sm font-mono text-foreground flex items-center justify-center h-[42px]">
                       {shortcutModifier === "CmdOrCtrl+Shift"
                         ? (isMac

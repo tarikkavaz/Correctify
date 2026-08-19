@@ -1,5 +1,6 @@
 import { getModelById } from "./models";
 import type { Provider } from "./types";
+import type { DetectedLanguage, WritingStyle } from "./types";
 
 export interface UsageEntry {
   timestamp: number;
@@ -10,6 +11,10 @@ export interface UsageEntry {
   duration: number; // milliseconds
   success: boolean;
   error?: string;
+  writingStyle?: WritingStyle;
+  language?: DetectedLanguage;
+  detectedEdits?: number;
+  acceptedEdits?: number;
 }
 
 export interface UsageStats {
@@ -43,11 +48,17 @@ export function getUsageHistory(): UsageEntry[] {
   try {
     const data = localStorage.getItem(STORAGE_KEY);
     if (!data) return [];
-    return JSON.parse(data);
+    return (JSON.parse(data) as UsageEntry[]).map((entry) => ({ ...entry, writingStyle: entry.writingStyle ?? "grammar", language: entry.language ?? "unknown", detectedEdits: entry.detectedEdits ?? 0, acceptedEdits: entry.acceptedEdits ?? 0 }));
   } catch (error) {
     console.error("Failed to load usage history:", error);
     return [];
   }
+}
+
+export function exportUsageHistory(): string {
+  const headers = ["timestamp", "provider", "model", "style", "language", "duration_ms", "input_tokens", "output_tokens", "estimated_edits", "accepted_edits", "success", "error"];
+  const rows = getUsageHistory().map((entry) => [new Date(entry.timestamp).toISOString(), entry.provider, entry.model, entry.writingStyle ?? "grammar", entry.language ?? "unknown", entry.duration, entry.inputTokens ?? 0, entry.outputTokens ?? 0, entry.detectedEdits ?? 0, entry.acceptedEdits ?? 0, entry.success, entry.error ?? ""].map((value) => `"${String(value).replaceAll('"', '""')}"`).join(","));
+  return [headers.join(","), ...rows].join("\n");
 }
 
 /**

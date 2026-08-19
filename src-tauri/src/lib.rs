@@ -701,7 +701,7 @@ pub fn run() {
         shortcut_modifier: Arc::new(Mutex::new("CmdOrCtrl+Shift".to_string())), // Default: Cmd+Shift on Mac, Ctrl+Shift on Win/Linux
         auto_paste_enabled: Arc::new(Mutex::new(false)), // Default: auto-paste disabled
         auto_paste_in_flight: Arc::new(Mutex::new(false)),
-        current_model: Arc::new(Mutex::new("gpt-5.4-nano".to_string())), // Default model
+        current_model: Arc::new(Mutex::new("gpt-5.4-mini".to_string())), // Recommended default model
         current_style: Arc::new(Mutex::new("grammar".to_string())), // Default style
         locale: Arc::new(Mutex::new("en".to_string())), // Default locale: English
     };
@@ -886,27 +886,65 @@ pub fn run() {
                 println!("macOS App Nap disabled");
             }
 
-            // Create system tray icon (no menu - click to toggle)
+            // Left-click opens Correctify; the contextual controls remain on right-click.
             let tray_icon = Image::from_bytes(include_bytes!("../icons/tray.png"))
                 .expect("Failed to load tray icon");
+            let show_window_item = MenuItemBuilder::with_id("show_window", "Open Correctify")
+                .build(app)?;
+            let tray_settings_item = MenuItemBuilder::with_id("tray_settings", "Settings")
+                .build(app)?;
+            let copy_status_item = MenuItemBuilder::with_id("copy_status", "Mode: Copy corrected text")
+                .enabled(false)
+                .build(app)?;
+            let shortcut_status_item = MenuItemBuilder::with_id("shortcut_status", "Shortcut: Cmd/Ctrl+Shift+]")
+                .enabled(false)
+                .build(app)?;
+            let tray_quit_item = MenuItemBuilder::with_id("tray_quit", "Quit Correctify")
+                .build(app)?;
+            let tray_menu = MenuBuilder::new(app)
+                .item(&shortcut_status_item)
+                .item(&copy_status_item)
+                .separator()
+                .item(&show_window_item)
+                .item(&tray_settings_item)
+                .separator()
+                .item(&tray_quit_item)
+                .build()?;
 
             let app_handle = app.app_handle().clone();
             TrayIconBuilder::new()
                 .icon(tray_icon)
                 .icon_as_template(true)
-                .tooltip("Correctify - Click to toggle")
+                .tooltip("Correctify - Click to open")
+                .menu(&tray_menu)
+                .show_menu_on_left_click(false)
                 .on_tray_icon_event(move |_tray, event| {
                     if let TrayIconEvent::Click { button, button_state, .. } = event {
                         if button == MouseButton::Left && button_state == MouseButtonState::Up {
                             if let Some(window) = app_handle.get_webview_window("main") {
-                                if window.is_visible().unwrap_or(false) {
-                                    let _ = window.hide();
-                                } else {
-                                    let _ = window.show();
-                                    let _ = window.set_focus();
-                                }
+                                let _ = window.show();
+                                let _ = window.set_focus();
                             }
                         }
+                    }
+                })
+                .on_menu_event(move |app, event| {
+                    match event.id().as_ref() {
+                        "show_window" => {
+                            if let Some(window) = app.get_webview_window("main") {
+                                let _ = window.show();
+                                let _ = window.set_focus();
+                            }
+                        }
+                        "tray_settings" => {
+                            if let Some(window) = app.get_webview_window("main") {
+                                let _ = window.show();
+                                let _ = window.set_focus();
+                            }
+                            let _ = app.emit("open-settings", ());
+                        }
+                        "tray_quit" => app.exit(0),
+                        _ => {}
                     }
                 })
                 .build(app)
