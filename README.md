@@ -3,7 +3,7 @@
 A cross-platform, desktop-first grammar correction app powered by multiple AI providers.
 Bring your own API key, choose a tested low-cost model, and keep credentials in your operating system's credential vault.
 
-![Correctify Screenshot](public/screenshot.jpg)
+![Correctify Screenshot](public/screenshot.png)
 
 ## Overview
 
