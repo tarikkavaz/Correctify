@@ -302,6 +302,16 @@ jobs:
           security set-key-partition-list -S apple-tool:,apple: -s -k "$MACOS_KEYCHAIN_PASSWORD" $KEYCHAIN_PATH
           pnpm tauri build ${{ matrix.args }} --config "{\"bundle\":{\"macOS\":{\"signingIdentity\":\"$MACOS_SIGNING_IDENTITY\"}}}"
 
+          # Tauri creates a signed .app.tar.gz updater archive. Give each
+          # architecture a distinct name so both can be attached to one release.
+          VERSION="${{ needs.check-release.outputs.version }}"
+          UPDATER_DIR="src-tauri/target/${{ matrix.target }}/release/bundle/macos"
+          for archive in "$UPDATER_DIR"/*.app.tar.gz; do
+            base="Correctify_${VERSION#v}_${{ matrix.target }}.app.tar.gz"
+            mv "$archive" "$UPDATER_DIR/$base"
+            mv "$archive.sig" "$UPDATER_DIR/$base.sig"
+          done
+
           # Notarize the DMG
           cd src-tauri/target/${{ matrix.target }}/release/bundle/dmg
           for dmg in *.dmg; do
@@ -355,7 +365,8 @@ jobs:
           name: installers-${{ matrix.target }}
           path: |
             src-tauri/target/${{ matrix.target }}/release/bundle/dmg/*.dmg
-            src-tauri/target/${{ matrix.target }}/release/bundle/dmg/*.sig
+            src-tauri/target/${{ matrix.target }}/release/bundle/macos/*.app.tar.gz
+            src-tauri/target/${{ matrix.target }}/release/bundle/macos/*.app.tar.gz.sig
           retention-days: 1
 
       - name: Upload installers (Linux x86_64)
@@ -424,23 +435,24 @@ jobs:
 
       - name: Generate updater JSON
         run: |
+          set -euo pipefail
           VERSION="${{ needs.check-release.outputs.version }}"
           NOTES="See release notes at: https://github.com/tarikkavaz/Correctify/releases/tag/${VERSION}"
-          signature() { local file="$1"; test -f "${file}.sig" || { echo "Missing updater signature: ${file}.sig"; exit 1; }; tr -d '\n' < "${file}.sig"; }
-          DARWIN_ARM_FILE=$(find installers -name "*aarch64.dmg" -type f | head -1)
-          DARWIN_X64_FILE=$(find installers -name "*x64.dmg" -type f | head -1)
+          signature() { local file="$1"; test -n "$file" && test -f "${file}.sig" || { echo "Missing updater signature for: ${file:-no file found}" >&2; return 1; }; tr -d '\n' < "${file}.sig"; }
+          DARWIN_ARM_FILE=$(find installers -name "*aarch64-apple-darwin.app.tar.gz" -type f | head -1)
+          DARWIN_X64_FILE=$(find installers -name "*x86_64-apple-darwin.app.tar.gz" -type f | head -1)
           LINUX_FILE=$(find installers -name "*amd64.AppImage" -type f | head -1)
-          LINUX_ARM_FILE=$(find installers -name "*arm64.AppImage" -type f | head -1)
+          LINUX_ARM_FILE=$(find installers -name "*aarch64.AppImage" -type f | head -1)
           WINDOWS_FILE=$(find installers -name "*x64-setup.exe" -type f | head -1)
 
           jq -n \
             --arg version "${VERSION#v}" \
             --arg notes "$NOTES" \
             --arg pub_date "$(date -u +"%Y-%m-%dT%H:%M:%SZ")" \
-            --arg darwin_aarch64_url "https://github.com/tarikkavaz/Correctify/releases/download/${VERSION}/Correctify_${VERSION#v}_aarch64.dmg" \
-            --arg darwin_x64_url "https://github.com/tarikkavaz/Correctify/releases/download/${VERSION}/Correctify_${VERSION#v}_x64.dmg" \
+            --arg darwin_aarch64_url "https://github.com/tarikkavaz/Correctify/releases/download/${VERSION}/Correctify_${VERSION#v}_aarch64-aarch64-apple-darwin.app.tar.gz" \
+            --arg darwin_x64_url "https://github.com/tarikkavaz/Correctify/releases/download/${VERSION}/Correctify_${VERSION#v}_x86_64-apple-darwin.app.tar.gz" \
             --arg linux_url "https://github.com/tarikkavaz/Correctify/releases/download/${VERSION}/correctify_${VERSION#v}_amd64.AppImage" \
-            --arg linux_arm64_url "https://github.com/tarikkavaz/Correctify/releases/download/${VERSION}/correctify_${VERSION#v}_arm64.AppImage" \
+            --arg linux_arm64_url "https://github.com/tarikkavaz/Correctify/releases/download/${VERSION}/Correctify_${VERSION#v}_aarch64.AppImage" \
             --arg windows_url "https://github.com/tarikkavaz/Correctify/releases/download/${VERSION}/Correctify_${VERSION#v}_x64-setup.exe" \
             --arg darwin_aarch64_signature "$(signature "$DARWIN_ARM_FILE")" \
             --arg darwin_x64_signature "$(signature "$DARWIN_X64_FILE")" \
